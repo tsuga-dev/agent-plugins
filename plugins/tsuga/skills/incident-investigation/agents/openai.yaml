@@ -1,0 +1,4 @@
+interface:
+  display_name: "Incident Investigation"
+  short_description: "Parallel incident root-cause workflow"
+  default_prompt: "Use $incident-investigation to investigate this incident with Tsuga, GitHub, prior incidents, and repo context."
