@@ -2,7 +2,7 @@
 
 For pods, deployments, nodes, or cluster-level symptoms. Trap: pinning cause on the restart/pod event when the restart is itself a symptom.
 
-Concrete metrics in `$knowledge-technology/kubernetes.md`. This file is reasoning disambiguation only.
+Concrete metrics in `$knowledge-technology/kubernetes.md`. Remediation recipes per failure mode in `$knowledge-technology/kubernetes/runbooks.md` (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending, NodeNotReady, DiskPressure, HighCPU). This file is reasoning disambiguation only — pick a runbook *after* the investigation validates the category, never before.
 
 ## Symptom vs root cause
 
@@ -46,3 +46,19 @@ Counter-example: if the producer JUST changed its schema and the consumer's conf
 - OOM: traffic spike OR payload growth → heap past limit → OOMKilled → restart → cold cache → latency → 5xx.
 - Bad secret rotation: secret rotated → ConfigMap not redeployed → pods read stale → auth fails at startup → CrashLoopBackOff.
 - Bad readiness probe: probe path changed in release → /health mismatch → pod never ready → rollout stuck → no new pods serve.
+
+## Runbooks (post-verdict only)
+
+Once the investigation has assigned a `category`, the matching runbook from `$knowledge-technology/kubernetes/runbooks.md` supplies concrete remediation steps. Map:
+
+| `category` | Runbook |
+|---|---|
+| `crashloop` | CrashLoopBackOff Recovery |
+| `oom` | OOMKilled Recovery |
+| `image_pull` | ImagePullBackOff Recovery |
+| `pending` | Pending Pods Recovery |
+| `node_not_ready` | Node Not Ready Recovery |
+| `disk_pressure` | Disk Pressure Recovery |
+| `high_cpu` | High CPU Usage Recovery |
+
+Pick a runbook only after the verdict; never let a runbook category force-fit the cause. Each step is tagged `Destructive` / `Human` — show the step + wait for explicit user confirmation before applying anything that changes cluster state.
