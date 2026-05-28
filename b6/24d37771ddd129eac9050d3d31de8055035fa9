@@ -1,0 +1,29 @@
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_2e94252a42e6f3::t_116064cb95d6f2 186
+  s_2e94252a42e6f3::t_43790d347f28d5 305-310,316
+  s_2e94252a42e6f3::t_62039a6f6fbbc7 284-285,287-301
+  s_2e94252a42e6f3::t_147ce7c0d31d8e 28-30
+  h_d0d97781e4f799 286
+  s_2e94252a42e6f3::t_bd7a9fbe282090 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b624d37771ddd129eac9050d3d31de8055035fa9",
+  "prompts": {},
+  "humans": {
+    "h_d0d97781e4f799": {
+      "author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_2e94252a42e6f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f3d87c0-477b-4045-b21a-7472882f0f9c",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
