@@ -12,7 +12,7 @@ Manage Tsuga resources and query telemetry data from the command line. All outpu
 ```bash
 npm install -g @tsuga/cli
 tsuga auth <token>         # saves to ~/.config/tsuga/config.json
-tsuga config               # inspect saved config
+tsuga config               # show API URL, masked key, config path, and defaults
 ```
 
 For auth and cluster, the lookup order is the same: **CLI flag > env var > saved config**.
@@ -25,9 +25,9 @@ For auth and cluster, the lookup order is the same: **CLI flag > env var > saved
 Multi-cluster tenants must target a specific cluster (single-cluster tenants can ignore this — the backend picks the only one).
 
 ```bash
-tsuga cluster list                       # show all clusters
-tsuga defaults set cluster <cluster-id>  # save as the default
-tsuga defaults set cluster ''            # clear it
+tsuga cluster list                              # show all clusters
+tsuga config set default cluster <cluster-id>   # save as the default
+tsuga config set default cluster ''             # clear it
 ```
 
 ## Resource Commands
@@ -183,7 +183,7 @@ tsuga logs error-pattern-increases  --team infra    --env prod --from -24h
 
 Flags: `--query` (`*`), `--from` (`-30m`), `--to` (`now`), `--max-results` (`100`), `--fields a,b,c.d` (project dot-paths), `-o, --output json|tsv|csv` (default `json`). TSV/CSV default to `timestamp,level,message`; `--fields` overrides.
 
-Output: `logs search` → `{"logs": [...]}` (or rows); `logs patterns` → `{"patterns": [{pattern, size, groups}], "sampleSize": N}`; `logs new-error-patterns` → patterns first seen in the window (scoped by `--team`/`--env`/`--service`); `logs error-pattern-increases` → `{errorPatternIncreases: [{team, env, pattern, increaseTimestamps}]}` (anomalous-volume increases; `--team` required).
+Output: `logs search` → `{"logs": [...]}` (or rows); `logs patterns` → `{"patterns": [{pattern, size, groups}], "sampleSize": N}` — `pattern` is the formatted string (e.g. `"Resolved segment SegmentId([0:1]) from cache"`); supports `-o tsv|csv` with default columns `count,ratio,team,level,pattern`; `logs new-error-patterns` → patterns first seen in the window (scoped by `--team`/`--env`/`--service`); `logs error-pattern-increases` → `{errorPatternIncreases: [{team, env, pattern, increaseTimestamps}]}` (anomalous-volume increases; `--team` required).
 
 ## Traces
 
@@ -281,19 +281,39 @@ Check `tsuga metrics get <name>` for `type` + `temporality` first; picking wrong
 - Before running any filter you're constructing, check it doesn't contain field names that look like secrets (`password`, `token`, `api_key`, `secret`). If it does, drop the field; never echo secret material into a tsuga query.
 - `tsuga` reads/writes Tsuga state. `delete`, `update`, and `create` mutate. Only invoke mutating commands with explicit user authorization.
 
+## Rationale
+
+Every API-calling command accepts an optional `--rationale <text>` to explain why the call was made. It does not change the result.
+
+```bash
+tsuga logs patterns --rationale "exploring telemetry to investigate prod outage"
+```
+
+Use it on agent-issued calls so the activity log explains intent.
+
+## Feedback
+
+Report friction with Tsuga tooling or APIs (a failing command, unusable output, confusing behavior):
+
+```bash
+tsuga feedback "the traces command keeps timing out on large services"
+```
+
 ## Defaults
 
 ```bash
-tsuga defaults                       # show builtin + custom defaults (* = custom)
-tsuga defaults set from -1h          # override default lookback
-tsuga defaults set max-results 50    # override default result count
-tsuga defaults set cluster <id>      # pin the default cluster (see Clusters section)
-tsuga defaults reset                 # clear all custom defaults
-tsuga defaults set <key> ''          # clear a single default
+tsuga config                              # show builtin + custom defaults (* = custom)
+tsuga config set default from -1h         # override default lookback
+tsuga config set default max-results 50   # override default result count
+tsuga config set default cluster <id>     # pin the default cluster (see Clusters section)
+tsuga config reset defaults               # clear all custom defaults
+tsuga config set default <key> ''         # clear a single default
 ```
 
 Priority: CLI flag > custom default > built-in default.
 Built-ins: `from: -30m`, `to: now`, `query: *`, `max-results: 100`. `cluster` has no built-in default (backend picks first if unset).
+
+Dash-prefixed values are accepted as-is (`tsuga config set default from -45m` works without a `--` separator).
 
 ## Time Formats
 
@@ -340,10 +360,10 @@ Load only the translator(s) relevant to the request; they overlap in scope but t
 
 Two structured lookups live under `references/playbooks/`. Load the matching one when the intent fits; the heavier service-triage workflows are handled by their own skills (see Related, below).
 
-| Trigger intent | Playbook |
-|---|---|
-| "Who owns X?" / "What dashboards/monitors does X have?" | `references/playbooks/find-owner-and-context.md` |
-| "Reliability overview" / "quality scores" / failing rules | `references/playbooks/reliability-review.md` |
+| Trigger intent                                            | Playbook                                         |
+| --------------------------------------------------------- | ------------------------------------------------ |
+| "Who owns X?" / "What dashboards/monitors does X have?"   | `references/playbooks/find-owner-and-context.md` |
+| "Reliability overview" / "quality scores" / failing rules | `references/playbooks/reliability-review.md`     |
 
 ## Troubleshooting
 
