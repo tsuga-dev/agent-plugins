@@ -15,6 +15,8 @@ tsuga auth <token>         # saves to ~/.config/tsuga/config.json
 tsuga config               # show API URL, masked key, config path, and defaults
 ```
 
+Keep the CLI up to date (`npm install -g @tsuga/cli@latest`) — new resources ship regularly. If a command documented here is missing, update before debugging.
+
 For auth and cluster, the lookup order is the same: **CLI flag > env var > saved config**.
 
 - Auth: `--operation-api-key <token>` / `TSUGA_OPERATION_API_KEY`
@@ -32,7 +34,7 @@ tsuga config set default cluster ''             # clear it
 
 ## Resource Commands
 
-All 10 resources follow the same CRUD pattern:
+All resources follow the same CRUD pattern:
 
 ```bash
 tsuga <resource> list
@@ -42,10 +44,11 @@ tsuga <resource> update <id> [-f <file> | -d '<json>'] [--generate-skeleton]
 tsuga <resource> delete <id>
 ```
 
-Resources: `dashboards`, `monitors`, `teams`, `routes`, `notification-rules`, `notification-silences`, `ingestion-api-keys`, `retention-policies`, `tag-policies`, `quality-reports`, `cloud-resources`.
+Resources: `dashboards`, `monitors`, `teams`, `routes`, `notification-rules`, `notification-silences`, `ingestion-api-keys`, `retention-policies`, `tag-policies`, `investigations`, `quality-reports`, `cloud-resources`.
 
 > Note: `ingestion-api-keys` does not support `get <id>`.
 > Note: `quality-reports` and `cloud-resources` only support `list` (read-only).
+> Note: `investigations` is **beta** — see [Investigations (beta)](#investigations-beta).
 
 ### Input methods
 
@@ -71,6 +74,26 @@ tsuga routes update abc-123 -d '{"name":"Updated route"}'
 tsuga retention-policies delete abc-123
 echo '{"name":"My Team"}' | tsuga teams create -f -
 ```
+
+## Investigations (beta)
+
+Store investigation / RCA write-ups in Tsuga, where they appear in the Investigations page and can link to other assets.
+
+**Beta:** only use this if the operation API key has the `investigations` permission (403 otherwise), and expect the API to change.
+
+```bash
+tsuga investigations list
+tsuga investigations create -d '{
+  "name": "Checkout 5xx surge - RCA",
+  "owner": "<team-id>",
+  "env": "prod",
+  "contentMd": "# Summary\n...",
+  "linkedAssets": [{"type": "monitor", "id": "<monitor-id>"}]
+}'
+```
+
+- `contentMd` is Markdown; headings, lists, and code blocks render in the UI.
+- `linkedAssets[].type` is one of `dashboard`, `monitor`, `service`, `slo`, `log-route`.
 
 ## Quality Reports
 

@@ -22,6 +22,7 @@ Subagents return branch-shaped output (their section's Branch output contract). 
 ## Inputs
 
 Minimum viable case:
+
 - what is broken
 - when it started (the incident's `declared_at` is your "now")
 - scope: service, cluster, customer, env, or monitor
@@ -52,7 +53,7 @@ Check these during synthesis:
 6. **Close uncertainty too early.** One noisy surface ≠ one explanation. Keep alternatives alive.
 7. **Return non-answers.** Placeholder chatter is worse than a narrow honest next step.
 8. **Merged ≠ deployed.** A merged PR is not evidence the change reached the affected environment.
-9. **Blame a PR without tracing the signal to its emitting code.** A PR that merged in the right window and touches "the right area" is a candidate, not a confirmation. Pin each verbatim signal (error string, metric name, log pattern) to the `file:line` that emits it *first*, then check whether the PR's diff modifies that exact path.
+9. **Blame a PR without tracing the signal to its emitting code.** A PR that merged in the right window and touches "the right area" is a candidate, not a confirmation. Pin each verbatim signal (error string, metric name, log pattern) to the `file:line` that emits it _first_, then check whether the PR's diff modifies that exact path.
 10. **Skip the monitor's own query.** If the case came from a monitor firing, that monitor's filter + threshold IS the first `Saw` of your diagnostic path. Pull it with `tsuga monitors get <id>` before running broader log searches.
 11. **Read the error string literally.** Before building a narrative, re-read the raw verbatim error. If the text says `"invalid type: map, expected a sequence"`, the payload being an array is the first thing to check — don't stack indirections on top. If literal reading contradicts your hypothesis, restart from the literal reading.
 
@@ -76,6 +77,7 @@ Fast-path triage is cheap: one probe, one classification, publish. Silence after
 ### 2. Build case board
 
 Track five fields, separate:
+
 - reported symptom
 - user-visible impact
 - human hints already present
@@ -83,6 +85,19 @@ Track five fields, separate:
 - missing facts
 
 Do not let `failing subsystem` silently replace `root cause`.
+
+Then open a Tsuga investigation record (beta) so progress is visible while you work:
+
+```bash
+tsuga investigations create -d '{
+  "name": "<reported symptom> — investigating",
+  "owner": "<owning-team-id>",
+  "contentMd": "# Investigating\n\n<case board: symptom, impact, hints, change candidates, missing facts>",
+  "linkedAssets": [{"type": "monitor", "id": "<fired-monitor-id>"}]
+}'
+```
+
+Keep the returned `id` — you will update this record at checkpoints and finish it with the RCA. If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -120,9 +135,10 @@ Disjoint goals, run concurrently. Each branch is its own subagent; do not serial
 - **codebase-grep** — the emphasis branch. For every distinct verbatim signal the telemetry sweep surfaces (error string, log pattern, metric name, monitor filter), spawn **one subagent per signal** that greps the mounted codebases under `{{CODEBASES_DIR}}` to find the `file:line` where that signal is emitted. Output: file path, surrounding function context, nearby conditions that trigger the emission. 5 signals → 5 parallel greps — this scales linearly and each one returns a sharp pin, not a vague area.
 - **challenger** — attack the leading hypothesis. Its job is to name the single piece of evidence that would falsify the leader and say whether it's been checked.
 
-**Why codebase-grep matters.** Knowing *where* a signal is emitted lets you:
+**Why codebase-grep matters.** Knowing _where_ a signal is emitted lets you:
+
 - verify mechanistic fit (does a candidate PR's diff actually touch this `file:line`?)
-- understand *what conditions* trigger the emission (look at the enclosing `if` / `match` / error-handling block)
+- understand _what conditions_ trigger the emission (look at the enclosing `if` / `match` / error-handling block)
 - narrow change-correlation from "PRs in the area" to "PRs modifying this specific function."
 
 Without this, you're matching PRs by directory. With it, you're matching PRs by the emitting code path — a much stronger mechanism.
@@ -130,16 +146,18 @@ Without this, you're matching PRs by directory. With it, you're matching PRs by 
 Merge results as they land; don't wait on all.
 
 **Cost discipline.** Prefer cheap, high-signal probes before expensive ones:
+
 - `logs new-error-patterns` / `logs error-pattern-increases` (cheap — pre-computed) before `logs search`
 - `logs patterns` (bounded cluster) before `logs search --query '*'` (unbounded scan)
 - `aggregation scalar` before `aggregation timeseries` at broad group-by limits
 - `services get` for 24h counters before drilling into per-log detail
 - `grep -rn` across codebases (cheap, parallel) before elaborate change-correlation hypotheses
-A broad `logs search` with no service / team scope is the most expensive move — save it for when you have a specific error string to chase.
+  A broad `logs search` with no service / team scope is the most expensive move — save it for when you have a specific error string to chase.
 
 ### 6. Hypothesis ledger
 
 Per candidate cause, record:
+
 - symptom it explains
 - evidence supporting (with source tag)
 - evidence against
@@ -148,7 +166,7 @@ Per candidate cause, record:
 
 Carry ≥ 2 candidates until one is confirmed or alternatives are falsified.
 
-**Steelman alternatives.** For each non-leading candidate, write one sentence: *"what evidence would I need to see to promote this to the leading hypothesis?"* If any of those sentences describes a probe you haven't run yet AND it's cheap, run it before committing to the current leader.
+**Steelman alternatives.** For each non-leading candidate, write one sentence: _"what evidence would I need to see to promote this to the leading hypothesis?"_ If any of those sentences describes a probe you haven't run yet AND it's cheap, run it before committing to the current leader.
 
 ### 7. Evidence-gap gate (loop or publish)
 
@@ -164,6 +182,12 @@ If any answer is no AND the missing check is cheap (one more `aggregation`, `log
 
 If the missing check is expensive or the signal is genuinely unreachable, state that explicitly in `Open unknowns` and downgrade verdict to `most likely` or `insufficient evidence`.
 
+If you opened an investigation record in step 2, push a progress update at each gate pass — current leading hypothesis, what was just checked, what's next:
+
+```bash
+tsuga investigations update <id> -d '{"contentMd": "# Investigating\n\n<current state>"}'
+```
+
 ### 8. Validate claims
 
 Run this procedure on every `Validated claim` before publishing:
@@ -176,6 +200,7 @@ Run this procedure on every `Validated claim` before publishing:
    - **Not found** → demote to `Non-validated` and say what would confirm it.
 
 **Mechanistic-fit check for `[evidence: local_git]` / `[evidence: gh_pr]` claims.** Temporal correlation + surface match is necessary but NOT sufficient. A claim that a PR caused the incident needs:
+
 - The PR's diff changes function `F`.
 - Function `F` emits observation `O` (confirmed via codebase-grep).
 - Observation `O` is what the telemetry actually recorded.
@@ -187,6 +212,7 @@ Hallucinated citations are worse than missing ones. When in doubt, demote.
 ### 9. Assign verdict + category
 
 **Verdict** (pick one):
+
 - `confirmed root cause` — ≥ 2 evidence types AND (direct artifact OR clear trigger with strong symptom alignment)
 - `most likely root cause`
 - `symptom diagnosis only` — subsystem known, trigger unknown
@@ -194,6 +220,7 @@ Hallucinated citations are worse than missing ones. When in doubt, demote.
 - `insufficient evidence`
 
 **Category** (pick one, orthogonal to verdict):
+
 - `configuration_error` — wrong value, missing env, flag flip, IAM mismatch
 - `code_defect` — bug in recently shipped code
 - `data_quality` — malformed input, schema drift, upstream API change
@@ -219,7 +246,7 @@ Time window, scope hint (service / cluster / env / customer / monitor), reported
 2. **Normalize scope.** `tsuga services list|get`. Capture canonical name, env, team, versions, sources, 24h log/trace counts.
 3. **Normalize session.** Check `tsuga defaults`. Always set explicit `--from`, `--to`, `--max-results`. For `tsuga aggregation`, convert windows to epoch seconds.
 4. **Load tech knowledge.** If scope names a known tech (Postgres, Redis, Kafka, …), load the matching `$knowledge-technology` reference to target the sweep.
-5. **Config-threshold preflight (capacity-shaped symptoms).** If the reported symptom is capacity-shaped — queue lag, `CrashLoopBackOff`, `OOMKilled`, throttling, "too many", "insufficient" — spend one probe asking *"is there a single config knob that would fix this?"* before any elaborate change-correlation. Grep mounted codebases / helm / Pulumi for patterns like `*BatchSize`, `*PoolSize`, `*Concurrency`, `*MaxConnections`, `*FailureThreshold`, `*InFlightBatches`, `*MemPoolSize` scoped to the affected service.
+5. **Config-threshold preflight (capacity-shaped symptoms).** If the reported symptom is capacity-shaped — queue lag, `CrashLoopBackOff`, `OOMKilled`, throttling, "too many", "insufficient" — spend one probe asking _"is there a single config knob that would fix this?"_ before any elaborate change-correlation. Grep mounted codebases / helm / Pulumi for patterns like `*BatchSize`, `*PoolSize`, `*Concurrency`, `*MaxConnections`, `*FailureThreshold`, `*InFlightBatches`, `*MemPoolSize` scoped to the affected service.
 6. **Evidence sweep.** Prefer in order:
    - `logs new-error-patterns` / `logs error-pattern-increases` (when team scope exists)
    - `logs patterns` to cluster failure shapes
@@ -229,7 +256,7 @@ Time window, scope hint (service / cluster / env / customer / monitor), reported
    - `monitors list|get` for signal semantics (not live truth)
    - `dashboards list|get` / `quality-reports list` as supporting context only
 7. **Compare.** Bad window vs good control window. Affected entity vs sibling healthy entity when possible.
-8. **Surface verbatim signals for codebase-grep.** As the sweep produces error strings, log patterns, metric names, and monitor filters, emit them as a distinct list at the end of the output — one per line. The orchestrator will spawn a codebase-grep subagent per entry to pin each signal to its emitting `file:line`. Do not try to explain what a signal *means* until its emitting code is found.
+8. **Surface verbatim signals for codebase-grep.** As the sweep produces error strings, log patterns, metric names, and monitor filters, emit them as a distinct list at the end of the output — one per line. The orchestrator will spawn a codebase-grep subagent per entry to pin each signal to its emitting `file:line`. Do not try to explain what a signal _means_ until its emitting code is found.
 9. **Write evidence matrix.** Four columns: symptom evidence | subsystem evidence | mechanism clues | unknowns. If evidence only supports subsystem diagnosis, say so.
 10. **Sweep completeness check.** Before returning, tick these boxes — if any is unchecked and cheap to resolve, do it now:
     - [ ] Service metadata resolved (canonical name, team, env, 24h counters)
@@ -308,7 +335,7 @@ A post-incident PR titled "Fix <exact symptom>" is the answer key leaking backwa
 4. **Then `$gh` — time-bounded.** Workflow runs, merged PRs, releases, commits, deployments with `merged:<<declared_at>` / `created:<<declared_at>` filters. A PR is a candidate only when it merged BEFORE `declared_at` AND a deploy completed between its merge and the incident start.
 5. **Mechanism fit** per candidate — the strict version:
    - Does the PR's diff touch the `file:line` that emits the observed signal? **If no → not a candidate**, regardless of timing.
-   - If yes: does the diff change the *condition that triggers emission* or the *value being emitted*? Quote the relevant lines.
+   - If yes: does the diff change the _condition that triggers emission_ or the _value being emitted_? Quote the relevant lines.
    - Does the timing align (merge → deploy → incident start)?
    - Is there a faster revert or verification step?
 6. **Classify each candidate** as one of:
@@ -342,6 +369,7 @@ Deploy status unknown? Say so explicitly and lower candidate confidence.
 If no repos are mounted (`ENABLE_CODEBASES=0`, no paths given) AND `$gh` is unavailable or returns nothing useful:
 
 Return exactly:
+
 ```
 Most relevant changes: (none — no repo / gh access)
 Strongest causal candidate: (unavailable)
@@ -398,6 +426,19 @@ Open unknowns:
 - <what you couldn't answer + what would unblock it>
 ```
 
+### Finish the investigation record (beta)
+
+If you opened an investigation record in step 2, end with one last clean update that replaces the in-progress notes with the final RCA — the name drops the "investigating" suffix and `contentMd` becomes the full verdict above:
+
+```bash
+tsuga investigations update <id> -d '{
+  "name": "<headline>",
+  "contentMd": "<the full markdown verdict>"
+}'
+```
+
+Beta — the API will likely change. Any 403 means the key lacks the `investigations` permission: skip the record entirely and say so; never retry or block the verdict on it.
+
 ## Evidence rules
 
 - Every `Validated claim` carries an `[evidence: <source>]` tag from the allowed list.
@@ -420,6 +461,7 @@ Open unknowns:
 ## References
 
 Load when needed:
+
 - [references/case-manifest.md](./references/case-manifest.md) — JSON shape for structured case input
 - [references/playbooks/](./references/playbooks/) — domain disambiguation guides
 - [references/tsuga-rules.md](./references/tsuga-rules.md) — `tsuga` command patterns for the telemetry branch
