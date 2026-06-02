@@ -94,6 +94,7 @@ tsuga investigations create -d '{
 
 - `contentMd` is Markdown; headings, lists, and code blocks render in the UI.
 - `linkedAssets[].type` is one of `dashboard`, `monitor`, `service`, `slo`, `log-route`.
+- `update` is a full PUT: `name` and `owner` are required on every call; omitted optional fields keep their current values.
 
 ## Quality Reports
 

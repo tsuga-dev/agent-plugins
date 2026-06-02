@@ -97,7 +97,7 @@ tsuga investigations create -d '{
 }'
 ```
 
-Keep the returned `id` — you will update this record at checkpoints and finish it with the RCA. If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
+Keep the returned `id` — you will update this record at checkpoints and finish it with the RCA. Updates are full PUTs: always resend `name` and `owner` (omitted optional fields keep their current values). If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -185,7 +185,7 @@ If the missing check is expensive or the signal is genuinely unreachable, state 
 If you opened an investigation record in step 2, push a progress update at each gate pass — current leading hypothesis, what was just checked, what's next:
 
 ```bash
-tsuga investigations update <id> -d '{"contentMd": "# Investigating\n\n<current state>"}'
+tsuga investigations update <id> -d '{"name": "<same name>", "owner": "<owning-team-id>", "contentMd": "# Investigating\n\n<current state>"}'
 ```
 
 ### 8. Validate claims
@@ -433,6 +433,7 @@ If you opened an investigation record in step 2, end with one last clean update 
 ```bash
 tsuga investigations update <id> -d '{
   "name": "<headline>",
+  "owner": "<owning-team-id>",
   "contentMd": "<the full markdown verdict>"
 }'
 ```

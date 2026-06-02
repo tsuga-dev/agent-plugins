@@ -1,7 +1,7 @@
 {
   "name": "telemetry",
   "description": "Instrumentation-quality plugin: OpenTelemetry SDK setup for Python, Go, Node.js, Java, .NET, Ruby, PHP, Rust, and C++; Collector configuration; OTTL transformations; semantic conventions; signal-choice advice; instrumentation audits (metrics/traces/logs); smoke-testing; and telemetry-debugging skills. Pair with the `tsuga` plugin for the `tsuga-cli` reference when running audit/debug/smoke-test workflows.",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": {
     "name": "Tsuga Engineering",
     "email": "engineering@tsuga.com"
