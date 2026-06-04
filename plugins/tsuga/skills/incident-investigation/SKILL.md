@@ -1,17 +1,17 @@
 ---
 name: incident-investigation
-description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1 through P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches — telemetry sweep (`tsuga` CLI), change correlation (git log / gh pr), analogue search (`$incident-history`), codebase-grep (local repos), challenger review — while tracking hypotheses and evidence gates. Classifies the investigation mode (known-symptom, novel-symptom, broad-degradation, cheat-check) up front so the branch plan matches the scope. Produces an operator-ready verdict with cited evidence, a time-bounded `Latest-cited-evidence:` trailer, and explicit 'insufficient evidence' output when probes don't converge."
+description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1 through P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches — telemetry sweep (`tsuga` CLI), change correlation (git log / gh pr), analogue search (`$incident-history`), codebase-grep (local repos), challenger review — while tracking hypotheses and evidence gates. Classifies the investigation mode (known-symptom, novel-symptom, broad-degradation, cheat-check) up front so the branch plan matches the scope. Produces an operator-ready verdict with cited evidence, a time-bounded `Latest-cited-evidence:` trailer, and explicit 'insufficient evidence' output when probes don't converge — plus, by default, two durable deliverables: a structured Tsuga investigation record and a proofs dashboard (one graph per validated claim)."
 ---
 
 # Incident Investigation
 
-Primary entry point. Read-only unless the user explicitly asks for mutations.
+Primary entry point. Read-only for everything **except the two standing deliverables** — the Tsuga investigation record and the proofs dashboard ([references/investigation-record.md](./references/investigation-record.md)) — which every concluded investigation publishes by default. Skip one only when: the user explicitly opted out; the verdict is a fast-path `healthy`/`validation_noise` close; the key lacks permission (403); or — rarely — your own judgment says the artifact adds nothing, and you name that reason in the verdict's `Deliverables:` line. All other mutations require an explicit user ask.
 
 ## How to read this skill
 
 This skill covers the full investigation loop — orchestrator-level workflow AND the detailed procedures for each parallel branch. Read selectively based on your role:
 
-- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-9) → Output contract → Evidence rules → Guardrails. You spawn subagents at step 5 and synthesize their outputs at step 8/9. You do NOT need to re-read the full Branch procedures inline; the subagents own those.
+- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-10) → Output contract → Evidence rules → Guardrails, plus [references/investigation-record.md](./references/investigation-record.md) for the two durable deliverables you publish at step 10. You spawn subagents at step 5 and synthesize their outputs at step 8/9. You do NOT need to re-read the full Branch procedures inline; the subagents own those.
 - **Telemetry-sweep subagent:** jump to `## Branch: telemetry sweep`. Read its Procedure + Branch output + Branch guardrails. Skip everything above (workflow, ledger, gate, verdict) and the Change-correlation branch — those aren't your job.
 - **Change-correlation subagent:** jump to `## Branch: change correlation`. Same — read only that section.
 - **Codebase-grep subagent:** you're spawned with one verbatim signal (error string, metric name, log pattern). Grep the mounted codebases under `{{CODEBASES_DIR}}` for that literal string; return the `file:line` and ~5 lines of surrounding context (the enclosing function + nearby conditions that trigger the emission). Nothing else. You do not interpret — you locate.
@@ -86,18 +86,18 @@ Track five fields, separate:
 
 Do not let `failing subsystem` silently replace `root cause`.
 
-Then open a Tsuga investigation record (beta) so progress is visible while you work:
+Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first (`tsuga config` — right key, right cluster; see the hygiene notes in [references/investigation-record.md](./references/investigation-record.md)):
 
 ```bash
 tsuga investigations create -d '{
-  "name": "<reported symptom> — investigating",
+  "name": "<INC-id>: <symptom, a few words> — investigating",
   "owner": "<owning-team-id>",
-  "contentMd": "# Investigating\n\n<case board: symptom, impact, hints, change candidates, missing facts>",
+  "contentMd": "## Investigating\n\n<case board: symptom, impact, hints, change candidates, missing facts>",
   "linkedAssets": [{"type": "monitor", "id": "<fired-monitor-id>"}]
 }'
 ```
 
-Keep the returned `id` — you will update this record at checkpoints and finish it with the RCA. Updates are full PUTs: always resend `name` and `owner` (omitted optional fields keep their current values). If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
+Keep `name` short — the app displays it everywhere; never restate it inside `contentMd`. Keep the returned `id` — you will update this record at checkpoints and finish it at step 10 with the structured document from [references/investigation-record.md](./references/investigation-record.md). Updates are full PUTs: always resend `name` and `owner` (omitted optional fields keep their current values). If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -185,7 +185,7 @@ If the missing check is expensive or the signal is genuinely unreachable, state 
 If you opened an investigation record in step 2, push a progress update at each gate pass — current leading hypothesis, what was just checked, what's next:
 
 ```bash
-tsuga investigations update <id> -d '{"name": "<same name>", "owner": "<owning-team-id>", "contentMd": "# Investigating\n\n<current state>"}'
+tsuga investigations update <id> -d '{"name": "<same name>", "owner": "<owning-team-id>", "contentMd": "## Investigating\n\n<current state>"}'
 ```
 
 ### 8. Validate claims
@@ -230,6 +230,15 @@ Hallucinated citations are worse than missing ones. When in doubt, demote.
 - `healthy` — alert stale, metric normal, self-recovered
 - `unknown` — insufficient evidence to categorize
 
+### 10. Publish deliverables (default, not optional)
+
+Verdict assigned → publish the two durable artifacts. Full spec and templates: [references/investigation-record.md](./references/investigation-record.md).
+
+1. **Proofs dashboard** — one graph per validated telemetry claim, assertion-style graph names, every query probe-verified before create, tagged with the incident id, owned by the affected team.
+2. **Final investigation record** — replace the in-progress notes with the structured document (Summary / Key facts / Timeline / Symptoms / Contributing causes / Mitigation & action items / Open questions / Falsified along the way / Lessons learned draft). Deep-link every ID, use absolute time windows on evidence links, populate `linkedAssets` (dashboard, service, fired monitor).
+
+These ship by default — do not ask permission for them. The only reasons to skip: the user explicitly said not to; the verdict is a fast-path `healthy`/`validation_noise` close; the key lacks the permission (403); the verdict has zero telemetry claims to graph (dashboard only); or — rarely — your own judgment that the artifact adds nothing. Whichever applies, name it in the chat verdict's `Deliverables:` line; an unexplained skip is a contract violation.
+
 ## Branch: telemetry sweep
 
 **Subagent scope:** if you were spawned as a telemetry-sweep subagent, this section + its Procedure + Branch output + Branch guardrails is everything you need. You don't synthesize a verdict; you surface facts + verbatim signals for codebase-grep + a completeness-check report.
@@ -244,7 +253,7 @@ Time window, scope hint (service / cluster / env / customer / monitor), reported
 
 1. **Monitor anchor (if the case cites a monitor).** `tsuga monitors get <monitor-id>` FIRST. Read the monitor's filter, aggregation, threshold, and groupBy — this IS the exact telemetry shape that crossed. Re-run the same query against the incident window AND a control window (same weekday + hour, 7 days earlier). Record the crossed value, the control value, and the ratio.
 2. **Normalize scope.** `tsuga services list|get`. Capture canonical name, env, team, versions, sources, 24h log/trace counts.
-3. **Normalize session.** Check `tsuga defaults`. Always set explicit `--from`, `--to`, `--max-results`. For `tsuga aggregation`, convert windows to epoch seconds.
+3. **Normalize session.** Check `tsuga config` (active key, default cluster). Always set explicit `--from`, `--to`, `--max-results`. For `tsuga aggregation`, convert windows to epoch seconds; on multi-cluster orgs include `"clusterId"` in the body.
 4. **Load tech knowledge.** If scope names a known tech (Postgres, Redis, Kafka, …), load the matching `$knowledge-technology` reference to target the sweep.
 5. **Config-threshold preflight (capacity-shaped symptoms).** If the reported symptom is capacity-shaped — queue lag, `CrashLoopBackOff`, `OOMKilled`, throttling, "too many", "insufficient" — spend one probe asking _"is there a single config knob that would fix this?"_ before any elaborate change-correlation. Grep mounted codebases / helm / Pulumi for patterns like `*BatchSize`, `*PoolSize`, `*Concurrency`, `*MaxConnections`, `*FailureThreshold`, `*InFlightBatches`, `*MemPoolSize` scoped to the affected service.
 6. **Evidence sweep.** Prefer in order:
@@ -424,17 +433,22 @@ Remediation:
 
 Open unknowns:
 - <what you couldn't answer + what would unblock it>
+
+Deliverables:
+  Investigation record: <id + deep link | skipped — reason>
+  Proofs dashboard: <id + deep link | skipped — reason>
 ```
 
 ### Finish the investigation record (beta)
 
-If you opened an investigation record in step 2, end with one last clean update that replaces the in-progress notes with the final RCA — the name drops the "investigating" suffix and `contentMd` becomes the full verdict above:
+End with one last clean update that replaces the in-progress notes with the **structured document** from [references/investigation-record.md](./references/investigation-record.md) — NOT a dump of the chat verdict. The name drops the "investigating" suffix and stays short (the app displays it; don't repeat it in `contentMd`):
 
 ```bash
 tsuga investigations update <id> -d '{
-  "name": "<headline>",
+  "name": "<INC-id>: <symptom, a few words>",
   "owner": "<owning-team-id>",
-  "contentMd": "<the full markdown verdict>"
+  "contentMd": "<structured document: Summary / Key facts / Timeline / Symptoms / Contributing causes / Mitigation & action items / Open questions / Falsified along the way / Lessons learned draft>",
+  "linkedAssets": [<dashboard, service, fired monitor>]
 }'
 ```
 
@@ -450,6 +464,7 @@ Beta — the API will likely change. Any 403 means the key lacks the `investigat
 
 ## Guardrails
 
+- **Record + dashboard are deliverables, not extras.** Publishing the investigation record and the proofs dashboard is the default close-out (step 10); skipping either requires a named reason in the verdict — user opt-out, fast-path healthy close, 403, nothing to graph, or a stated judgment call (rare).
 - Classify task before triage.
 - Ask `what changed?` early.
 - Human hints before ambient telemetry noise.
