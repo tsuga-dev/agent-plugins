@@ -5,8 +5,9 @@ Use these defaults:
 1. Start with `tsuga services list|get`.
    Resolve canonical service, env, team, versions, and whether logs/traces exist.
 
-2. Check `tsuga defaults`.
+2. Check `tsuga config` (active key, default cluster).
    Override `--from`, `--to`, and `--max-results` explicitly.
+   On multi-cluster orgs, `aggregation` bodies need a `"clusterId"` field.
 
 3. Prefer high-signal commands first.
    - `tsuga logs new-error-patterns`
@@ -40,5 +41,4 @@ Read-only commands to prefer:
 - `monitors list|get`
 - `teams list|get`
 - `quality-reports list`
-- `defaults`
 - `config`
