@@ -1,0 +1,38 @@
+plugins/tsuga/skills/incident-investigation/SKILL.md
+  s_4186e9061cc6a7::t_31870e1a2e5cea 8
+  s_4186e9061cc6a7::t_569988d8c1b6d0 240
+  s_4186e9061cc6a7::t_e81d985304481c 188
+  s_4186e9061cc6a7::t_2783ca3be5158e 3
+  s_4186e9061cc6a7::t_7e0a556c314291 14
+  s_4186e9061cc6a7::t_54418ace881a1e 256
+  s_4186e9061cc6a7::t_8ce8aafae09f39 436-439,444,448,450-451
+  s_4186e9061cc6a7::t_424a4c8bf5c99a 233-239,241
+  s_4186e9061cc6a7::t_e294afdc4b555b 89,93,95,100
+  s_4186e9061cc6a7::t_bad2b20af135c1 467
+plugins/tsuga/skills/incident-investigation/references/investigation-record.md
+  s_4186e9061cc6a7::t_f836dff6c9dbf8 14-15,17
+  s_4186e9061cc6a7::t_f1f30185e9763b 1-13,16,18-96
+plugins/tsuga/skills/incident-investigation/references/tsuga-rules.md
+  s_4186e9061cc6a7::t_eccc84334e65fb 8,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "889d50e46bf7c91fee5b0d499aae935efd929d21",
+  "prompts": {},
+  "humans": {
+    "h_d0d97781e4f799": {
+      "author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4186e9061cc6a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d14a3881-d654-4982-8ad2-487daecc811c",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
