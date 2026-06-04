@@ -1,0 +1,23 @@
+plugins/tsuga/skills/build-knowledge-company/references/SKILL_TEMPLATE.md
+  s_f1fa647a06908e::t_1477b84493fd2b 52-53
+  s_f1fa647a06908e::t_6020f3c203404e 7
+  s_f1fa647a06908e::t_602eb0046d4e92 14
+.github/workflows/lint.yml
+  s_f1fa647a06908e::t_3b2ccae7c20d11 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "167bae70cd9c509396c0ffc6f5df2955eabcdba9",
+  "prompts": {},
+  "sessions": {
+    "s_f1fa647a06908e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ae1bde0-a189-4078-b27a-7192cad6a7c5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
