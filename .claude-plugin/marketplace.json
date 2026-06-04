@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Tsuga toolkit for AI coding agents — two plugins: `telemetry` for OpenTelemetry instrumentation/audits across 9 languages, and `tsuga` for live-platform investigation, dashboards, and the tsuga CLI driver.",
-    "version": "0.7.3"
+    "version": "0.7.4"
   },
   "plugins": [
     {

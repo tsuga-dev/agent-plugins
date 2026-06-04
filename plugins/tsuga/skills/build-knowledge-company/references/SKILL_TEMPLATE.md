@@ -4,14 +4,14 @@ Short dispatcher. This file is what Claude / Codex load into context at run time
 
 ## Target length: 40–70 lines
 
-The description field in the frontmatter is the most load-bearing part — it determines whether the skill triggers on a given incident. Write it to include every service name an agent might search for.
+The description field in the frontmatter is the most load-bearing part — it determines whether the skill triggers on a given incident. Write it to include every service name an agent might search for, but keep it **under 1024 characters** — Codex's skill loader silently drops skills with longer descriptions.
 
 ## Template — copy verbatim, substitute `{company}` + `{service-name-list}`
 
 ```markdown
 ---
 name: knowledge-company
-description: "{company}-specific domain knowledge: what the company does, how its own telemetry is routed, and per-team / per-service operational playbooks. Trigger at the start of any {company}-internal incident (a cluster service slow, a pipeline lagging, a monitor fired) or whenever a service name like {service-name-list} appears. References live at `{{SKILLS_DIR}}/knowledge-company/references/`: `COMPANY_GENERAL_KNOWLEDGE.md` (what {company} is), `COMPANY_TELEMETRY_KNOWLEDGE.md` (how telemetry is shaped + live catalog of teams, monitors, canonical query patterns, symptom-routing), plus `teams/<team>/TEAM_KNOWLEDGE.md` and `teams/<team>/services/<service-name>/SERVICE_KNOWLEDGE.md` dossiers for the operational surface of each team and its services. Each SERVICE_KNOWLEDGE.md leads with ready-to-run `tsuga` CLI commands."
+description: "{company}-specific domain knowledge: what the company does, how its own telemetry is routed, and per-team / per-service operational playbooks. Trigger at the start of any {company}-internal incident (a cluster service slow, a pipeline lagging, a monitor fired) or whenever a service name like {service-name-list} appears. References live at `${CLAUDE_PLUGIN_ROOT}/skills/knowledge-company/references/`: COMPANY_GENERAL / COMPANY_TELEMETRY knowledge files, plus per-team `TEAM_KNOWLEDGE.md` and per-service `SERVICE_KNOWLEDGE.md` dossiers that lead with ready-to-run `tsuga` CLI commands."
 ---
 
 # Company Knowledge
@@ -49,7 +49,8 @@ Service folder names match the literal `context.service.name` value in telemetry
 ## Shell commands
 
 \`\`\`bash
-CK={{SKILLS_DIR}}/knowledge-company/references
+# references/ sits next to this SKILL.md; ${CLAUDE_PLUGIN_ROOT} resolves to the plugin root on Claude Code
+CK=${CLAUDE_PLUGIN_ROOT}/skills/knowledge-company/references
 
 # Which teams have dossiers?
 ls "$CK/teams"
