@@ -1,0 +1,72 @@
+plugins/tsuga/skills/knowledge-technology/references/aws-sqs/README.md
+  s_dfac68c2e8bf44::t_dc27eff40454d0 175
+  s_dfac68c2e8bf44::t_bfb210ad45f037 172
+plugins/tsuga/skills/tsuga-build-dashboard/references/layout-rules.md
+  s_651e2ef56c15a2::t_6b3fac510d40e4 115
+  s_651e2ef56c15a2::t_b9304cf6fa622f 40-41
+  s_651e2ef56c15a2::t_b77c31d7389009 85-90
+.gitignore
+  s_0ef372a6eeebf3::t_c4c025e8ae7d91 1
+plugins/tsuga/skills/knowledge-technology/references/aws-efs/README.md
+  s_dfac68c2e8bf44::t_ab44f5c76dfc09 196
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_651e2ef56c15a2::t_3da9c8eac59965 267-268,272
+  s_651e2ef56c15a2::t_1f97f99e1a79b2 19
+  s_651e2ef56c15a2::t_0fdd6b213731f8 20
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_dfac68c2e8bf44::t_04a8a8ab9b7a76 62,64
+  s_651e2ef56c15a2::t_4b23b821d9053e 49-50
+  s_dfac68c2e8bf44::t_667671518b7da8 74
+  s_dfac68c2e8bf44::t_05c9ede2b91ab1 166-186
+  s_651e2ef56c15a2::t_7f00b41f89b33a 273
+plugins/tsuga/skills/knowledge-technology/references/aws-dynamodb/README.md
+  s_dfac68c2e8bf44::t_e0ace3745c4366 191
+plugins/tsuga/skills/knowledge-technology/references/istio/README.md
+  s_dfac68c2e8bf44::t_ec9f120d7d3eee 208
+plugins/tsuga/skills/knowledge-technology/references/nvidia-gpu/README.md
+  s_dfac68c2e8bf44::t_98cd7a56a79abd 201
+plugins/tsuga/skills/knowledge-technology/references/kafka/README.md
+  s_dfac68c2e8bf44::t_13a94429c8e632 186
+plugins/tsuga/skills/knowledge-technology/references/aws-nat-gateway/README.md
+  s_dfac68c2e8bf44::t_70926c129f7730 177
+  s_dfac68c2e8bf44::t_4b8cc3c8a108ab 180
+plugins/tsuga/skills/knowledge-technology/references/aws-lambda/README.md
+  s_dfac68c2e8bf44::t_d67fde1516f61b 169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "faf6b0591acdb02d6328733ad15a7451b30b7a29",
+  "prompts": {},
+  "humans": {
+    "h_d0d97781e4f799": {
+      "author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_0ef372a6eeebf3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ae6a2b3e-543a-43c2-bd63-966a18bb3c3c",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    },
+    "s_651e2ef56c15a2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d83f3d93-cba7-48e1-9ccf-ba0baf739be0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    },
+    "s_dfac68c2e8bf44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a8e1bdab-dd8d-4b28-8ccd-49846461c915",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
