@@ -193,7 +193,7 @@ context.destinationfilesystemid -> anchors -> replication pair attribution (why:
 - Precise: `context.log_group:/aws/efs/utils/ AND context.filesystemid:*`
   Rationale: targets opt-in mount-attempt log groups after normalization.
   Risk: requires CloudWatch logging to be enabled and the log-group field to be preserved.
-- Fallback: `message:(amazon-efs-mount-watchdog OR mount.efs OR efs-utils) AND context.team:*`
+- Fallback: `(message:*amazon-efs-mount-watchdog* OR message:*mount.efs* OR message:*efs-utils*) AND context.team:*`
   Rationale: catches client-side EFS helper logs even if log-group metadata is inconsistent.
   Risk: may mix helper logs from multiple hosts and file systems.
 

@@ -174,10 +174,10 @@ For NAT Gateway, connection-establishment success and packet-drop rate are usual
   - Optional fields: custom formats can add fields such as `pkt-srcaddr`, `pkt-dstaddr`, `traffic-path`, `az-id`, or subnet metadata when supported.
 
 3. **Candidate query filters for Stage 4**
-- Precise: `service:vpc-flow-logs AND (context.natgatewayid:* OR message:*nat-*gateway*)`
+- Precise: `context.service.name:vpc-flow-logs AND (context.natgatewayid:* OR message:*nat-*gateway*)`
   - Rationale: best if the ingestion pipeline already maps NAT gateway identity or source ENI metadata.
   - Risk: likely misses data if NAT gateway identity is not normalized into Tsuga log attributes.
-- Fallback: `service:vpc-flow-logs AND (dstport:443 OR dstport:80 OR action:REJECT OR log-status:SKIPDATA)`
+- Fallback: `context.service.name:vpc-flow-logs AND (dstport:443 OR dstport:80 OR action:REJECT OR log-status:SKIPDATA)`
   - Rationale: broad enough to capture common egress flows and failure evidence for NAT-heavy paths.
   - Risk: captures more non-NAT traffic and needs refinement by VPC/subnet/interface context.
 

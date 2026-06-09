@@ -169,10 +169,10 @@ Treat CloudWatch SQS metrics as the primary dashboard contract and use logs only
    Evidence: Unknown from vendor docs; infer only after Stage 4 live log search.
 
 **Candidate query filters for Stage 4**
-- Precise: `context.service.name:* AND message:sqs.amazonaws.com`  
+- Precise: `context.service.name:* AND message:*sqs.amazonaws.com*`  
   Rationale: catches CloudTrail-style SQS API events if AWS audit logs are ingested.  
   Risk: depends on CloudTrail forwarding and log preservation in Tsuga.
-- Broader fallback: `message:(ReceiveMessage OR DeleteMessage OR ChangeMessageVisibility OR SendMessage)`  
+- Broader fallback: `(message:*ReceiveMessage* OR message:*DeleteMessage* OR message:*ChangeMessageVisibility* OR message:*SendMessage*)`  
   Rationale: catches both audit and app logs that mention the core queue verbs.  
   Risk: high false-positive rate across unrelated components.
 

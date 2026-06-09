@@ -166,7 +166,7 @@ Sources: https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.h
 - Precise: `context.log.group:/aws/lambda/* AND context.functionname:*`  
   Rationale: narrow to Lambda execution log groups while requiring function identity.  
   Risk: depends on Tsuga preserving the CloudWatch log group field.
-- Broader fallback: `message:(START RequestId OR REPORT RequestId OR Task timed out OR Process exited before completing request)`  
+- Broader fallback: `(message:*RequestId* OR message:*timed* OR message:*exited*)`  
   Rationale: catches standard Lambda platform lines even if log-group metadata is missing.  
   Risk: can match unrelated copied log text.
 

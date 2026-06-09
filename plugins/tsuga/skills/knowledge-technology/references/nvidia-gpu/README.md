@@ -198,7 +198,7 @@ Known log formats:
    - Optional fields: message text and component details vary.
 
 Candidate query filters for Stage 4:
-- Precise: `context.service.name:samples-nvidia AND (message:"NVRM: Xid" OR message:"dcgm-exporter")`
+- Precise: `context.service.name:samples-nvidia AND (message:*Xid* OR message:*dcgm-exporter*)`
   - Rationale: user-provided service tag plus NVIDIA fault/exporter markers.
   - Risk: misses renamed service streams or nonstandard message bodies.
 - Fallback: `context.service.name:samples-nvidia`

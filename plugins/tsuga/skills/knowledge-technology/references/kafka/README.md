@@ -183,7 +183,7 @@ Partition health + lag + throughput -> form -> triage chain backbone (why: cover
    - Optional fields: `clientId`, `groupId`, `topic`, `partition` may be absent.
 
 #### Candidate query filters for Stage 4
-- Precise: `context.service.name:kafka AND (message:*ERROR* OR message:*WARN* OR message:*under-replicated* OR message:*leader election* OR message:*rebalance*)`
+- Precise: `context.service.name:kafka AND (message:*ERROR* OR message:*WARN* OR message:*under-replicated* OR message:*election* OR message:*rebalance*)`
   - Rationale: targets high-value reliability events.
   - Risk: depends on consistent `context.service.name` mapping.
 - Fallback: `(message:*kafka* OR message:*consumer*) AND (message:*error* OR message:*warn* OR message:*rebalance* OR message:*timeout*)`
