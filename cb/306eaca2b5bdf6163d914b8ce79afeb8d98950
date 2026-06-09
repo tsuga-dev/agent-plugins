@@ -1,0 +1,23 @@
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_2de4269aac64d0::t_57cc30bd75ad29 3,11,15-17,19,22
+  s_2de4269aac64d0::t_feb9e4f89cd734 242-360
+  s_2de4269aac64d0::t_cca436dc17063d 451-477
+  s_2de4269aac64d0::t_d74b60404c2b03 392-416
+  s_2de4269aac64d0::t_b00ad4274c6458 104-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "cb306eaca2b5bdf6163d914b8ce79afeb8d98950",
+  "prompts": {},
+  "sessions": {
+    "s_2de4269aac64d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a68d30d-f0be-4f35-9b9e-ff77f17f63f9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
