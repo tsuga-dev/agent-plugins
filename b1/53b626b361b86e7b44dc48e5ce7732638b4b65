@@ -1,0 +1,21 @@
+plugins/tsuga/.claude-plugin/plugin.json
+  s_dfac68c2e8bf44::t_060d00d6f1bd70 4
+plugins/telemetry/.claude-plugin/plugin.json
+  s_dfac68c2e8bf44::t_3ea9bc0ec50a67 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "b153b626b361b86e7b44dc48e5ce7732638b4b65",
+  "prompts": {},
+  "sessions": {
+    "s_dfac68c2e8bf44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a8e1bdab-dd8d-4b28-8ccd-49846461c915",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
