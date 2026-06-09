@@ -1,6 +1,6 @@
 # Widget Reference
 
-All 7 widget types, their schemas, and usage guidance.
+All widget types, their schemas, and usage guidance.
 
 ## Widget Type Summary
 
@@ -8,11 +8,18 @@ All 7 widget types, their schemas, and usage guidance.
 |--------|----------|----------|--------|
 | `timeseries` | Trends over time | Yes (max 7) | logs, metrics, traces |
 | `query-value` | Single-number KPIs | No (silently dropped) | logs, metrics, traces |
+| `gauge` | Single value against a known max (budget, utilization, SLO) | No | logs, metrics, traces |
 | `top-list` | "Who is highest?" triage | Yes (max 7) | logs, metrics, traces |
 | `bar` | Category comparisons (bounded set) | Yes (max 7) | logs, metrics, traces |
 | `pie` | Part-to-whole breakdown (≤6 slices) | Yes (max 7) | logs, metrics, traces |
+| `distribution` | Spread of a value (latency, token counts) | Yes (max 7) | logs, metrics, traces |
+| `heatmap` | Density across two dimensions (group × time) | Yes (max 7) | logs, metrics, traces |
+| `table` | Per-entity scorecard — many metrics as columns | Yes (max 7, multi-level) | logs, metrics, traces |
 | `list` | Log evidence table | N/A | logs only |
+| `list-log-patterns` | Clustered log patterns from noisy streams | N/A | logs only |
 | `note` | Section headers, context blocks | N/A | N/A |
+
+Each aggregation widget also has a `*-connection` twin (`timeseries-connection`, `list-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`) that runs read-only SQL against a datastore connection instead of a Tsuga aggregation — see "Database connection variants" at the end.
 
 Max 15 queries per widget. `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 
@@ -91,6 +98,45 @@ Displays a single aggregated number. Use for KPIs on the dashboard's top row.
 - Always set `"backgroundMode": "background"` so conditions (colors) are visible
 - Condition operators: `greater_than`, `less_than`, `equal`, `not_equal`, `greater_than_or_equal`, `less_than_or_equal`
 - Condition colors: `alert` (red), `warning` (yellow), `success` (green) — no other values
+
+---
+
+## `gauge`
+
+Displays a single aggregated value as a dial against a maximum. Use for bounded quantities where "how close to the ceiling?" is the question — budget/quota burn, utilization, SLO attainment. For an unbounded KPI, use `query-value`.
+
+```json
+{
+  "id": "g-budget-burn",
+  "name": "LLM spend vs monthly budget",
+  "visualization": {
+    "type": "gauge",
+    "source": "logs",
+    "queries": [
+      {
+        "aggregate": {"type": "sum", "field": "cost_usd"},
+        "filter": "context.service.name:claude-code event.name:api_request"
+      }
+    ],
+    "formula": "q1",
+    "max": 2000,
+    "normalizer": {"type": "custom", "unit": "USD"},
+    "colorThresholds": [
+      {"from": 0, "color": "green"},
+      {"from": 1500, "color": "yellow"},
+      {"from": 1800, "color": "red"}
+    ]
+  },
+  "layout": {"x": 0, "y": 0, "w": 3, "h": 3}
+}
+```
+
+**Required:** `source`, `queries`
+**Optional:** `formula`, `max`, `colorThresholds`, `normalizer`, `precision`, `legendMode`
+**Gotchas:**
+- No `groupBy` — a gauge renders one value. To compare across a dimension, use `bar` or `top-list`.
+- Set `max` — without it the dial has no scale to fill against.
+- `colorThresholds` colors are the full palette (`red`, `pink`, `violet`, `blue`, `cyan`, `green`, `yellow`, `orange`) — NOT the `alert`/`warning`/`success` set used by `query-value` `conditions`. Each `from` starts a band that runs to the next threshold (or to `max`).
 
 ---
 
@@ -193,6 +239,125 @@ Displays part-to-whole proportion. Keep slices to ≤6; more than that is unread
 
 ---
 
+## `distribution`
+
+Displays the spread of an aggregated value as a histogram. Use when the *shape* — tail, modality, outliers — matters more than a single percentile: request latency, tokens per call, payload sizes.
+
+```json
+{
+  "id": "g-latency-dist",
+  "name": "API request latency distribution",
+  "visualization": {
+    "type": "distribution",
+    "source": "logs",
+    "queries": [
+      {
+        "aggregate": {"type": "percentile", "field": "duration_ms", "percentile": 95},
+        "filter": "context.service.name:claude-code event.name:api_request"
+      }
+    ],
+    "percentileMarkers": [50, 95, 99],
+    "normalizer": {"type": "duration", "unit": "ms"}
+  },
+  "layout": {"x": 0, "y": 0, "w": 6, "h": 4}
+}
+```
+
+**Required:** `source`, `queries`
+**Optional:** `formula`, `groupBy`, `percentileMarkers`, `normalizer`, `precision`
+**Gotchas:**
+- `percentileMarkers` are integers 0–100 (e.g. `[50, 95, 99]`) drawn as vertical reference lines on the histogram.
+- The widget buckets the queried numeric `field`, so point the aggregate at a numeric field (`duration_ms`, `output_tokens`, …) — `count` with no field gives nothing to distribute. Verify the rendered shape with `tsuga aggregation scalar` + the app before embedding.
+
+---
+
+## `heatmap`
+
+Displays an aggregated value as a color-intensity grid — `groupBy` on one axis, time on the other, the aggregate as the cell color. Use for density across two dimensions: activity per user over time, latency band over time, errors per route over time.
+
+```json
+{
+  "id": "g-activity-heatmap",
+  "name": "Prompt activity by user over time",
+  "visualization": {
+    "type": "heatmap",
+    "source": "logs",
+    "queries": [
+      {
+        "aggregate": {"type": "count"},
+        "filter": "context.service.name:claude-code event.name:user_prompt"
+      }
+    ],
+    "groupBy": [{"fields": ["user.email"], "limit": 30}],
+    "palette": "green",
+    "normalizer": {"type": "custom", "unit": "prompts"}
+  },
+  "layout": {"x": 0, "y": 0, "w": 12, "h": 5}
+}
+```
+
+**Required:** `source`, `queries`
+**Optional:** `formula`, `groupBy`, `palette`, `normalizer`, `precision`
+**Gotchas:**
+- `palette` is one color from `red`, `pink`, `violet`, `blue`, `cyan`, `green`, `yellow`, `orange` — it sets the intensity gradient.
+- Without `groupBy` the heatmap collapses to a single time-banded row; group by the dimension you want on the y-axis.
+- High-cardinality `groupBy` makes rows unreadable — cap `limit` to what fits vertically (~20–30).
+
+---
+
+## `table`
+
+Displays several independent aggregations as columns, with rows defined by `groupBy`. The densest widget — use for per-entity scorecards (one row per user / service / route, several metrics across). The existing LLM-usage dashboard uses it for per-user breakdowns.
+
+```json
+{
+  "id": "g-per-user",
+  "name": "Per-user activity",
+  "visualization": {
+    "type": "table",
+    "columns": [
+      {
+        "name": "Events",
+        "source": "logs",
+        "queries": [{"aggregate": {"type": "count"}, "filter": "context.service.name:claude-code"}],
+        "precision": 0
+      },
+      {
+        "name": "Spend",
+        "source": "logs",
+        "queries": [{"aggregate": {"type": "sum", "field": "cost_usd"}, "filter": "context.service.name:claude-code event.name:api_request"}],
+        "normalizer": {"type": "custom", "unit": "$"},
+        "precision": 2
+      },
+      {
+        "name": "vs last week",
+        "source": "logs",
+        "queries": [
+          {"aggregate": {"type": "count"}, "filter": "context.service.name:claude-code"},
+          {"aggregate": {"type": "count"}, "functions": [{"type": "time-offset", "seconds": 604800}], "filter": "context.service.name:claude-code"}
+        ],
+        "formula": "(q1-q2)/q2*100",
+        "normalizer": {"type": "percent"},
+        "precision": 1
+      }
+    ],
+    "groupBy": [{"fields": ["user.email"], "limit": 50}]
+  },
+  "layout": {"x": 0, "y": 0, "w": 12, "h": 6}
+}
+```
+
+**Required:** `columns` (≥1; each column needs `name`, `source`, `queries`)
+**Optional per column:** `formula`, `normalizer`, `precision`, `aliases`
+**Optional top-level:** `groupBy` (max 7, applied as multi-level row grouping), `defaultSorting` (`[{"id": "<column id>", "desc": true}]`)
+**Gotchas:**
+- Unlike every other widget, `source` / `queries` live **per column**, not at the visualization root.
+- `groupBy` defines the rows; each column aggregates within those rows.
+- Per-column `formula` enables week-over-week deltas via a `time-offset` second query (see the percent column above).
+- `defaultSorting.id` is the column id — confirm it in the app before relying on it; omit to use the default order.
+
+---
+
 ## `list`
 
 Displays raw log records in a table. Use for log evidence rows below a chart that identified a problem. Source must be `"logs"`.
@@ -221,6 +386,31 @@ Displays raw log records in a table. Use for log evidence rows below a chart tha
 - Uses `query` (string), not `queries` (array) — the structure is different from all other widgets
 - `source` must be `"logs"` — no other source is accepted
 - Without `listColumns`, shows a default column set
+
+---
+
+## `list-log-patterns`
+
+Clusters the logs matching a query into recurring patterns (templated messages with the variable parts factored out). Use to summarize a noisy stream — "what distinct things are being logged?" — instead of scrolling raw rows. Logs-only.
+
+```json
+{
+  "id": "g-error-patterns",
+  "name": "Error patterns",
+  "visualization": {
+    "type": "list-log-patterns",
+    "query": "level:ERROR context.service.name:web-backend",
+    "layout": "vertical"
+  },
+  "layout": {"x": 0, "y": 0, "w": 12, "h": 5}
+}
+```
+
+**Required:** `query` (a TQL string — like `list`, not a `queries` array)
+**Optional:** `layout` (`horizontal` | `vertical`)
+**Gotchas:**
+- Like `list`, it takes a single `query` string and is logs-only — no `source`, no aggregation.
+- The visualization-level `layout` (`horizontal`/`vertical`) is a different field from the widget's grid `layout` (`x/y/w/h`) — both appear in the same widget object.
 
 ---
 
@@ -255,6 +445,33 @@ Displays static markdown text. Use as section headers and context blocks.
 - Note text supports markdown — use `##` for section headings
 - Use real newlines (`\n` in JSON), not literal backslash-n in the rendered text
 - Section header notes should always be `w: 12, h: 1` (full-width, one row tall)
+
+---
+
+## Database connection variants
+
+Every aggregation widget has a `*-connection` twin that runs read-only SQL against a configured datastore connection instead of a Tsuga aggregation: `timeseries-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`, `list-connection`. They drop `source` + aggregation `queries` and use instead:
+
+- `connectionId` — the datastore connection to query (not a Tsuga `source`)
+- `queries` — an array of read-only SQL strings (`SELECT` only); `list-connection` uses a single `query` string
+
+```json
+{
+  "id": "g-signups",
+  "name": "Signups (last 7d)",
+  "visualization": {
+    "type": "timeseries-connection",
+    "connectionId": "<connection-id>",
+    "queries": ["SELECT date_trunc('day', created_at) AS t, count(*) FROM users GROUP BY 1 ORDER BY 1"]
+  },
+  "layout": {"x": 0, "y": 0, "w": 6, "h": 4}
+}
+```
+
+**Gotchas:**
+- SQL must be read-only — anything other than `SELECT` is rejected.
+- `connectionId` comes from the configured connections, not from `tsuga services list`.
+- `legendMode`, `thresholds`, `yAxisSettings`, `listColumns` apply the same as on the non-connection twin.
 
 ---
 
