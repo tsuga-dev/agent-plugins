@@ -16,6 +16,8 @@ All 7 widget types, their schemas, and usage guidance.
 
 Max 15 queries per widget. `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 
+**Never send an empty `name` or `description` (`""`)** — the API rejects it with a 400 (`must NOT have fewer than 1 characters`). When a widget has no label (common for notes), **omit the key entirely** rather than passing `""`. (For aggregate/query-body rules — `count` not valid on `metrics`, Unix-seconds `timeRange`, etc. — see `tsuga-cli`.)
+
 ---
 
 ## `timeseries`
@@ -262,10 +264,12 @@ Every numeric widget should have a `normalizer` so values display with meaningfu
 
 | Type | JSON | Use for |
 |------|------|---------|
-| Duration | `{"type": "duration", "unit": "ms"}` | Latency (ns, us, ms, s, m, h, days) |
-| Data | `{"type": "data", "unit": "MB"}` | Memory, payload size (B, KB, MB, GB, TB, PB) |
+| Duration | `{"type": "duration", "unit": "ms"}` | Latency — set `unit` to the metric's actual unit (ns, us, ms, s, m, h, days) |
+| Data | `{"type": "data", "unit": "B"}` | Bytes — set `unit` to the value's actual unit; OTel byte metrics are bytes → `B` (B, KB, MB, GB, TB, PB) |
 | Percent | `{"type": "percent"}` | Ratios, utilization |
 | Custom | `{"type": "custom", "unit": "req/s"}` | Everything else — provide a unit label |
+
+**Critical — for `data` and `duration`, `unit` is the unit the raw value is ALREADY in, not a display target.** The UI auto-scales *up* from that base unit and picks the readable magnitude itself, so set it to the metric's true unit and let the widget format. OTel byte metrics (`*_bytes`, `intake_api_batch_bytes`, `quickwit_*_bytes`, …) emit **bytes** → use `"B"`, and the widget renders `58 TB`, `4.2 GB`, etc. on its own. Setting a larger base like `"GB"` on a bytes value overstates the reading by 1e9 — e.g. 58 TB displays as "58M PB". Always confirm the metric's unit with `tsuga metrics get <name>` before choosing.
 
 ---
 

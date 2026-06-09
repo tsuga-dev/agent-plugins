@@ -205,7 +205,7 @@ Candidate query filters for Stage 4:
 - Precise: `context.service.name:istio-proxy AND context.log_name:access`
   - Rationale: likely to isolate centralized access logs if the collector preserves service and log stream names.
   - Risk: may miss logs if the org uses a different `context.service.name` mapping.
-- Fallback: `message:\"HTTP/1.\" AND (message:\"outbound|\" OR message:\"inbound|\")`
+- Fallback: `message:*HTTP/1.* AND (message:*outbound|* OR message:*inbound|*)`
   - Rationale: catches default Envoy access-log lines even when enrichment is sparse.
   - Risk: text-shape filter can match non-Istio Envoy logs or partially customized formats.
 

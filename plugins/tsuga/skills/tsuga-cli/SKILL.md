@@ -46,6 +46,8 @@ tsuga <resource> delete <id>
 
 Resources: `dashboards`, `monitors`, `teams`, `routes`, `notification-rules`, `notification-silences`, `ingestion-api-keys`, `retention-policies`, `tag-policies`, `investigations`, `quality-reports`, `cloud-resources`.
 
+> **Building or modifying a dashboard?** If the `tsuga-build-dashboard` skill is available, load it — it owns widget schemas, layout rules, normalizers, and the create/update workflow. This skill provides the raw `dashboards` CRUD commands and the query bodies that skill embeds.
+
 > Note: `ingestion-api-keys` does not support `get <id>`.
 > Note: `quality-reports` and `cloud-resources` only support `list` (read-only).
 > Note: `investigations` is **beta** — see [Investigations (beta)](#investigations-beta).
@@ -57,9 +59,9 @@ Resources: `dashboards`, `monitors`, `teams`, `routes`, `notification-rules`, `n
 - `-d '{"name":"foo"}'` — inline JSON
 - `--generate-skeleton` — print a JSON template and exit (no API call)
 
-### Resource-specific flags
+### Resource-specific filters
 
-- `tsuga dashboards list --owners <id1> <id2>` — filter by owner team IDs
+- `dashboards list` filters via a JSON body (not flags). Owner filter: `tsuga dashboards list -d '{"filters":{"owners":{"values":["<id>"]}}}'`. Also supports `searchQuery`, `tags`, and `sort` / `limit` / `offset` — run `tsuga dashboards list --generate-skeleton` for the full shape.
 
 ### Examples
 
@@ -69,7 +71,7 @@ tsuga teams get qz9c-d08h8-0vfa
 tsuga teams create -d '{"name":"platform","visibility":"public"}'
 tsuga monitors create --generate-skeleton > monitor.json   # edit, then:
 tsuga monitors create -f monitor.json
-tsuga dashboards list --owners team-1 team-2
+tsuga dashboards list -d '{"filters":{"owners":{"values":["team-1","team-2"]}}}'
 tsuga routes update abc-123 -d '{"name":"Updated route"}'
 tsuga retention-policies delete abc-123
 echo '{"name":"My Team"}' | tsuga teams create -f -
@@ -161,21 +163,27 @@ Output: `{"nodes": [{"serviceName": ...}], "edges": [{"from": <svc>, "to": <svc>
 
 Applies to all `--query` flags and aggregation `filter` fields.
 
-| Syntax           | Meaning                  | Example                                                |
-| ---------------- | ------------------------ | ------------------------------------------------------ |
-| `field:value`    | Exact match              | `level:ERROR`                                          |
-| `term1 term2`    | AND (default)            | `level:ERROR context.service.name:api`                 |
-| `term1 OR term2` | OR (must be uppercase)   | `level:ERROR OR level:WARN`                            |
-| `NOT term`       | Negation (uppercase)     | `NOT context.env:staging`                              |
-| `(...)`          | Grouping                 | `(level:ERROR OR level:WARN) context.service.name:api` |
-| `field:(a OR b)` | Field-level OR           | `context.service.name:(web-backend OR api-gateway)`    |
-| `field:*`        | Field exists             | `trace_id:*`                                           |
-| `_exists_:field` | Field exists (alternate) | `_exists_:trace_id`                                    |
-| `field:[A TO B]` | Range, inclusive         | `duration:[100 TO 500]`                                |
-| `field:{A TO B}` | Range, exclusive         | `duration:{100 TO 500}`                                |
-| `field:>N`       | Numeric comparison       | `duration:>100`                                        |
+| Syntax                 | Meaning                         | Example                                                          |
+| ---------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| `field:value`          | Exact match                     | `level:ERROR`                                                    |
+| `term1 term2`          | AND (default)                   | `level:ERROR context.service.name:api`                           |
+| `term1 OR term2`       | OR (must be uppercase)          | `level:ERROR OR level:WARN`                                      |
+| `NOT term`             | Negation (uppercase)            | `level:ERROR NOT context.env:staging`                            |
+| `(...)`                | Grouping                        | `(level:ERROR OR level:WARN) context.service.name:api`           |
+| `(field:a OR field:b)` | Multiple values for one field   | `(context.service.name:web-backend OR context.service.name:api)` |
+| `field:*`              | Field exists                    | `trace_id:*`                                                     |
+| `field:[A TO B]`       | Range, inclusive                | `duration:[100 TO 500]`                                          |
+| `field:>N`             | Numeric (also `>=`, `<`)        | `duration:>100`                                                  |
+| `<bare token>`         | Free-text token in log message  | `refused`, `connection refused`, `(timeout OR refused)`          |
 
-AND is the default (space-separated terms); OR binds looser than AND. `OR` and `NOT` must be uppercase — lowercase `or`/`not` are treated as literal search terms.
+AND is the default (space-separated terms); OR binds looser than AND. `OR` and `NOT` must be uppercase — lowercase `or`/`not` become literal search terms.
+
+**Verified gotchas (these fail _silently_ — the API returns 0 rows, not an error):**
+
+- **No field-distributed OR.** `field:(a OR b)` matches nothing. Repeat the field per clause: `(field:a OR field:b)`.
+- **No `_exists_:field`.** Matches nothing; use `field:*` to test presence.
+- **Inclusive ranges only.** `field:[A TO B]` works; the exclusive `field:{A TO B}` is rejected (400). Emulate with `field:>A field:<B`.
+- **Free-text vs `message:`.** A bare token searches and tokenizes the log message (`refused`, `connection refused`, `(timeout OR refused)` all work). `message:X` instead matches only the _entire, exact_ message — for a substring use the wildcard `message:*token*` (single token; wildcards do not span spaces).
 
 ## Shared Attributes (Cross-Signal)
 
@@ -262,6 +270,7 @@ Example — per-second rate of a counter:
 ```
 
 - `timeRange` uses **Unix seconds** (not relative strings like `"-1h"`)
+- On a **multi-cluster tenant**, `aggregation scalar|timeseries` needs a top-level `"clusterId": "<id>"` **in the body** — the global `--cluster` flag and `defaults.cluster` are *ignored* for `aggregation` (every other command honors them). Without it: `400 clusterId must be provided when the organization has multiple clusters`.
 - `dataSource` and `formula` are **body-level** fields; query items do not have `id` or `dataSource`
 - `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 - `groupBy` is at **body level** (not inside query items): `[{"fields": ["field.name"], "limit": N}]`

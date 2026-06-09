@@ -37,6 +37,8 @@ Example (Health section):
 {"id": "g-chart", "visualization": {...},  "layout": {"x": 0, "y": 3, "w": 12, "h": 4}}
 ```
 
+**Note heights:** a pure section-divider header is `h: 1`. An intro / context note with prose needs `h ≈ 3–5` — size it to the text. Don't leave it at `h: 1` (text clips) or balloon it to `h: 8+` (it dominates and pushes every chart below the fold — the #1 cause of an unreadable board).
+
 ---
 
 ## Row Tiling Patterns
@@ -80,6 +82,12 @@ Not every dashboard needs all five sections — include only the sections the au
 
 ---
 
+## Widget Naming
+
+Name widgets by **what they show**, never by the current time window or any other dashboard-level control. The time range is a per-view control the user changes freely — a name like `Indexed (7d)` is stale the instant someone picks a different range. Use `Indexed bytes`, not `Indexed (7d)`; `Error rate`, not `Errors (1h)`. Keep the window out of widget names and descriptions.
+
+---
+
 ## Section Color Rotation
 
 Use note colors to visually separate sections. Rotate through this sequence:
@@ -104,6 +112,7 @@ Always include these two filters so users can scope the dashboard without editin
 - `values: []` means the filter is present but not pre-set — the UI shows a picker
 - Filters apply to every widget on the dashboard
 - Filters use object form, not TQL strings
+- **Keep `values: []` for entity filters** (`context.cluster_id`, `context.org_name`, `context.service.name`). Because a filter is global, *pre-setting* one collapses every widget that groups *across* that entity down to a single series — e.g. a "cost by org" top-list under a hard-set `org_name` shows one row. Pre-set a filter only on a board that is genuinely about one entity; a comparison/breakdown board must leave them empty.
 
 ---
 

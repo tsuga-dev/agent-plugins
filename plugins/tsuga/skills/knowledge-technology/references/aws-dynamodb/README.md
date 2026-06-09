@@ -188,7 +188,7 @@ CloudTrail data events -> capture -> API caller and request context (why: they h
 - Precise: `eventSource:dynamodb.amazonaws.com AND requestParameters.tableName:*`
   Rationale: targets CloudTrail records that clearly belong to DynamoDB and have a table target.
   Risk: field names may be normalized differently in Tsuga.
-- Fallback: `message:(dynamodb.amazonaws.com OR DynamoDB) AND (GetItem OR PutItem OR UpdateItem OR Query OR Scan)`
+- Fallback: `(message:*dynamodb.amazonaws.com* OR message:*DynamoDB*) AND (GetItem OR PutItem OR UpdateItem OR Query OR Scan)`
   Rationale: works when CloudTrail JSON is not fully normalized.
   Risk: could mix application logs mentioning DynamoDB with true CloudTrail events.
 
