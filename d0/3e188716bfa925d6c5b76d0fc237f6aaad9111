@@ -1,0 +1,24 @@
+plugins/tsuga/skills/build-knowledge-company/references/CLI_TRANSLATION.md
+  s_dfac68c2e8bf44::t_02363db0e48ec1 35
+plugins/tsuga/skills/tsuga-cli/references/playbooks/find-owner-and-context.md
+  s_dfac68c2e8bf44::t_5e6a7aeb720a7e 14
+plugins/tsuga/skills/build-knowledge-company/references/PROCEDURE.md
+  s_dfac68c2e8bf44::t_60f6c742de9a50 176
+  s_dfac68c2e8bf44::t_b226b1f0d74d9c 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d03e188716bfa925d6c5b76d0fc237f6aaad9111",
+  "prompts": {},
+  "sessions": {
+    "s_dfac68c2e8bf44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a8e1bdab-dd8d-4b28-8ccd-49846461c915",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
