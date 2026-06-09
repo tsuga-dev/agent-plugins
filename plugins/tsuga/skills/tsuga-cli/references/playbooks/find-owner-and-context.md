@@ -11,7 +11,7 @@ Use when asked who owns a service, which team is responsible, what observability
 1. `tsuga services list` — find by `serviceName`. If multiple partial matches, show them and ask the user to confirm before proceeding.
 2. Extract from matched service: `teams[]`, `logsCount24h`, `errorLogsCount24h`, `tracesCount24h`, `errorTracesCount24h`, `sources[]`, `env`, `lastSeenAt`.
 3. For each team ID in `teams[]`: `tsuga teams get <team-id>` — get `name`, `description`.
-4. For each team ID: `tsuga dashboards list --owners <team-id>` — list dashboards owned by this team.
+4. For each team ID: `tsuga dashboards list -d '{"filters":{"owners":{"values":["<team-id>"]}}}'` — list dashboards owned by this team.
 5. `tsuga monitors list` — filter results where `configuration.queries[].filter` contains the service name. Note: glob patterns (e.g., `web-*`) in filters may cover this service without an exact match — flag these separately.
 6. `tsuga notification-rules list` — filter by team ID appearing in `teamsFilter.teams[]`; note `isActive` per rule.
 

@@ -32,7 +32,7 @@ The single most expensive bug in the first `knowledge-company` build was subagen
 | `list-monitors` | `tsuga monitors list` |
 | `get-monitor id=X` | `tsuga monitors get X` |
 | `list-dashboards` | `tsuga dashboards list` |
-| `list-dashboards owners=A,B` | `tsuga dashboards list --owners A B` |
+| `list-dashboards owners=A,B` | `tsuga dashboards list -d '{"filters":{"owners":{"values":["A","B"]}}}'` |
 | `get-dashboard id=X` | `tsuga dashboards get X` |
 | `list-routes` / `get-route id=X` | `tsuga routes list` / `tsuga routes get X` |
 | `list-teams` / `get-team id=X` | `tsuga teams list` / `tsuga teams get X` |

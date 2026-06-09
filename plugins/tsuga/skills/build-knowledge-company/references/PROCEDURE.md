@@ -48,7 +48,7 @@ Not every team needs a TEAM_KNOWLEDGE.md — user-only teams (design, advisors) 
 # For each team id, count monitors, dashboards, services
 while IFS=$'\t' read -r team_id team_name vis; do
   monitors=$(tsuga monitors list | jq "[.[] | select(.owner == \"$team_id\")] | length")
-  dashboards=$(tsuga dashboards list --owners "$team_id" | jq 'length')
+  dashboards=$(tsuga dashboards list -d "{\"filters\":{\"owners\":{\"values\":[\"$team_id\"]}}}" | jq 'length')
   services=$(tsuga services list | jq "[.[] | select(.teams[]? == \"$team_id\")] | length")
   printf '%s\t%s\t%s\t%s\t%s\n' "$team_id" "$team_name" "$monitors" "$dashboards" "$services"
 done < /tmp/team-index.tsv > /tmp/team-score.tsv
@@ -173,7 +173,7 @@ Per-team inputs the orchestrator uses:
 
 - `/tmp/teams-raw.json[<team>]` for metadata
 - `jq '.[] | select(.owner == "<team_id>")' <(tsuga monitors list)` for owned monitors
-- `tsuga dashboards list --owners <team_id>` for owned dashboards
+- `tsuga dashboards list -d '{"filters":{"owners":{"values":["<team_id>"]}}}'` for owned dashboards
 - `jq '.[] | select(.teams[]? == "<team_id>")' <(tsuga services list)` for owned services
 
 ## Phase 7 — write per-service dossiers (parallel, subagent per service)
