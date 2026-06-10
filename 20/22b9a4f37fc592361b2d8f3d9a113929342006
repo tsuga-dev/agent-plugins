@@ -1,0 +1,23 @@
+README.md
+  s_2a351892f7d3fd::t_393950fdc7e3e6 26-32
+AGENTS.md
+  s_2a351892f7d3fd::t_7aa667592c69c2 92,95-96
+  s_2a351892f7d3fd::t_9bdc48cc48d400 68
+  s_2a351892f7d3fd::t_b6713c61f369bb 90-91,93-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "2022b9a4f37fc592361b2d8f3d9a113929342006",
+  "prompts": {},
+  "sessions": {
+    "s_2a351892f7d3fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49995648-b1ca-44ba-b6a2-b92f9c658805",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
