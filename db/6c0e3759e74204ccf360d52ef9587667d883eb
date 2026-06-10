@@ -1,0 +1,23 @@
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_2a351892f7d3fd::t_54b739750e0184 238-239
+  s_2a351892f7d3fd::t_b6be77f42adab1 314,316
+  s_2a351892f7d3fd::t_c0d21c77662c0e 315,317
+plugins/tsuga/skills/tsuga-cli/references/http-api.md
+  s_2a351892f7d3fd::t_042a3c0fe7e277 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "db6c0e3759e74204ccf360d52ef9587667d883eb",
+  "prompts": {},
+  "sessions": {
+    "s_2a351892f7d3fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49995648-b1ca-44ba-b6a2-b92f9c658805",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
