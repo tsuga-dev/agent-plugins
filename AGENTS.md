@@ -65,7 +65,7 @@ Do **not** use relative paths like `../../other-plugin/skills/...` — plugins a
 
 ## Validation
 
-The repo has no CI. Lint locally before opening a PR:
+CI (`.github/workflows/lint.yml`) runs on every PR: manifest JSON validity, `skills` field shape, description ≤ 1024 chars, plugin source paths, stray placeholders. Lint locally before opening a PR:
 
 ```bash
 # Each manifest validates against Claude Code's schema
@@ -86,6 +86,13 @@ v_tele=$(jq -r '.version' plugins/telemetry/.claude-plugin/plugin.json)
 
 # No stray {{SKILLS_DIR}}
 grep -rn '{{SKILLS_DIR}}' plugins/ && echo "FAIL: replace with \${CLAUDE_PLUGIN_ROOT}"
+
+# Frontmatter descriptions approaching 1024 chars — CI hard-fails above 1024 (Codex silently
+# drops the whole skill there; Claude Code truncates the listing at 1536). Warn early, at 900:
+for f in plugins/*/skills/*/SKILL.md; do
+  len=$(awk -F'description: ' '/^description:/{print length($2); exit}' "$f")
+  [ "${len:-0}" -gt 900 ] && echo "WARN: $len chars, close to 1024: $f"
+done
 
 # No stray top-level skills/ directory
 [ -d skills ] && echo "FAIL: skills/ should be empty/absent — move into plugins/<name>/skills/"

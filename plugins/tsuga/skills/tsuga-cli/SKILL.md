@@ -235,6 +235,8 @@ tsuga metrics list --from -1h               # custom time range
 tsuga metrics get <metric-name>             # get metadata for a specific metric
 ```
 
+**When the right metric isn't obvious, check existing dashboards before the catalog.** `metrics list` returns every catalogued metric, including series that are no longer (or never were) emitted — name-matching against it is how you end up querying a dead metric and misreading the empty result as "no data exists." Dashboards encode metric + filter + aggregation combinations already validated end-to-end: `tsuga dashboards list`, then `tsuga dashboards get <id>` and read the widgets' queries. Fall back to the catalog only when no dashboard covers the domain. If a metric you expected to have data comes back empty, treat it as evidence you picked the wrong metric — look for adjacent metric families before concluding the system is silent.
+
 ## Aggregations
 
 Scalar (single value) and timeseries queries use JSON body input:
@@ -308,6 +310,10 @@ Check `tsuga metrics get <name>` for `type` + `temporality` first; picking wrong
 | Histogram           | `percentile` (+ `field` + `percentile`)   | none                                        |
 
 `average` on a counter, no function on a cumulative counter, or `per-second` on a gauge all produce garbage. Custom pipelines may have non-standard temporality — when in doubt, `$knowledge-technology/<tech>/metrics.csv` (`type` + `post_function` columns) is authoritative.
+
+## Public HTTP API
+
+When the user is building their own scripts or services against Tsuga (no CLI, no MCP — bulk backfills, metering jobs), read `references/http-api.md` for the verified integration facts: API host, operation-key auth, `/v1` aggregation endpoints, body/envelope shapes, and retention-policy lookback bounds. During skill execution stay CLI-first — never curl the API yourself.
 
 ## Safety
 
