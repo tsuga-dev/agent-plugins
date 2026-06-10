@@ -1,0 +1,23 @@
+plugins/telemetry/.claude-plugin/plugin.json
+  s_2a351892f7d3fd::t_11a1fd9189a734 4
+plugins/tsuga/.claude-plugin/plugin.json
+  s_2a351892f7d3fd::t_11a1fd9189a734 4
+.claude-plugin/marketplace.json
+  s_2a351892f7d3fd::t_11a1fd9189a734 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "1a7147d0e42fba0789c675bc78000d6c5d7610f6",
+  "prompts": {},
+  "sessions": {
+    "s_2a351892f7d3fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49995648-b1ca-44ba-b6a2-b92f9c658805",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
