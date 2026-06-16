@@ -17,6 +17,19 @@ description: "Use when asked to check if OTel is working, confirm a metric or sp
 
 ## Workflow
 
+Documentation query for validation after instrumentation, collector, provider integration, or ingestion-key changes:
+
+```bash
+tsuga docs get data-collection/guides/how-to-validate-telemetry-arrival-in-tsuga
+```
+
+Documentation queries for missing-signal troubleshooting:
+
+```bash
+tsuga docs get data-collection/guides/how-to-troubleshoot-missing-telemetry
+tsuga docs get data-collection/opentelemetry/configure-otlp-export
+```
+
 1. `tsuga services list` — confirm service appears; check `lastSeenAt` is within the last 15 minutes (recent = post-deploy); note `sources[]` and 24h counters (`logsCount24h`, `tracesCount24h`)
    - If service not found at all: stop with "Service not found in Tsuga — check ingestion key and OTLP endpoint configuration"
    - If `logsCount24h == 0` AND `tracesCount24h == 0`: stop with same message

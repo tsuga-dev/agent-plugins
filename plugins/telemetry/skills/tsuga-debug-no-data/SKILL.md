@@ -20,6 +20,14 @@ description: "Use when signals are absent, OTLP export looks broken, the service
 
 ## Workflow
 
+Documentation queries for Tsuga ingestion, endpoint, and validation behavior:
+
+```bash
+tsuga docs get data-collection/guides/how-to-troubleshoot-missing-telemetry
+tsuga docs get data-collection/opentelemetry/configure-otlp-export
+tsuga docs get account-and-settings/api-keys
+```
+
 ### Step 1: Identify what is missing
 
 ```bash

@@ -31,7 +31,13 @@ description: "Use when asked to review metric design, check metric naming, audit
 
 6. `tsuga quality-reports list` — check if any rule failures relate to metric naming or instrumentation for this service. Note `generatedAt`; flag if > 48h ago.
 
-7. **Stop and validate with user.** Before presenting final findings, share preliminary observations: "Here is what I found so far — [summary of naming issues, instrument type concerns, cardinality risks]. Does this match your understanding of how metrics are instrumented in this service?" Adjust findings based on user context before concluding.
+7. Documentation queries for quality-report scoring and failing-rule investigation:
+   ```bash
+   tsuga docs get account-and-settings/quality-reports
+   tsuga docs get account-and-settings/guides/how-to-investigate-a-failing-quality-rule
+   ```
+
+8. **Stop and validate with user.** Before presenting final findings, share preliminary observations: "Here is what I found so far — [summary of naming issues, instrument type concerns, cardinality risks]. Does this match your understanding of how metrics are instrumented in this service?" Adjust findings based on user context before concluding.
 
 ## Naming Rules
 
