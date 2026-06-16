@@ -22,6 +22,14 @@ description: "Use when asked about slow requests, high latency, latency spikes, 
 
 ## Workflow
 
+Documentation queries for Traces, trace details, and trace-log pivots:
+
+```bash
+tsuga docs get explore/traces
+tsuga docs get explore/guides/how-to-find-logs-for-a-trace
+tsuga docs get data-collection/application-telemetry/correlate-logs-and-traces
+```
+
 1. `tsuga services list` — confirm service; note `tracesCount24h`. If `tracesCount24h` is 0: warn that traces are not available for this service and stop. Do not proceed without trace data.
 
 2. `tsuga aggregation timeseries` — p95 latency grouped by `span.name`, limit 10, over window with 5-minute aggregation windows:

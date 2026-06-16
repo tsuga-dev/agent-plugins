@@ -1,25 +1,17 @@
 # Widget Reference
 
-All widget types, their schemas, and usage guidance.
+Dashboard JSON schema notes and API gotchas for `tsuga dashboards create|update`.
 
-## Widget Type Summary
+Documentation queries:
 
-| Widget | Use when | groupBy? | Source |
-|--------|----------|----------|--------|
-| `timeseries` | Trends over time | Yes (max 7) | logs, metrics, traces |
-| `query-value` | Single-number KPIs | No (silently dropped) | logs, metrics, traces |
-| `gauge` | Single value against a known max (budget, utilization, SLO) | No | logs, metrics, traces |
-| `top-list` | "Who is highest?" triage | Yes (max 7) | logs, metrics, traces |
-| `bar` | Category comparisons (bounded set) | Yes (max 7) | logs, metrics, traces |
-| `pie` | Part-to-whole breakdown (≤6 slices) | Yes (max 7) | logs, metrics, traces |
-| `distribution` | Spread of a value (latency, token counts) | Yes (max 7) | logs, metrics, traces |
-| `heatmap` | Density across two dimensions (group × time) | Yes (max 7) | logs, metrics, traces |
-| `table` | Per-entity scorecard — many metrics as columns | Yes (max 7, multi-level) | logs, metrics, traces |
-| `list` | Log evidence table | N/A | logs only |
-| `list-log-patterns` | Clustered log patterns from noisy streams | N/A | logs only |
-| `note` | Section headers, context blocks | N/A | N/A |
+```bash
+tsuga docs get visualize/analytics/graph-types-and-widget-options
+tsuga docs get visualize/analytics/queries
+tsuga docs get visualize/analytics/display-options
+tsuga docs get visualize/analytics/connection-backed-graphs
+```
 
-Each aggregation widget also has a `*-connection` twin (`timeseries-connection`, `list-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`) that runs read-only SQL against a datastore connection instead of a Tsuga aggregation — see "Database connection variants" at the end.
+The visualization `type` strings here are API values, not necessarily the UI labels used in docs.
 
 Max 15 queries per widget. `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 
@@ -29,7 +21,7 @@ Max 15 queries per widget. `formula` references queries by position: `"q1"` = fi
 
 ## `timeseries`
 
-Displays metric or log data as a line chart over time. Use for trends, rates, and latency distributions.
+API payload for a time-series line chart.
 
 ```json
 {
@@ -64,7 +56,7 @@ Displays metric or log data as a line chart over time. Use for trends, rates, an
 
 ## `query-value`
 
-Displays a single aggregated number. Use for KPIs on the dashboard's top row.
+API payload for a single aggregated number.
 
 ```json
 {
@@ -103,7 +95,7 @@ Displays a single aggregated number. Use for KPIs on the dashboard's top row.
 
 ## `gauge`
 
-Displays a single aggregated value as a dial against a maximum. Use for bounded quantities where "how close to the ceiling?" is the question — budget/quota burn, utilization, SLO attainment. For an unbounded KPI, use `query-value`.
+API payload for a gauge.
 
 ```json
 {
@@ -142,7 +134,7 @@ Displays a single aggregated value as a dial against a maximum. Use for bounded 
 
 ## `top-list`
 
-Displays a ranked list of the top values for a grouped aggregation. Use for "which service has the most errors?" triage.
+API payload for a ranked grouped aggregation.
 
 ```json
 {
@@ -175,7 +167,7 @@ Displays a ranked list of the top values for a grouped aggregation. Use for "whi
 
 ## `bar`
 
-Displays aggregated values as vertical bars. Use for comparing a bounded category set (environments, HTTP methods, status codes) — not for unbounded high-cardinality fields.
+API payload for a bar chart.
 
 ```json
 {
@@ -208,7 +200,7 @@ Displays aggregated values as vertical bars. Use for comparing a bounded categor
 
 ## `pie`
 
-Displays part-to-whole proportion. Keep slices to ≤6; more than that is unreadable. Use for status code breakdown, environment split, etc.
+API payload for a donut/pie chart.
 
 ```json
 {
@@ -241,7 +233,7 @@ Displays part-to-whole proportion. Keep slices to ≤6; more than that is unread
 
 ## `distribution`
 
-Displays the spread of an aggregated value as a histogram. Use when the *shape* — tail, modality, outliers — matters more than a single percentile: request latency, tokens per call, payload sizes.
+API payload for a distribution chart.
 
 ```json
 {
@@ -273,7 +265,7 @@ Displays the spread of an aggregated value as a histogram. Use when the *shape* 
 
 ## `heatmap`
 
-Displays an aggregated value as a color-intensity grid — `groupBy` on one axis, time on the other, the aggregate as the cell color. Use for density across two dimensions: activity per user over time, latency band over time, errors per route over time.
+API payload for a heatmap.
 
 ```json
 {
@@ -307,7 +299,7 @@ Displays an aggregated value as a color-intensity grid — `groupBy` on one axis
 
 ## `table`
 
-Displays several independent aggregations as columns, with rows defined by `groupBy`. The densest widget — use for per-entity scorecards (one row per user / service / route, several metrics across). The existing LLM-usage dashboard uses it for per-user breakdowns.
+API payload for a table.
 
 ```json
 {
@@ -360,7 +352,7 @@ Displays several independent aggregations as columns, with rows defined by `grou
 
 ## `list`
 
-Displays raw log records in a table. Use for log evidence rows below a chart that identified a problem. Source must be `"logs"`.
+API payload for raw log rows.
 
 ```json
 {
@@ -391,7 +383,7 @@ Displays raw log records in a table. Use for log evidence rows below a chart tha
 
 ## `list-log-patterns`
 
-Clusters the logs matching a query into recurring patterns (templated messages with the variable parts factored out). Use to summarize a noisy stream — "what distinct things are being logged?" — instead of scrolling raw rows. Logs-only.
+API payload for clustered log patterns.
 
 ```json
 {
@@ -416,7 +408,7 @@ Clusters the logs matching a query into recurring patterns (templated messages w
 
 ## `note`
 
-Displays static markdown text. Use as section headers and context blocks.
+API payload for static dashboard notes.
 
 ```json
 {
@@ -450,7 +442,7 @@ Displays static markdown text. Use as section headers and context blocks.
 
 ## Database connection variants
 
-Every aggregation widget has a `*-connection` twin that runs read-only SQL against a configured datastore connection instead of a Tsuga aggregation: `timeseries-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`, `list-connection`. They drop `source` + aggregation `queries` and use instead:
+API payloads for connection-backed variants drop `source` + aggregation `queries` and use instead:
 
 - `connectionId` — the datastore connection to query (not a Tsuga `source`)
 - `queries` — an array of read-only SQL strings (`SELECT` only); `list-connection` uses a single `query` string

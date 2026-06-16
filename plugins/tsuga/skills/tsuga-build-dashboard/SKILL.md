@@ -5,7 +5,7 @@ description: "Use when asked to create a Tsuga dashboard, add or fix widgets, co
 
 # Tsuga Build Dashboard
 
-Build, modify, and validate Tsuga dashboards from the command line. This skill leans on `tsuga-cli` (filter syntax, counter math, aggregation body construction, metric discovery, CRUD commands) — it owns only the dashboard-specific concerns: widget schemas, layout, and the create/update workflow.
+Build, modify, and validate Tsuga dashboards from the command line. This skill leans on `tsuga-cli` (docs lookup, filter syntax, counter math, aggregation body construction, metric discovery, CRUD commands). This skill owns dashboard JSON schema, layout, verification, and create/update workflow.
 
 ## When to Trigger
 
@@ -24,6 +24,22 @@ Build, modify, and validate Tsuga dashboards from the command line. This skill l
 ## Workflow
 
 ### Step 1 — Clarify goal
+
+Documentation queries for graph types, display options, dashboard workflow, and template behavior:
+
+```bash
+tsuga docs get visualize/analytics/graph-types-and-widget-options
+tsuga docs get visualize/analytics/queries
+tsuga docs get visualize/dashboards/index
+```
+
+Documentation queries for connection-backed widgets, scheduled reports, and dashboard templates:
+
+```bash
+tsuga docs get visualize/analytics/connection-backed-graphs
+tsuga docs get visualize/dashboards/reports
+tsuga docs get visualize/guides/how-to-create-a-dashboard-from-a-template
+```
 
 Determine:
 - What service or system is this for?
@@ -73,7 +89,7 @@ Do not embed an unverified query body. If a query returns no data, resolve at th
 
 ### Step 4 — Assemble the dashboard payload
 
-Embed the verified query bodies from Step 3 into widget JSON. Use `references/widget-reference.md` for schemas and `references/layout-rules.md` for grid positioning.
+Embed the verified query bodies from Step 3 into widget JSON. Use `references/widget-reference.md` for payload schemas and API gotchas. Use `references/layout-rules.md` for grid positioning.
 
 Key structural rules:
 - `owner` must be a team ID — resolve with `tsuga teams list`

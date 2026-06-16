@@ -39,6 +39,22 @@ description: "Use when asked to check if services have monitors, audit alerting 
 
 ### Confirm Before Applying
 
+Documentation queries for monitor types, notification routing, and silence behavior:
+
+```bash
+tsuga docs get alert/monitors/index
+tsuga docs get alert/notifications/rules
+tsuga docs get alert/notifications/silences
+```
+
+Documentation queries for setup and troubleshooting workflows:
+
+```bash
+tsuga docs get alert/guides/how-to-create-threshold-monitors
+tsuga docs get alert/guides/how-to-set-up-notifications-and-alerts
+tsuga docs get alert/guides/how-to-troubleshoot-notifications-that-are-not-sending
+```
+
 Before creating any monitors or notification rules, show the full proposed list and wait for explicit confirmation.
 
 1. Show the proposed change (diff, code block, or table) with a brief explanation of WHY

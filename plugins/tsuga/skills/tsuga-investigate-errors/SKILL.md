@@ -21,6 +21,14 @@ description: "Use when asked about errors, error spikes, what's failing, excepti
 
 ## Workflow
 
+Documentation queries for Logs, log patterns, query syntax, and service-page error context:
+
+```bash
+tsuga docs get explore/logs
+tsuga docs get explore/query-syntax
+tsuga docs get categorize/services/service-page
+```
+
 1. `tsuga services list` — confirm the service exists; note `errorLogsCount24h` and `errorTracesCount24h` for immediate triage signal. If both are 0 over 24h: state this upfront and ask the user if they want to proceed anyway.
 
 2. `tsuga aggregation scalar` — count errors in window. Use this body:

@@ -22,6 +22,15 @@ description: "Use during active incidents, on-call response, or any time someone
 
 ## Workflow
 
+Documentation queries for service inventory, service-page pivots, Logs, and Traces:
+
+```bash
+tsuga docs get categorize/services/index
+tsuga docs get categorize/services/service-page
+tsuga docs get explore/logs
+tsuga docs get explore/traces
+```
+
 1. `tsuga services list` — confirm service; extract `teams[]`, `sources[]`, `errorLogsCount24h`, `errorTracesCount24h`, `logsCount24h`, `tracesCount24h`, `env`. If both error counters are 0: lead with "No errors in last 24h per service registry" before proceeding with window investigation.
 
    If the service emits `context.service.version` (visible via `tsuga logs attributes` for the service, or in a sample log/span), surface the active versions. When multiple versions are live in the window, add `context.service.version:<version>` to the `tsuga aggregation scalar` / `tsuga aggregation timeseries` filters in step 3 and compare per version. Symptoms coinciding with a version change are a correlation only, not proof of causality (see Safety Rules).
