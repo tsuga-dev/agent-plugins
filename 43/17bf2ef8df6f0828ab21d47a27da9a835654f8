@@ -1,0 +1,40 @@
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_a70930e5af48c9::t_25090b624d9258 8-11
+  s_a70930e5af48c9::t_1e6e0848125be5 3-4,6-7,12-13
+  s_a70930e5af48c9::t_bb446ed0532321 5,14,24,59,98,137,170,203,236,268,302,355,386,411,445
+plugins/tsuga/skills/tsuga-analyze-trace-latency/SKILL.md
+  s_a70930e5af48c9::t_735acead4d86b3 26-32
+  s_a70930e5af48c9::t_bb446ed0532321 25
+plugins/tsuga/skills/tsuga-investigate-service-health/SKILL.md
+  s_a70930e5af48c9::t_735acead4d86b3 26-33
+  s_a70930e5af48c9::t_bb446ed0532321 25
+plugins/tsuga/skills/tsuga-audit-monitor-coverage/SKILL.md
+  s_a70930e5af48c9::t_9956c33670ac2f 50-56
+  s_a70930e5af48c9::t_25090b624d9258 45-47
+  s_a70930e5af48c9::t_1e6e0848125be5 43-44,48-49,57
+  s_a70930e5af48c9::t_bb446ed0532321 42
+plugins/tsuga/skills/tsuga-investigate-errors/SKILL.md
+  s_a70930e5af48c9::t_bb446ed0532321 24
+  s_a70930e5af48c9::t_735acead4d86b3 25-31
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_a70930e5af48c9::t_1e6e0848125be5 29-30,34-35,43
+  s_a70930e5af48c9::t_25090b624d9258 31-33
+  s_a70930e5af48c9::t_9956c33670ac2f 36-42
+  s_a70930e5af48c9::t_bb446ed0532321 8,28,92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "4317bf2ef8df6f0828ab21d47a27da9a835654f8",
+  "prompts": {},
+  "sessions": {
+    "s_a70930e5af48c9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecf2e-6ab9-7af1-bb98-9afc15cb6c4f",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
