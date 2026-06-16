@@ -1,6 +1,6 @@
 ---
 name: tsuga-cli
-description: "Use whenever the task involves a `tsuga` CLI command: searching logs/traces with TQL, composing `tsuga aggregation` bodies, picking the right aggregate type for a metric's temporality (gauge/delta/cumulative/histogram), managing clusters or any CRUD resource (monitors, dashboards, routes, teams, notification-rules, retention/tag policies, ingestion keys, …), or building deep links into `app.tsuga.com`. Also use for two specific lookups: service-ownership (`who owns X?`, `which team owns X?`, `what monitors/dashboards does X have?`) and reliability posture (`quality scores`, `observability posture`, `which teams have failing instrumentation?`) — both load a playbook from `references/playbooks/`. Produces shell commands, JSON bodies, and URLs."
+description: "Use whenever the task involves a `tsuga` CLI command: searching logs/traces with TQL, querying Tsuga documentation with `tsuga docs`, composing `tsuga aggregation` bodies, picking the right aggregate type for a metric's temporality, managing clusters or CRUD resources (monitors, dashboards, routes, teams, notification rules, retention/tag policies, ingestion keys, …), or building deep links into `app.tsuga.com`. Also use for service-ownership and reliability-posture lookups via `references/playbooks/`. Produces shell commands, JSON bodies, documentation lookups, and URLs."
 ---
 
 # Tsuga CLI
@@ -30,6 +30,46 @@ Multi-cluster tenants must target a specific cluster (single-cluster tenants can
 tsuga cluster list                              # show all clusters
 tsuga config set default cluster <cluster-id>   # save as the default
 tsuga config set default cluster ''             # clear it
+```
+
+## Documentation
+
+Documentation lookup examples:
+
+```bash
+tsuga docs search "query syntax"
+tsuga docs get visualize/analytics/graph-types-and-widget-options
+```
+
+Use `search` when you do not know the path; use `get` when a skill names a specific path. Search with product terms (`query syntax`, `dashboard`, `monitors`, `notifications`, `ingestion`, `quality reports`) rather than internal shorthand like `TQL`.
+
+Common documentation queries:
+
+```bash
+tsuga docs get account-and-settings/ai-access/tsuga-cli
+tsuga docs get explore/query-syntax
+tsuga docs get explore/logs
+tsuga docs get explore/traces
+tsuga docs get categorize/services/index
+tsuga docs get categorize/services/service-page
+tsuga docs get categorize/cloud-resources
+tsuga docs get categorize/kubernetes
+tsuga docs get visualize/analytics/queries
+tsuga docs get visualize/analytics/graph-types-and-widget-options
+tsuga docs get visualize/analytics/display-options
+tsuga docs get visualize/analytics/connection-backed-graphs
+tsuga docs get alert/monitors/index
+tsuga docs get alert/notifications/rules
+tsuga docs get process/routes/index
+tsuga docs get process/routes/processors
+tsuga docs get account-and-settings/api-keys
+tsuga docs get account-and-settings/clusters
+tsuga docs get account-and-settings/teams
+tsuga docs get account-and-settings/tag-policies
+tsuga docs get account-and-settings/retention
+tsuga docs get data-collection/guides/how-to-validate-telemetry-arrival-in-tsuga
+tsuga docs get data-collection/guides/how-to-troubleshoot-missing-telemetry
+tsuga docs get account-and-settings/quality-reports
 ```
 
 ## Resource Commands

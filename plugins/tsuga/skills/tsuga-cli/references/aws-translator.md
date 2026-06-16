@@ -2,6 +2,16 @@
 
 For accounts wired to a CloudWatch metric stream → Firehose → Tsuga pipeline, most read-only `aws cloudwatch get-metric-statistics` and several `aws <service> get-*-attributes` calls have a `tsuga aggregation` equivalent.
 
+Documentation queries for Cloud Resources inventory and AWS setup:
+
+```bash
+tsuga docs get categorize/cloud-resources
+tsuga docs get integrations/aws/index
+tsuga docs get integrations/aws/how-to-connect-an-aws-account-to-cloud-resources
+tsuga docs get integrations/aws/cloudwatch-metrics-through-data-firehose
+tsuga docs get integrations/aws/cloudwatch-logs-through-data-firehose
+```
+
 Tsuga registers each metric as `aws_<service>_<metric>` (snake-case) with CloudWatch dimensions exposed as `context.<dimensionkey>` attributes, lowercased.
 
 ## What's queryable

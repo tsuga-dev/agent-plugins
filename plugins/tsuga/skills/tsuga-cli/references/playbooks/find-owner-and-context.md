@@ -15,6 +15,16 @@ Use when asked who owns a service, which team is responsible, what observability
 5. `tsuga monitors list` — filter results where `configuration.queries[].filter` contains the service name. Note: glob patterns (e.g., `web-*`) in filters may cover this service without an exact match — flag these separately.
 6. `tsuga notification-rules list` — filter by team ID appearing in `teamsFilter.teams[]`; note `isActive` per rule.
 
+Documentation queries for returned surfaces:
+
+```bash
+tsuga docs get categorize/services/index
+tsuga docs get categorize/services/service-page
+tsuga docs get visualize/dashboards/dashboard-list
+tsuga docs get alert/monitors/index
+tsuga docs get alert/notifications/rules
+```
+
 ## Evidence Requirements
 
 - Ownership comes only from `services list` → `teams[]`. Never infer ownership from service name patterns.

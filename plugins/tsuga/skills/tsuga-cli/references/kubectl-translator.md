@@ -7,6 +7,14 @@ Most read-only `kubectl` reads have a `tsuga` equivalent. Tsuga ingests four cla
 3. **K8s object snapshots** — full PodSpec / Deployment / Node objects under `k8s.resource.name:<kind>`
 4. **K8s metrics** — `k8s.pod.*`, `k8s.node.*`, `k8s.deployment.*`, etc.
 
+Documentation queries for Kubernetes inventory and setup:
+
+```bash
+tsuga docs get categorize/kubernetes
+tsuga docs get integrations/kubernetes/index
+tsuga docs get categorize/guides/how-to-troubleshoot-missing-kubernetes-inventory
+```
+
 ## Cluster scoping
 
 - `--cluster` selects the **tsuga regional endpoint**, not the data scope. Multi-cluster tenants get the same data from any endpoint.

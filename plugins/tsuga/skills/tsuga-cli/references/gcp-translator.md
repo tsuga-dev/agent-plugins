@@ -2,6 +2,15 @@
 
 For projects wired to a Cloud Monitoring → Tsuga pipeline, most read-only GCP CLI/Monitoring queries have a `tsuga aggregation` equivalent.
 
+Documentation queries for Cloud Resources inventory and GCP setup:
+
+```bash
+tsuga docs get categorize/cloud-resources
+tsuga docs get integrations/gcp/index
+tsuga docs get integrations/gcp/how-to-connect-a-gcp-project-to-cloud-resources
+tsuga docs get integrations/gcp/gcp-services-through-opentelemetry
+```
+
 Unlike AWS, **metric names are kept in their native form**: `<service>.googleapis.com/<path>` (with literal slashes).
 
 - Inside an aggregation `field`, raw slashes work as-is.

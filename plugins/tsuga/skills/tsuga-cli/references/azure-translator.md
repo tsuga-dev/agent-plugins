@@ -2,6 +2,15 @@
 
 For subscriptions wired to an Azure Monitor → Tsuga pipeline, most read-only `az monitor metrics tail` and CLI metric queries have a `tsuga aggregation` equivalent.
 
+Documentation queries for Cloud Resources inventory and Azure setup:
+
+```bash
+tsuga docs get categorize/cloud-resources
+tsuga docs get integrations/azure/index
+tsuga docs get integrations/azure/how-to-connect-an-azure-subscription-to-cloud-resources
+tsuga docs get integrations/azure/azure-services-through-opentelemetry
+```
+
 Azure Monitor pre-computes statistical aggregates server-side, so metric names embed the aggregate suffix:
 
 ```

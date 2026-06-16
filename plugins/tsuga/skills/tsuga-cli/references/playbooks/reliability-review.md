@@ -11,9 +11,14 @@ Use when asked for an observability posture overview, quality scores, reliabilit
 
 1. `tsuga quality-reports list` — extract `report.generatedAt`, `report.overallScore`, `report.teamResults[]` sorted by `score` ascending.
 2. If `report.generatedAt` is more than 48 hours ago: flag as potentially stale before continuing.
-3. Flag teams below threshold; for each: extract `ruleResults[]` to identify failing rules — key fields: `key`, `title`, `recommendation`.
-4. `tsuga teams list` — cross-reference `teamId` → team name (quality report includes `teamName` but verify against live data).
-5. `tsuga monitors list` — identify teams with low quality score **and** few or no monitors; these represent the highest combined risk.
+3. Documentation queries for quality reports and failing-rule investigation:
+   ```bash
+   tsuga docs get account-and-settings/quality-reports
+   tsuga docs get account-and-settings/guides/how-to-investigate-a-failing-quality-rule
+   ```
+4. Flag teams below threshold; for each: extract `ruleResults[]` to identify failing rules — key fields: `key`, `title`, `recommendation`.
+5. `tsuga teams list` — cross-reference `teamId` → team name (quality report includes `teamName` but verify against live data).
+6. `tsuga monitors list` — identify teams with low quality score **and** few or no monitors; these represent the highest combined risk.
 
 ## Evidence Requirements
 
