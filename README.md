@@ -12,6 +12,22 @@ Adding and auditing OpenTelemetry in a codebase across nine languages (Python, G
 
 ## Install
 
+The [Tsuga CLI](https://www.npmjs.com/package/@tsuga/cli) adds the marketplace and installs the plugin in one command:
+
+```bash
+npm install -g @tsuga/cli
+
+# Claude Code
+tsuga install plugin claude-code --include-telemetry
+
+# Codex
+tsuga install plugin codex --include-telemetry
+```
+
+`--include-telemetry` also installs the `telemetry` plugin; drop it to install only `tsuga`. For Claude Code, this enables marketplace auto-update so the plugins refresh on their own (pass `--no-auto-update` to skip).
+
+Or add the marketplace and install the plugins directly:
+
 ```bash
 # Claude Code
 claude plugin marketplace add tsuga-dev/agent-plugins
