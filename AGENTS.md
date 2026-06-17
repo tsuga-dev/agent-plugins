@@ -15,6 +15,7 @@ plugins/telemetry/
 ```
 
 Notes:
+
 - **No top-level `skills/` directory.** Every skill lives under its plugin's subdir.
 - **No `.codex-plugin/` directory.** Codex consumes the same `.claude-plugin/marketplace.json` (verified: `~/.codex/.tmp/marketplaces/<name>/.claude-plugin/marketplace.json` is what `codex plugin list` reads).
 - **No `skills[]` array in marketplace.json.** Skills are auto-discovered from each plugin's `skills/` directory. The `skills[]` filter is only meaningful in single-plugin marketplaces and is silently ignored when multiple plugins share a `source`.
@@ -31,6 +32,7 @@ Notes:
    - Patch (`0.6.1 → 0.6.2`): content tweaks, doc fixes, clarifications.
    - Minor (`0.6.x → 0.7.0`): new skill, new reference doc, new behavior.
    - Major (`0.x → 1.0`): breaking change to a SKILL.md contract (rare).
+
 3. Open the PR as a draft. Use the `open-pr` skill if available.
 
 ## When adding a new skill
@@ -164,7 +166,7 @@ Code-reading skills (`signal-choice-advisor`, the `tsuga-audit-*` and `tsuga-smo
 
 ## Runtime behavior rules
 
-These govern how skills *behave when executing* (distinct from the authoring/repo conventions above). They apply to all Tsuga skills; each skill's SKILL.md inlines the rules critical to its workflow. This section is the canonical source.
+These govern how skills _behave when executing_ (distinct from the authoring/repo conventions above). They apply to all Tsuga skills; each skill's SKILL.md inlines the rules critical to its workflow. This section is the canonical source.
 
 1. **CLI-first, no external calls.** Only `tsuga` commands. No curl, no direct API calls, no web browsing during skill execution.
 
@@ -184,7 +186,7 @@ These govern how skills *behave when executing* (distinct from the authoring/rep
 
 9. **Scope containment.** If a request spans multiple skills, address your skill's scope, state what evidence you found, then direct the user to the other skill for the rest.
 
-10. **Stale data acknowledgment.** `monitors list`, `services list`, and `quality-reports list` return config/snapshot state, not live state. State the query time in output. For quality reports, flag if `generatedAt` > 48h ago.
+10. **Stale data acknowledgment.** `monitors list`, `services list`, and `quality-reports list` return config/snapshot state, not live state. State the query time in output. For quality reports, derive the report timestamp as `min(rows.createdAt)` and flag if > 48h ago.
 
 ### Addendum: instrumentation-quality skills
 

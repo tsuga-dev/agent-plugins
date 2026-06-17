@@ -1,6 +1,6 @@
 ---
 name: tsuga-audit-metrics
-description: "Use when asked to review metric design, check metric naming, audit metric quality, or validate a custom metric."
+description: 'Use when asked to review metric design, check metric naming, audit metric quality, or validate a custom metric.'
 ---
 
 # Tsuga: Audit Metrics
@@ -29,7 +29,7 @@ description: "Use when asked to review metric design, check metric naming, audit
 
 5. For code-side audit (instrument type correctness, OTel SDK init, metric view configuration) → `otel-<lang>/references/audit-checklist.md`
 
-6. `tsuga quality-reports list` — check if any rule failures relate to metric naming or instrumentation for this service. Note `generatedAt`; flag if > 48h ago.
+6. `tsuga quality-reports list` (pass `--cluster <id>` in multi-cluster orgs) — flat array of rule-evaluation rows. Filter `.[] | select(.status == "failed")` for failures related to metric naming or instrumentation for this service. Report timestamp = `min(.[].createdAt)`; flag if > 48h ago.
 
 7. **Stop and validate with user.** Before presenting final findings, share preliminary observations: "Here is what I found so far — [summary of naming issues, instrument type concerns, cardinality risks]. Does this match your understanding of how metrics are instrumented in this service?" Adjust findings based on user context before concluding.
 
@@ -47,15 +47,15 @@ Source: OTel specification (https://opentelemetry.io/docs/specs/otel/metrics/sup
 | `{request}` | Request counts |
 Never encode units in the metric name — set the `unit` field instead.
 
-| Rule | Bad example | Good example |
-|---|---|---|
-| No service name in metric name | `web_backend_request_count` | `http.server.request.count` (service identity in `context.service.name`) |
-| No environment/version in metric name | `prod_latency_ms`, `v2_errors` | `http.server.request.duration` |
-| No units in metric name | `latency_ms`, `memory_bytes` | `request.duration` with `unit: ms` |
-| OTel dot notation (not underscores) | `http_server_request_duration` | `http.server.request.duration` |
-| Verb-object pattern | `duration` (missing namespace) | `http.server.request.duration` |
-| Counter must not describe current state | `active_connections` as Counter | `active_connections` as UpDownCounter |
-| Histogram for distributions | `request_duration` as Counter | `request.duration` as Histogram |
+| Rule                                    | Bad example                     | Good example                                                             |
+| --------------------------------------- | ------------------------------- | ------------------------------------------------------------------------ |
+| No service name in metric name          | `web_backend_request_count`     | `http.server.request.count` (service identity in `context.service.name`) |
+| No environment/version in metric name   | `prod_latency_ms`, `v2_errors`  | `http.server.request.duration`                                           |
+| No units in metric name                 | `latency_ms`, `memory_bytes`    | `request.duration` with `unit: ms`                                       |
+| OTel dot notation (not underscores)     | `http_server_request_duration`  | `http.server.request.duration`                                           |
+| Verb-object pattern                     | `duration` (missing namespace)  | `http.server.request.duration`                                           |
+| Counter must not describe current state | `active_connections` as Counter | `active_connections` as UpDownCounter                                    |
+| Histogram for distributions             | `request_duration` as Counter   | `request.duration` as Histogram                                          |
 
 ## GOOD/BAD Examples
 
@@ -80,11 +80,14 @@ Never encode units in the metric name — set the `unit` field instead.
 ### Cardinality Examples
 
 **BAD:** Metric dimension `user_id` (or `user.id`)
+
 ```
 histogram.record(duration, {"user.id": userId, "http.route": "/api/orders"})
 ```
+
 **Why wrong:** `user_id` has unbounded cardinality — one unique value per user → millions of time series.
 **GOOD:** Remove `user.id` from metric dimensions; use it as a span attribute instead:
+
 ```
 histogram.record(duration, {"http.route": "/api/orders"})  // Low-cardinality dims only
 span.setAttribute("user.id", userId)                        // High-cardinality → spans
@@ -98,12 +101,12 @@ span.setAttribute("user.id", userId)                        // High-cardinality 
 
 ## Instrument Type Rules
 
-| Instrument | Correct use |
-|---|---|
-| Counter | Monotonically increasing totals (requests processed, errors, retries) |
-| UpDownCounter | Fluctuating current values (queue depth, active connections, cache size) |
-| Histogram | Distributions — latency, payload size, queue wait time |
-| Observable Gauge | Values sampled at collection time (CPU %, memory usage, thread count) |
+| Instrument       | Correct use                                                              |
+| ---------------- | ------------------------------------------------------------------------ |
+| Counter          | Monotonically increasing totals (requests processed, errors, retries)    |
+| UpDownCounter    | Fluctuating current values (queue depth, active connections, cache size) |
+| Histogram        | Distributions — latency, payload size, queue wait time                   |
+| Observable Gauge | Values sampled at collection time (CPU %, memory usage, thread count)    |
 
 **Detection heuristic (source: CLI):** If a metric's description contains "current", "active", "open", "in-flight", or "pending" AND its type is Counter: likely wrong instrument type.
 
@@ -141,8 +144,8 @@ Metrics audited: <N> | Naming issues: <N> | Instrument type issues: <N> | Cardin
 | <metric.name> | <attr> | >100 (limit reached) | High — possible per-request identifier | tsuga CLI |
 
 ## Quality Report Correlation
-<N> quality rule failures relate to metric instrumentation (report generated: <generatedAt>)
-[If generatedAt > 48h ago: ⚠️ Quality report is stale — results may not reflect current state]
+<N> quality rule failures relate to metric instrumentation (report generated: <min(rows.createdAt)>)
+[If derived timestamp > 48h ago: ⚠️ Quality report is stale — results may not reflect current state]
 
 ## Recommended Actions
 1. Rename <metric.name> to <corrected.name> — eliminates service-identity-in-name violation
@@ -157,6 +160,7 @@ Metrics audited: <N> | Naming issues: <N> | Instrument type issues: <N> | Cardin
 ```
 
 ## Related Skills / Next Steps
+
 - `tsuga-metric-naming-fix` — apply renames found in this audit
 - `tsuga-smoke-test` — verify metrics after fixes
 - `otel-<lang>/references/audit-checklist.md` — code-side audit (instrument type, SDK init, metric views)

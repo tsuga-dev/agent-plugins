@@ -101,12 +101,13 @@ tsuga investigations create -d '{
 ## Quality Reports
 
 ```bash
-tsuga quality-reports list              # get the latest quality report
-tsuga quality-reports list | jq '.report.overallScore'
-tsuga quality-reports list | jq '.report.teamResults[].teamName'
+tsuga quality-reports list                                    # rows for the cluster's latest report
+tsuga quality-reports list --cluster <id>                     # multi-cluster orgs MUST pass --cluster (else 400)
+tsuga quality-reports list | jq '.[] | select(.status=="failed") | {ruleId, owner}'
+tsuga quality-reports list | jq 'group_by(.owner) | map({owner: .[0].owner, score: .[0].reportOverallScore})'
 ```
 
-Key fields: `report.generatedAt`, `report.overallScore`, `report.teamResults[]{teamId, teamName, score, weightedScore, ruleResults[]}`. Generated at least once per 24h. Only supports `list`.
+Returns a flat list of rows (one per persisted rule evaluation). Key fields per row: `id`, `reportId`, `ruleId`, `owner` (team id or absent for global), `status` (`passed`/`failed`/`ignored`), `score` (0..1), `weight`, `reportOverallScore` and `reportTotalWeight` (per-owner aggregates, identical across rows of the same `reportId`), `createdAt`, optional `recommendation` and `examples`. Generated at least once per 24h. Only supports `list`.
 
 ## Services
 
@@ -163,18 +164,18 @@ Output: `{"nodes": [{"serviceName": ...}], "edges": [{"from": <svc>, "to": <svc>
 
 Applies to all `--query` flags and aggregation `filter` fields.
 
-| Syntax                 | Meaning                         | Example                                                          |
-| ---------------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `field:value`          | Exact match                     | `level:ERROR`                                                    |
-| `term1 term2`          | AND (default)                   | `level:ERROR context.service.name:api`                           |
-| `term1 OR term2`       | OR (must be uppercase)          | `level:ERROR OR level:WARN`                                      |
-| `NOT term`             | Negation (uppercase)            | `level:ERROR NOT context.env:staging`                            |
-| `(...)`                | Grouping                        | `(level:ERROR OR level:WARN) context.service.name:api`           |
-| `(field:a OR field:b)` | Multiple values for one field   | `(context.service.name:web-backend OR context.service.name:api)` |
-| `field:*`              | Field exists                    | `trace_id:*`                                                     |
-| `field:[A TO B]`       | Range, inclusive                | `duration:[100 TO 500]`                                          |
-| `field:>N`             | Numeric (also `>=`, `<`)        | `duration:>100`                                                  |
-| `<bare token>`         | Free-text token in log message  | `refused`, `connection refused`, `(timeout OR refused)`          |
+| Syntax                 | Meaning                        | Example                                                          |
+| ---------------------- | ------------------------------ | ---------------------------------------------------------------- |
+| `field:value`          | Exact match                    | `level:ERROR`                                                    |
+| `term1 term2`          | AND (default)                  | `level:ERROR context.service.name:api`                           |
+| `term1 OR term2`       | OR (must be uppercase)         | `level:ERROR OR level:WARN`                                      |
+| `NOT term`             | Negation (uppercase)           | `level:ERROR NOT context.env:staging`                            |
+| `(...)`                | Grouping                       | `(level:ERROR OR level:WARN) context.service.name:api`           |
+| `(field:a OR field:b)` | Multiple values for one field  | `(context.service.name:web-backend OR context.service.name:api)` |
+| `field:*`              | Field exists                   | `trace_id:*`                                                     |
+| `field:[A TO B]`       | Range, inclusive               | `duration:[100 TO 500]`                                          |
+| `field:>N`             | Numeric (also `>=`, `<`)       | `duration:>100`                                                  |
+| `<bare token>`         | Free-text token in log message | `refused`, `connection refused`, `(timeout OR refused)`          |
 
 AND is the default (space-separated terms); OR binds looser than AND. `OR` and `NOT` must be uppercase — lowercase `or`/`not` become literal search terms.
 
@@ -272,7 +273,7 @@ Example — per-second rate of a counter:
 ```
 
 - `timeRange` uses **Unix seconds** (not relative strings like `"-1h"`)
-- On a **multi-cluster tenant**, `aggregation scalar|timeseries` needs a top-level `"clusterId": "<id>"` **in the body** — the global `--cluster` flag and `defaults.cluster` are *ignored* for `aggregation` (every other command honors them). Without it: `400 clusterId must be provided when the organization has multiple clusters`.
+- On a **multi-cluster tenant**, `aggregation scalar|timeseries` needs a top-level `"clusterId": "<id>"` **in the body** — the global `--cluster` flag and `defaults.cluster` are _ignored_ for `aggregation` (every other command honors them). Without it: `400 clusterId must be provided when the organization has multiple clusters`.
 - `dataSource` and `formula` are **body-level** fields; query items do not have `id` or `dataSource`
 - `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 - `groupBy` is at **body level** (not inside query items): `[{"fields": ["field.name"], "limit": N}]`
