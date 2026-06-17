@@ -1,6 +1,7 @@
 # Audit Checklist — Go OTel
 
 > This file covers two audit modes:
+>
 > 1. **Code anti-patterns** (static) — section "Anti-Patterns to Flag"
 > 2. **Cross-signal live audit** (tsuga CLI) — section "Cross-Signal Audit Workflow"
 >
@@ -28,12 +29,12 @@ go list -m go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
 
 Expected minimum versions:
 
-| Module | Minimum |
-|---|---|
-| `go.opentelemetry.io/otel` | v1.x (latest stable) |
-| `go.opentelemetry.io/otel/sdk` | v1.x (latest stable) |
-| `go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc` | v1.x |
-| `go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc` | v1.x |
+| Module                                                              | Minimum              |
+| ------------------------------------------------------------------- | -------------------- |
+| `go.opentelemetry.io/otel`                                          | v1.x (latest stable) |
+| `go.opentelemetry.io/otel/sdk`                                      | v1.x (latest stable) |
+| `go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc`   | v1.x                 |
+| `go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc` | v1.x                 |
 
 Check for module version consistency — `otel`, `otel/sdk`, and `otel/exporters` packages should use the same major version.
 
@@ -156,6 +157,7 @@ tsuga metrics list --filter "service.name=<your-service>"
 ```
 
 If no spans appear:
+
 1. Check `OTEL_EXPORTER_OTLP_ENDPOINT` — for gRPC, do not include `http://`
 2. Verify the collector is reachable: `grpc_cli ls localhost:4317`
 3. Confirm `otel.SetTracerProvider(tp)` is called before any `otel.Tracer()` calls
@@ -179,6 +181,7 @@ tsuga services get <id>
 Capture `sources[]`, `logsCount24h`, `tracesCount24h`, `errorLogsCount24h`, `errorTracesCount24h`.
 
 Classify:
+
 - No signals at all → stop; direct to `otel-instrumentation`
 - Logs only / Traces only / Metrics only → note what's missing; continue what's present
 - All 3 present → continue full audit
@@ -230,20 +233,22 @@ In sampled metric attributes: flag `user.id`, `request.id`, raw URL paths, trace
 ### Step 9 — Quality report
 
 ```bash
-tsuga quality-reports list
+tsuga quality-reports list                        # add `--cluster <id>` in multi-cluster orgs
 ```
 
-Note `generatedAt` — flag as stale if > 48h ago. Note rule failures attributed to this service.
+Returns a flat array of rule-evaluation rows. Filter `.[] | select(.status == "failed")` for rule failures attributed to this service. Report timestamp = `min(.[].createdAt)`; flag as stale if > 48h ago.
 
 ### Step 10 — Source code check (if path provided)
 
 Read SDK init file. Check for:
+
 - `TracerProvider`, `MeterProvider`, `LoggerProvider` initialization
 - Log bridge setup (`otelslog.NewHandler` or `otelzap.NewCore`)
 - Resource attributes set at init (`service.name`, `service.version`, `deployment.environment.name`)
 - Exporter endpoint: **fail** if hardcoded (`WithEndpoint("http://localhost:4317")` in code); **pass** if zero-arg constructor AND `OTEL_EXPORTER_OTLP_ENDPOINT` is in deployment config
 
 If metric creation code is available, check instrument type:
+
 - Description containing "current", "active", "open", "in-flight", or "pending" → must use `UpDownCounter` (not `Counter`)
 - Description containing "duration", "latency", "time", or "size" → must use `Histogram` (not `Counter` or `Gauge`)
 
@@ -300,7 +305,7 @@ service.name: <present/MISSING> | service.version: <present/MISSING>
 Endpoint hardcoded: ✅ no / ❌ yes (file:line) | OTEL_EXPORTER_OTLP_ENDPOINT configured: ✅ / ❌ / ⚠️ not checked
 
 ## Quality Report
-<N rule failures / No failures / ⚠️ Report stale — generated: <generatedAt>>
+<N rule failures / No failures / ⚠️ Report stale — generated: <min(rows.createdAt)>>
 
 ## Recommended Actions (in order of impact)
 1. <highest-impact fix> — run `<specific skill>` for detailed guidance
@@ -310,7 +315,7 @@ Endpoint hardcoded: ✅ no / ❌ yes (file:line) | OTEL_EXPORTER_OTLP_ENDPOINT c
 - Condensed audit: 5-record samples per signal; use tsuga-audit-metrics / tsuga-audit-logs / tsuga-audit-traces for full per-signal analysis
 - Metric check covers spot-check of up to 3 metric names only
 - Source code findings (if any) are from the provided path only
-- Quality report reflects state at generatedAt, not live state
+- Quality report reflects state at the row `createdAt` timestamps, not live state
 ```
 
 ---
