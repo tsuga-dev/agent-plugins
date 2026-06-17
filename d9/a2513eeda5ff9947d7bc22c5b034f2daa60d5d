@@ -1,0 +1,30 @@
+plugins/telemetry/skills/tsuga-audit-metrics/SKILL.md
+  s_74de952e30cff1::t_c2ff561ff61ff6 32
+  s_74de952e30cff1::t_6424dd94967ffe 147-148
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_74de952e30cff1::t_4ce0ac6630ca4f 104-107,110
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_74de952e30cff1::t_dcddb36dedb87f 12-17,21,32-33,39,43-44,51,54,62,65
+AGENTS.md
+  s_74de952e30cff1::t_a62b77dd742b44 189
+plugins/telemetry/skills/otel-go/references/audit-checklist.md
+  s_74de952e30cff1::t_e8fb542f9a2c9d 236,239
+  s_74de952e30cff1::t_e1bda9cf84989f 308
+  s_74de952e30cff1::t_ae9cec2fec5022 318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "d9a2513eeda5ff9947d7bc22c5b034f2daa60d5d",
+  "prompts": {},
+  "sessions": {
+    "s_74de952e30cff1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12ade4dc-ccb1-4027-a46d-31095da5bf58",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
