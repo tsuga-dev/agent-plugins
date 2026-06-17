@@ -1,0 +1,19 @@
+README.md
+  s_803562b6aa21c7::t_29eb2a920750b2 15-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "09645771c6a06d0b514bf4c5ff3adecb088ae7d0",
+  "prompts": {},
+  "sessions": {
+    "s_803562b6aa21c7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04cb5c42-b310-4ebc-8f93-cdf67c411208",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
