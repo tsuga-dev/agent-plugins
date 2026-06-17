@@ -1,0 +1,29 @@
+plugins/telemetry/skills/tsuga-smoke-test/SKILL.md
+  s_a70930e5af48c9::t_58f8f5524eea4a 27-28,31-32
+  s_a70930e5af48c9::t_1e6e0848125be5 21-22,24-25
+  s_a70930e5af48c9::t_bb446ed0532321 20,26
+  s_a70930e5af48c9::t_25090b624d9258 23,29-30
+plugins/telemetry/skills/tsuga-debug-no-data/SKILL.md
+  s_a70930e5af48c9::t_1e6e0848125be5 24-25,29-30
+  s_a70930e5af48c9::t_25090b624d9258 26-28
+  s_a70930e5af48c9::t_bb446ed0532321 23
+plugins/telemetry/skills/tsuga-audit-metrics/SKILL.md
+  s_a70930e5af48c9::t_33e0c707f5816e 34-38
+  s_a70930e5af48c9::t_1e6e0848125be5 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "d2e3405b6001c6d2a4b70200a6b56db015f4581b",
+  "prompts": {},
+  "sessions": {
+    "s_a70930e5af48c9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecf2e-6ab9-7af1-bb98-9afc15cb6c4f",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}

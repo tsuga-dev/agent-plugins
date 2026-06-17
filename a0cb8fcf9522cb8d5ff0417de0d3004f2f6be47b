@@ -1,0 +1,40 @@
+plugins/tsuga/skills/tsuga-cli/references/playbooks/find-owner-and-context.md
+  s_a70930e5af48c9::t_bb446ed0532321 18
+  s_a70930e5af48c9::t_735acead4d86b3 19-27
+plugins/tsuga/skills/tsuga-cli/references/kubectl-translator.md
+  s_a70930e5af48c9::t_bb446ed0532321 10
+  s_a70930e5af48c9::t_735acead4d86b3 11-17
+plugins/tsuga/skills/tsuga-cli/references/aws-translator.md
+  s_a70930e5af48c9::t_bb446ed0532321 5
+  s_a70930e5af48c9::t_735acead4d86b3 6-14
+plugins/tsuga/skills/tsuga-cli/references/azure-translator.md
+  s_a70930e5af48c9::t_bb446ed0532321 5
+  s_a70930e5af48c9::t_735acead4d86b3 6-13
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_a70930e5af48c9::t_33e0c707f5816e 46-73
+  s_a70930e5af48c9::t_1e6e0848125be5 3,35-36,38-39,42-45
+  s_a70930e5af48c9::t_25090b624d9258 40-41
+  s_a70930e5af48c9::t_bb446ed0532321 37
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_a70930e5af48c9::t_33e0c707f5816e 14-18
+  s_a70930e5af48c9::t_1e6e0848125be5 19-21
+plugins/tsuga/skills/tsuga-cli/references/gcp-translator.md
+  s_a70930e5af48c9::t_735acead4d86b3 6-13
+  s_a70930e5af48c9::t_bb446ed0532321 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "a0cb8fcf9522cb8d5ff0417de0d3004f2f6be47b",
+  "prompts": {},
+  "sessions": {
+    "s_a70930e5af48c9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecf2e-6ab9-7af1-bb98-9afc15cb6c4f",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
