@@ -1,0 +1,36 @@
+plugins/tsuga/skills/incident-investigation/SKILL.md
+  s_db8301a62a5375::t_218234744ef518 135-136
+  s_db8301a62a5375::t_b560175c1e7845 337-339
+  s_db8301a62a5375::t_24d8e4c5daf022 323
+  s_db8301a62a5375::t_66d45366c502f3 79,83,90
+  s_db8301a62a5375::t_e01e1d4d1d29cf 14
+  s_db8301a62a5375::t_3b759bdb837f4e 8
+  s_db8301a62a5375::t_ad5a63faa20e25 188
+  s_db8301a62a5375::t_b20fc814715a6e 3
+  s_db8301a62a5375::t_12c839cef285e7 283-288
+  s_db8301a62a5375::t_98756f77d4b1c3 245,247,249-250
+  s_db8301a62a5375::t_fc7119c5f41ed2 15-16
+  s_db8301a62a5375::t_d72a012b1222e1 329
+plugins/tsuga/skills/incident-investigation/references/branch-telemetry-sweep.md
+  s_db8301a62a5375::t_55e95e0a055f18 1-75
+plugins/tsuga/skills/incident-investigation/references/investigation-record.md
+  s_db8301a62a5375::t_49c8b218546dc4 65-71
+plugins/tsuga/skills/incident-investigation/references/branch-change-correlation.md
+  s_db8301a62a5375::t_b5e09293feed3b 1-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "6856ab2f6b081fa67dc7661b5ebe52bb7177e25c",
+  "prompts": {},
+  "sessions": {
+    "s_db8301a62a5375": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "00348c89-8e55-483e-8128-60926b371a96",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
