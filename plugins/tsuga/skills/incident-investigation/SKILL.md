@@ -1,19 +1,19 @@
 ---
 name: incident-investigation
-description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1 through P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches — telemetry sweep (`tsuga` CLI), change correlation (git log / gh pr), analogue search (`$incident-history`), codebase-grep (local repos), challenger review — while tracking hypotheses and evidence gates. Classifies the investigation mode (known-symptom, novel-symptom, broad-degradation, cheat-check) up front so the branch plan matches the scope. Produces an operator-ready verdict with cited evidence, a time-bounded `Latest-cited-evidence:` trailer, and explicit 'insufficient evidence' output when probes don't converge — plus, by default, two durable deliverables: a structured Tsuga investigation record and a proofs dashboard (one graph per validated claim)."
+description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1–P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches — telemetry sweep (`tsuga` CLI), change correlation (git / gh), analogue search, codebase-grep, challenger review — tracking hypotheses behind evidence gates, and produces an operator-ready verdict with cited evidence plus two durable deliverables by default: a Tsuga investigation record and a proofs dashboard."
 ---
 
 # Incident Investigation
 
-Primary entry point. Read-only for everything **except the two standing deliverables** — the Tsuga investigation record and the proofs dashboard ([references/investigation-record.md](./references/investigation-record.md)) — which every concluded investigation publishes by default. Skip one only when: the user explicitly opted out; the verdict is a fast-path `healthy`/`validation_noise` close; the key lacks permission (403); or — rarely — your own judgment says the artifact adds nothing, and you name that reason in the verdict's `Deliverables:` line. All other mutations require an explicit user ask.
+Primary entry point. Read-only for everything **except the two standing deliverables** — the Tsuga investigation record and the proofs dashboard ([references/investigation-record.md](./references/investigation-record.md)) — which every concluded investigation publishes by default (skip conditions in step 10). All other mutations require an explicit user ask.
 
 ## How to read this skill
 
 This skill covers the full investigation loop — orchestrator-level workflow AND the detailed procedures for each parallel branch. Read selectively based on your role:
 
-- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-10) → Output contract → Evidence rules → Guardrails, plus [references/investigation-record.md](./references/investigation-record.md) for the two durable deliverables you publish at step 10. You spawn subagents at step 5 and synthesize their outputs at step 8/9. You do NOT need to re-read the full Branch procedures inline; the subagents own those.
-- **Telemetry-sweep subagent:** jump to `## Branch: telemetry sweep`. Read its Procedure + Branch output + Branch guardrails. Skip everything above (workflow, ledger, gate, verdict) and the Change-correlation branch — those aren't your job.
-- **Change-correlation subagent:** jump to `## Branch: change correlation`. Same — read only that section.
+- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-10) → Output contract → Evidence rules → Guardrails, plus [references/investigation-record.md](./references/investigation-record.md) for the two durable deliverables you publish at step 10. You spawn subagents at step 5 and synthesize their outputs at step 8/9. The branch procedures live in their own reference files; the subagents own those — you don't read them.
+- **Telemetry-sweep subagent:** read [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — that file is everything you need. Skip the workflow, ledger, gate, verdict, and the change-correlation branch.
+- **Change-correlation subagent:** read [references/branch-change-correlation.md](./references/branch-change-correlation.md) — that file is yours.
 - **Codebase-grep subagent:** you're spawned with one verbatim signal (error string, metric name, log pattern). Grep the mounted codebases under `{{CODEBASES_DIR}}` for that literal string; return the `file:line` and ~5 lines of surrounding context (the enclosing function + nearby conditions that trigger the emission). Nothing else. You do not interpret — you locate.
 - **Challenger subagent:** you're spawned with the leading hypothesis and the current evidence. Name the single piece of evidence that would most cleanly falsify it, and say whether it's been checked. Do not build competing hypotheses; just falsify.
 
@@ -76,15 +76,18 @@ Fast-path triage is cheap: one probe, one classification, publish. Silence after
 
 ### 2. Build case board
 
-Track five fields, separate:
+Track six fields, separate:
 
 - reported symptom
 - user-visible impact
+- mitigation status — is impact still ongoing, and what (if anything) has already stopped it?
 - human hints already present
 - recent change candidates
 - missing facts
 
 Do not let `failing subsystem` silently replace `root cause`.
+
+For an active incident with ongoing impact, mitigation is the first question, not the last. Identify the fastest action that restores service — rollback, failover, scale, flag flip — and surface it early, in parallel with the RCA; never gate stopping the bleeding on a completed root cause. Mitigation actions postdate `declared_at`; that does not violate Time discipline — they document the response and never feed the causal chain.
 
 Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first (`tsuga config` — right key, right cluster; see the hygiene notes in [references/investigation-record.md](./references/investigation-record.md)):
 
@@ -129,8 +132,8 @@ If scope names a specific tech (Postgres, Redis, Kafka, …), the telemetry bran
 
 Disjoint goals, run concurrently. Each branch is its own subagent; do not serialize.
 
-- **telemetry sweep** — Tsuga evidence, monitor anchor, config-threshold preflight, surface verbatim signals. Full procedure in [Branch: telemetry sweep](#branch-telemetry-sweep) below.
-- **change correlation** — local git + `$gh`, strict mechanism fit (diff must touch emitter line). Full procedure in [Branch: change correlation](#branch-change-correlation) below.
+- **telemetry sweep** — Tsuga evidence, monitor anchor, config-threshold preflight, surface verbatim signals. Procedure: [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md).
+- **change correlation** — local git + `$gh`, strict mechanism fit (diff must touch emitter line). Procedure: [references/branch-change-correlation.md](./references/branch-change-correlation.md).
 - **history** — `$incident-history` (prior incident archive mining, if mounted).
 - **codebase-grep** — the emphasis branch. For every distinct verbatim signal the telemetry sweep surfaces (error string, log pattern, metric name, monitor filter), spawn **one subagent per signal** that greps the mounted codebases under `{{CODEBASES_DIR}}` to find the `file:line` where that signal is emitted. Output: file path, surrounding function context, nearby conditions that trigger the emission. 5 signals → 5 parallel greps — this scales linearly and each one returns a sharp pin, not a vague area.
 - **challenger** — attack the leading hypothesis. Its job is to name the single piece of evidence that would falsify the leader and say whether it's been checked.
@@ -182,7 +185,7 @@ If any answer is no AND the missing check is cheap (one more `aggregation`, `log
 
 If the missing check is expensive or the signal is genuinely unreachable, state that explicitly in `Open unknowns` and downgrade verdict to `most likely` or `insufficient evidence`.
 
-If you opened an investigation record in step 2, push a progress update at each gate pass — current leading hypothesis, what was just checked, what's next:
+If you opened an investigation record in step 2, push a progress update at each gate pass — current leading hypothesis, what was just checked, what's next, and (for an active incident) the mitigation status:
 
 ```bash
 tsuga investigations update <id> -d '{"name": "<same name>", "owner": "<owning-team-id>", "contentMd": "## Investigating\n\n<current state>"}'
@@ -239,161 +242,12 @@ Verdict assigned → publish the two durable artifacts. Full spec and templates:
 
 These ship by default — do not ask permission for them. The only reasons to skip: the user explicitly said not to; the verdict is a fast-path `healthy`/`validation_noise` close; the key lacks the permission (403); the verdict has zero telemetry claims to graph (dashboard only); or — rarely — your own judgment that the artifact adds nothing. Whichever applies, name it in the chat verdict's `Deliverables:` line; an unexplained skip is a contract violation.
 
-## Branch: telemetry sweep
+## Branch procedures (subagent references)
 
-**Subagent scope:** if you were spawned as a telemetry-sweep subagent, this section + its Procedure + Branch output + Branch guardrails is everything you need. You don't synthesize a verdict; you surface facts + verbatim signals for codebase-grep + a completeness-check report.
+Each parallel branch from step 5 has its own procedure file. The orchestrator does not read these inline — it spawns a subagent and points it at the file:
 
-Read-only evidence gathering from Tsuga. This branch does not declare root cause on its own — it produces facts the orchestrator synthesizes.
-
-### Inputs
-
-Time window, scope hint (service / cluster / env / customer / monitor), reported symptom. Missing scope → return only the discovery steps needed to resolve it.
-
-### Procedure
-
-1. **Monitor anchor (if the case cites a monitor).** `tsuga monitors get <monitor-id>` FIRST. Read the monitor's filter, aggregation, threshold, and groupBy — this IS the exact telemetry shape that crossed. Re-run the same query against the incident window AND a control window (same weekday + hour, 7 days earlier). Record the crossed value, the control value, and the ratio.
-2. **Normalize scope.** `tsuga services list|get`. Capture canonical name, env, team, versions, sources, 24h log/trace counts.
-3. **Normalize session.** Check `tsuga config` (active key, default cluster). Always set explicit `--from`, `--to`, `--max-results`. For `tsuga aggregation`, convert windows to epoch seconds; on multi-cluster orgs include `"clusterId"` in the body.
-4. **Load tech knowledge.** If scope names a known tech (Postgres, Redis, Kafka, …), load the matching `$knowledge-technology` reference to target the sweep.
-5. **Config-threshold preflight (capacity-shaped symptoms).** If the reported symptom is capacity-shaped — queue lag, `CrashLoopBackOff`, `OOMKilled`, throttling, "too many", "insufficient" — spend one probe asking _"is there a single config knob that would fix this?"_ before any elaborate change-correlation. Grep mounted codebases / helm / Pulumi for patterns like `*BatchSize`, `*PoolSize`, `*Concurrency`, `*MaxConnections`, `*FailureThreshold`, `*InFlightBatches`, `*MemPoolSize` scoped to the affected service.
-6. **Evidence sweep.** Prefer in order:
-   - `logs new-error-patterns` / `logs error-pattern-increases` (when team scope exists)
-   - `logs patterns` to cluster failure shapes
-   - `logs search` only after pattern discovery
-   - `traces search` for exact failing spans
-   - `aggregation scalar|timeseries` for counts, rates, comparisons
-   - `monitors list|get` for signal semantics (not live truth)
-   - `dashboards list|get` / `quality-reports list` as supporting context only
-7. **Compare.** Bad window vs good control window. Affected entity vs sibling healthy entity when possible.
-8. **Surface verbatim signals for codebase-grep.** As the sweep produces error strings, log patterns, metric names, and monitor filters, emit them as a distinct list at the end of the output — one per line. The orchestrator will spawn a codebase-grep subagent per entry to pin each signal to its emitting `file:line`. Do not try to explain what a signal _means_ until its emitting code is found.
-9. **Write evidence matrix.** Four columns: symptom evidence | subsystem evidence | mechanism clues | unknowns. If evidence only supports subsystem diagnosis, say so.
-10. **Sweep completeness check.** Before returning, tick these boxes — if any is unchecked and cheap to resolve, do it now:
-    - [ ] Service metadata resolved (canonical name, team, env, 24h counters)
-    - [ ] Monitor's own query pulled + replayed against bad + control windows (if case came from a monitor)
-    - [ ] Config-threshold preflight done (for capacity-shaped symptoms)
-    - [ ] Error-log patterns scanned (`new-error-patterns` OR `patterns`)
-    - [ ] Primary metric aggregated in bad window AND control window
-    - [ ] At least one trace from the failing path inspected (when traces exist)
-    - [ ] Recent-deploy correlation asked (even if the answer is "no data here — defer to change branch")
-    - [ ] Verbatim signals surfaced for the codebase-grep branch
-
-### No-data honesty
-
-A metric or log pattern being absent is NOT equivalent to its value being zero. Causes of absence include receiver scope / permission issues, feature not enabled, instrumentation gap, or scrape failure.
-
-When you checked and found nothing, say which: `(absent)` — did not appear in window `|` `(not instrumented)` — scope lacks the receiver `|` `(denied)` — permission error `|` `(empty)` — query ran, returned 0 rows. Never report silent absence as "metric is zero" in a Validated claim.
-
-### Branch output
-
-```
-Observed symptom: <one sentence>
-Monitor anchor: <monitor id + filter + threshold, or (none) if case didn't cite a monitor>
-Confirmed failing subsystem: <one sentence, or (unknown)>
-Signals that support it:
-  - <fact with exact value> [evidence: tsuga_logs | tsuga_traces | tsuga_aggregation | tsuga_monitors | service_metadata]
-Signals that do not yet support causality:
-  - <what you checked that was silent>
-Control-window comparison: <bad vs good: counts / rates / ratio, or (skipped) with reason>
-Verbatim signals for codebase-grep:
-  - "exact error string 1"
-  - "exact error string 2"
-  - metric.name.to_grep
-  - log pattern
-Config-threshold preflight result: <summary, or (N/A — non-capacity symptom)>
-Best next non-Tsuga check: <one action, or (none)>
-```
-
-Every claim carries `[evidence: …]`. No tag = hypothesis, belongs in the non-causal section.
-
-### Branch guardrails
-
-- `metrics list|get` is metadata. Use `aggregation` for values.
-- Monitor definitions are clues, not live truth.
-- Do not claim deploy or config causality from Tsuga alone.
-- Exact counts and windows > prose summaries.
-- Stop at `symptom diagnosis only` when you can't tie the subsystem to a trigger.
-
-More detail on `tsuga` command patterns: [references/tsuga-rules.md](./references/tsuga-rules.md).
-
-## Branch: change correlation
-
-**Subagent scope:** if you were spawned as a change-correlation subagent, this section is yours. Don't assign verdicts or synthesize root causes — produce the change timeline + candidate classifications (`mechanism_confirmed` / `mechanism_plausible` / `area_only` / `ruled_out`) for the orchestrator.
-
-Answer: what changed, was it deployed, and could it plausibly cause the symptom?
-
-### Inputs
-
-- incident window
-- at least one repo slug or local repo path. The container mounts its codebases at `{{CODEBASES_DIR}}/` — check there first for subdirectories (each is a git repo you can inspect with `git log`, `git diff`, `git blame`).
-
-### Time-bound rule (hard)
-
-**Nothing past `declared_at` is admissible.** Restrict every `git log`, `git show`, and `gh pr` call to strictly-before the incident start. Every shell you run in this branch must include the time bound:
-
-- `git log --until="$DECLARED_AT" ...`
-- `git log --before="$DECLARED_AT" ...`
-- `gh pr list --search "merged:<$DECLARED_AT"`
-
-A post-incident PR titled "Fix <exact symptom>" is the answer key leaking backward — do not use it, do not quote it, do not let it validate your leader. If you see one anyway (because a broad query returned it), drop it and rerun with the `--until` bound. Violating this invalidates the verdict.
-
-### Procedure
-
-1. **Map repos.** Case manifest > local paths > git remotes. Prioritize repos containing the affected service, cluster config, or incident hint.
-2. **Collect the emitting `file:line` pins from codebase-grep.** The orchestrator spawns codebase-grep subagents for every verbatim signal in the telemetry output. Their results (one `file:line` per signal) are your highest-leverage inputs — each tells you exactly which source file a PR would need to touch to be a real candidate.
-3. **Local git first — time-bounded.** Commits strictly before `declared_at`, files changed in config / helm / infra / auth / feature-flag / routing paths. Dirty working tree = not a safe proxy for the incident window. For each `file:line` from step 2, run `git log -L <line>,<line>:<file> --until=<declared_at>` to see which commits modified that specific line before the incident started.
-4. **Then `$gh` — time-bounded.** Workflow runs, merged PRs, releases, commits, deployments with `merged:<<declared_at>` / `created:<<declared_at>` filters. A PR is a candidate only when it merged BEFORE `declared_at` AND a deploy completed between its merge and the incident start.
-5. **Mechanism fit** per candidate — the strict version:
-   - Does the PR's diff touch the `file:line` that emits the observed signal? **If no → not a candidate**, regardless of timing.
-   - If yes: does the diff change the _condition that triggers emission_ or the _value being emitted_? Quote the relevant lines.
-   - Does the timing align (merge → deploy → incident start)?
-   - Is there a faster revert or verification step?
-6. **Classify each candidate** as one of:
-   - `mechanism_confirmed` — diff → emitter → observation traces cleanly.
-   - `mechanism_plausible` — diff touches nearby code that could plausibly affect the observation; not directly on the emitter line.
-   - `area_only` — diff is in the right repo / service but doesn't touch the emitter.
-   - `ruled_out` — wrong surface or wrong timing.
-
-### Branch output
-
-```
-Most relevant changes:
-  - <PR/SHA/tag> [evidence: gh_pr | gh_run | gh_release | gh_api | local_git]
-    emitting signal: "<verbatim error/metric>"
-    emitting file:line: <path>:<line>
-    diff touches emitter line?: yes | no
-    classification: mechanism_confirmed | mechanism_plausible | area_only | ruled_out
-Strongest causal candidate:
-  <change> — timestamp | artifact | surface | deploy status (deployed | merged only) | trace: diff→emitter→observation
-Changes ruled out:
-  - <change> — why it doesn't fit (wrong file, wrong surface, wrong timing, not deployed)
-Best verification or rollback step:
-  <concrete command or action>
-```
-
-Deploy status unknown? Say so explicitly and lower candidate confidence.
-`area_only` classification? Say so explicitly — don't promote to "strongest candidate" without a mechanism trace.
-
-### No-data fallback
-
-If no repos are mounted (`ENABLE_CODEBASES=0`, no paths given) AND `$gh` is unavailable or returns nothing useful:
-
-Return exactly:
-
-```
-Most relevant changes: (none — no repo / gh access)
-Strongest causal candidate: (unavailable)
-Best verification or rollback step: Operator should check deploy timestamps and config-change audit out-of-band.
-```
-
-Do not infer changes from telemetry alone. Do not cite PRs / SHAs / file paths that were not actually retrieved.
-
-### Branch guardrails
-
-- `merged` ≠ `deployed`.
-- No blame without a traced mechanism: `diff → emitter → observation`. "Area match" is not a mechanism.
-- Current checkout ≠ incident-window state.
-- File paths, SHAs, PR numbers, run URLs over vague prose.
-- Never skip codebase-grep. If the orchestrator didn't spawn it, spawn it yourself for the signals you're trying to explain before proposing a PR candidate.
+- **telemetry sweep** → [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — Tsuga evidence, monitor anchor, config-threshold preflight, verbatim-signal surfacing, completeness check.
+- **change correlation** → [references/branch-change-correlation.md](./references/branch-change-correlation.md) — time-bounded git + `$gh`, strict `diff → emitter → observation` mechanism fit, candidate classification.
 
 ## Output contract
 
@@ -426,10 +280,12 @@ Alternatives considered:
 What changed:
 - <timestamp | repo | artifact type | surface | fit>
 
-Remediation:
-  Stop the bleeding: <fastest restore action, or (none needed)>
-  Likely root fix: <durable fix>
-  Verify before acting: <confirm fix addresses root cause, not symptom>
+Mitigation & action items:
+  Status: <mitigated | not yet mitigated | none needed> — <what restored service, or why impact is still ongoing>
+  Mitigation (stop the bleeding): <fastest action that restores service before the cause is fixed — rollback, failover, scale, flag flip; or (none needed)>
+  Root fix: <durable change that removes the cause>
+  Follow-ups: <preventive work — monitor, runbook, test; or (none)>
+  Verify: <observable signal that proves the fix addressed the cause, not just quieted the symptom>
 
 Open unknowns:
 - <what you couldn't answer + what would unblock it>
@@ -464,13 +320,13 @@ Beta — the API will likely change. Any 403 means the key lacks the `investigat
 
 ## Guardrails
 
-- **Record + dashboard are deliverables, not extras.** Publishing the investigation record and the proofs dashboard is the default close-out (step 10); skipping either requires a named reason in the verdict — user opt-out, fast-path healthy close, 403, nothing to graph, or a stated judgment call (rare).
+- **Record + dashboard are deliverables, not extras.** Default close-out (step 10); skipping either needs a named reason in the verdict's `Deliverables:` line.
 - Classify task before triage.
 - Ask `what changed?` early.
 - Human hints before ambient telemetry noise.
 - Separate symptom / subsystem / trigger.
 - Preserve uncertainty when evidence is thin.
-- `merged` ≠ `deployed`. `subsystem` ≠ `root cause`. `symptom` ≠ `trigger`.
+- `merged` ≠ `deployed`. `subsystem` ≠ `root cause`. `symptom` ≠ `trigger`. `mitigated` ≠ `fixed` — a restored service is not a removed cause; record the mitigation and keep the root fix open.
 - **Raw signal overrides analogue.** When a prior-incident analogue suggests a cause but the current case's literal error string / metric shape contradicts it, trust the literal signal. Same bug class ≠ same bug instance.
 - **Every verbatim signal gets a codebase pin** before it feeds into change-correlation. No pin → don't blame a PR yet.
 
@@ -478,6 +334,9 @@ Beta — the API will likely change. Any 403 means the key lacks the `investigat
 
 Load when needed:
 
+- [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — telemetry-sweep subagent procedure
+- [references/branch-change-correlation.md](./references/branch-change-correlation.md) — change-correlation subagent procedure
+- [references/investigation-record.md](./references/investigation-record.md) — durable deliverables (record + proofs dashboard) spec + templates
 - [references/case-manifest.md](./references/case-manifest.md) — JSON shape for structured case input
 - [references/playbooks/](./references/playbooks/) — domain disambiguation guides
 - [references/tsuga-rules.md](./references/tsuga-rules.md) — `tsuga` command patterns for the telemetry branch

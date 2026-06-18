@@ -62,9 +62,13 @@ Numbered (plural — avoid single-root-cause framing). Each carries:
 file:line pins · *Verified:* how it was confirmed [evidence: tag].
 
 ## Mitigation & action items
-One line for what was done during the incident (or "none required").
-| # | Action | Owner | Ticket | Status |
-Owner = team, not person. Ticket "—" until filed.
+**Mitigation:** what stopped the bleeding during the incident — the action, when it
+took effect, and whether it's temporary (cause still live) or also the durable fix.
+"None required" if impact self-resolved or was never user-visible.
+
+Then the durable corrective + preventive follow-ups:
+| # | Action | Type | Owner | Ticket | Status |
+Type = root-fix / preventive. Owner = team, not person. Ticket "—" until filed.
 End with **Verify fixes:** the observable signal that proves each fix worked.
 
 ## Open questions
