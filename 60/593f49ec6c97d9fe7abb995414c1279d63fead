@@ -1,0 +1,19 @@
+plugins/telemetry/skills/otel-collector/SKILL.md
+  s_d6d1ef2268c41b::t_40a23ae99d220a 3,6,8,24-25,35,47,51-52,54-64,71,79,85,87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "60593f49ec6c97d9fe7abb995414c1279d63fead",
+  "prompts": {},
+  "sessions": {
+    "s_d6d1ef2268c41b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edefd-5e93-7ac2-b45f-4e926d389f65",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
