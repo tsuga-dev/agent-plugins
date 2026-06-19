@@ -1,0 +1,21 @@
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_6c82b49119c1fe::t_a9b2d78d05636b 8,10,14,16-17,30,32,34,36-39,41,43-48,50,52-54,56,58,60-64,68,70,76,86,88-92,94,103,112,114,116-121,123,125,127-129,131,133,135-138,140,142-146,149,151-154,156,158-160
+  s_6c82b49119c1fe::t_d5ac41026ed720 12
+  s_6c82b49119c1fe::t_30865f1ae09de3 18-28,35,73,79-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "33d9bc747d79218a25ea4354841d1049da1a62c2",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
