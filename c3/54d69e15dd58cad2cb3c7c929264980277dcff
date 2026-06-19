@@ -1,0 +1,23 @@
+plugins/telemetry/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_a9b2d78d05636b 4
+.claude-plugin/marketplace.json
+  s_6c82b49119c1fe::t_a9b2d78d05636b 9
+plugins/tsuga/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_a9b2d78d05636b 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "c354d69e15dd58cad2cb3c7c929264980277dcff",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
