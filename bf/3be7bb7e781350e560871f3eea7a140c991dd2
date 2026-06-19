@@ -1,0 +1,48 @@
+plugins/telemetry/skills/otel-cpp/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 6,8,10,12,14,16-18,20,22-33,35,37-39,41,43,45-50,52,54,56-58,60,62,64-69,71,73-76,78,80-82
+plugins/telemetry/skills/otel-ruby/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 6,8,10,12,14-50,54-82
+plugins/telemetry/skills/otel-go/SKILL.md
+  s_6c82b49119c1fe::t_a9b2d78d05636b 6,8,10,14,16,18,20,22-23,35,37,39,41,43,45-51,53,55,57-59,61,63,65-70,72,74-77,79,81-83
+  s_6c82b49119c1fe::t_d5ac41026ed720 12
+  s_6c82b49119c1fe::t_30865f1ae09de3 17,24-33,38
+plugins/telemetry/skills/otel-dotnet/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 6,8,10,12-50,54-82
+plugins/telemetry/skills/otel-java/SKILL.md
+  s_6c82b49119c1fe::t_d5ac41026ed720 12
+  s_6c82b49119c1fe::t_a9b2d78d05636b 6,8,10,14-16,18-23,34-37,39-50,54-82
+  s_6c82b49119c1fe::t_30865f1ae09de3 17,24-33,38
+plugins/telemetry/skills/otel-python/SKILL.md
+  s_6c82b49119c1fe::t_30865f1ae09de3 17,24-33,38
+  s_6c82b49119c1fe::t_a9b2d78d05636b 6,8,10,14,16,18,20,22-23,35,37,39,41,43,45-50,52,54,56-58,60,62-78,80-82
+  s_6c82b49119c1fe::t_d5ac41026ed720 12
+plugins/telemetry/skills/otel-nodejs/SKILL.md
+  s_6c82b49119c1fe::t_d5ac41026ed720 12-13
+  s_6c82b49119c1fe::t_30865f1ae09de3 17,24-33,38
+  s_6c82b49119c1fe::t_a9b2d78d05636b 6,8,10,14-16,18-23,34-37,39-50,54-82
+plugins/telemetry/skills/otel-instrumentation/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 28-32,80-84
+  s_6c82b49119c1fe::t_a9b2d78d05636b 6,8,10,14,16,18,20-23,43-62,64,66-72,74,76-79,85-88,90,92,94,96-99,101,103-107,109,111-113,115,117-123,126,128-131,135-137
+  s_6c82b49119c1fe::t_30865f1ae09de3 17,24-27,33-42
+  s_6c82b49119c1fe::t_d5ac41026ed720 12
+plugins/telemetry/skills/otel-php/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 6,8,10,12-54,58-86
+plugins/telemetry/skills/otel-rust/SKILL.md
+  s_6c82b49119c1fe::t_771539f37591ea 6,8,10,12,14-50,54-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "bf3be7bb7e781350e560871f3eea7a140c991dd2",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
