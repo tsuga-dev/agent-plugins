@@ -1,0 +1,38 @@
+plugins/telemetry/skills/otel-instrumentation/SKILL.md
+  s_6c82b49119c1fe::t_21c6b1a6de394a 12,17,24-32,38-50
+plugins/telemetry/skills/otel-collector/SKILL.md
+  s_6c82b49119c1fe::t_21c6b1a6de394a 12,18-27,32
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_6c82b49119c1fe::t_d93b5c7664f766 72,78-80
+  s_6c82b49119c1fe::t_2838497fa1dfc8 12,18-30
+plugins/telemetry/skills/tsuga-audit-telemetry-quality/SKILL.md
+  s_6c82b49119c1fe::t_2838497fa1dfc8 19,22-29
+.claude-plugin/marketplace.json
+  s_6c82b49119c1fe::t_4405bc9286e441 9
+plugins/telemetry/skills/tsuga-debug-telemetry-ingestion/SKILL.md
+  s_6c82b49119c1fe::t_2838497fa1dfc8 20,23-29
+plugins/telemetry/skills/signal-choice-advisor/SKILL.md
+  s_6c82b49119c1fe::t_21c6b1a6de394a 12,18-20
+plugins/tsuga/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_4405bc9286e441 4
+plugins/telemetry/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_4405bc9286e441 4
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_6c82b49119c1fe::t_4405bc9286e441 72,461
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "7e542d19495bf2271eced34a137779825f427733",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
