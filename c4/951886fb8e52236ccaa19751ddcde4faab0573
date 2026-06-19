@@ -1,0 +1,35 @@
+plugins/telemetry/skills/otel-instrumentation/references/checklist.md
+  s_6c82b49119c1fe::t_a9a4db53c7d820 50
+plugins/telemetry/skills/tsuga-debug-no-data/SKILL.md
+  s_6c82b49119c1fe::t_d668183864249b 82,108,169,171
+plugins/telemetry/skills/otel-python/references/audit-checklist.md
+  s_6c82b49119c1fe::t_23cc58da780fc9 172,180,192,200
+plugins/telemetry/skills/otel-go/references/audit-checklist.md
+  s_6c82b49119c1fe::t_23cc58da780fc9 8,219
+plugins/telemetry/skills/otel-instrumentation/references/otel-reference.md
+  s_6c82b49119c1fe::t_23cc58da780fc9 38,171
+plugins/telemetry/skills/tsuga-audit-logs/SKILL.md
+  s_6c82b49119c1fe::t_d668183864249b 8,33,174,176
+plugins/telemetry/skills/tsuga-debug-missing-trace-propagation/SKILL.md
+  s_6c82b49119c1fe::t_d668183864249b 64,79,82-83,142,145
+plugins/telemetry/skills/otel-instrumentation/references/k8s-deployment.md
+  s_6c82b49119c1fe::t_23cc58da780fc9 54
+plugins/telemetry/skills/tsuga-smoke-test/SKILL.md
+  s_6c82b49119c1fe::t_d668183864249b 106-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "c4951886fb8e52236ccaa19751ddcde4faab0573",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
