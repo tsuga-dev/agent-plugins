@@ -1,0 +1,25 @@
+plugins/telemetry/skills/tsuga-audit-telemetry-quality/SKILL.md
+  s_6c82b49119c1fe::t_de28a8030a71b2 13,38-39,85
+  s_6c82b49119c1fe::t_0c3aa3fc02c563 1-12,14-18,20,22-23,32-37,40-84,86-112
+  s_6c82b49119c1fe::t_9d2c9e01915149 19,21,24-31
+plugins/telemetry/skills/tsuga-debug-telemetry-ingestion/SKILL.md
+  s_6c82b49119c1fe::t_0c3aa3fc02c563 1-13,15-19,21,23-24,32-37,40-47,50-76,78-104
+  s_6c82b49119c1fe::t_de28a8030a71b2 14,38-39,48-49,77
+  s_6c82b49119c1fe::t_9d2c9e01915149 20,22,25-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "39a88ed4072c6ba502aeb945e16f05197aeeccfa",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
