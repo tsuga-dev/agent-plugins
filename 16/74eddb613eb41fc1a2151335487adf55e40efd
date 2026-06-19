@@ -1,0 +1,73 @@
+plugins/tsuga/skills/incident-investigation/references/investigation-record.md
+  s_db8301a62a5375::t_49c8b218546dc4 65-71
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_74de952e30cff1::t_4ce0ac6630ca4f 144-147,150
+README.md
+  s_803562b6aa21c7::t_29eb2a920750b2 15-30
+plugins/tsuga/skills/incident-investigation/references/branch-telemetry-sweep.md
+  s_db8301a62a5375::t_55e95e0a055f18 1-75
+.claude-plugin/marketplace.json
+  s_db8301a62a5375::t_d12c2b1345aea5 12
+plugins/telemetry/.claude-plugin/plugin.json
+  s_db8301a62a5375::t_97c7183b4c500e 7
+plugins/telemetry/skills/otel-go/references/audit-checklist.md
+  s_74de952e30cff1::t_ae9cec2fec5022 318
+  s_74de952e30cff1::t_e1bda9cf84989f 308
+  s_74de952e30cff1::t_e8fb542f9a2c9d 236,239
+plugins/telemetry/skills/tsuga-audit-metrics/SKILL.md
+  s_74de952e30cff1::t_6424dd94967ffe 153-154
+  s_74de952e30cff1::t_c2ff561ff61ff6 32
+AGENTS.md
+  s_74de952e30cff1::t_a62b77dd742b44 189
+plugins/tsuga/skills/incident-investigation/SKILL.md
+  s_db8301a62a5375::t_66d45366c502f3 79,83,90
+  s_db8301a62a5375::t_3b759bdb837f4e 8
+  s_db8301a62a5375::t_fc7119c5f41ed2 15-16
+  s_db8301a62a5375::t_b20fc814715a6e 3
+  s_db8301a62a5375::t_d72a012b1222e1 329
+  s_db8301a62a5375::t_e01e1d4d1d29cf 14
+  s_db8301a62a5375::t_24d8e4c5daf022 323
+  s_db8301a62a5375::t_ad5a63faa20e25 188
+  s_db8301a62a5375::t_12c839cef285e7 283-288
+  s_db8301a62a5375::t_b560175c1e7845 337-339
+  s_db8301a62a5375::t_218234744ef518 135-136
+  s_db8301a62a5375::t_98756f77d4b1c3 245,247,249-250
+plugins/tsuga/skills/incident-investigation/references/branch-change-correlation.md
+  s_db8301a62a5375::t_b5e09293feed3b 1-79
+plugins/tsuga/.claude-plugin/plugin.json
+  s_db8301a62a5375::t_a48785ad5a25e6 7
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_74de952e30cff1::t_dcddb36dedb87f 23-28,33,44-45,51,55-56,63,66,74,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "1674eddb613eb41fc1a2151335487adf55e40efd",
+  "prompts": {},
+  "sessions": {
+    "s_74de952e30cff1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12ade4dc-ccb1-4027-a46d-31095da5bf58",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    },
+    "s_803562b6aa21c7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04cb5c42-b310-4ebc-8f93-cdf67c411208",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    },
+    "s_db8301a62a5375": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "00348c89-8e55-483e-8128-60926b371a96",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
