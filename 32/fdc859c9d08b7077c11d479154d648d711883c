@@ -1,0 +1,35 @@
+plugins/tsuga/skills/tsuga-analyze-trace-latency/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 117-118
+plugins/tsuga/skills/tsuga-audit-monitor-coverage/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 48
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 71
+plugins/telemetry/skills/otel-instrumentation/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 122
+plugins/telemetry/skills/otel-collector/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 80
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 156
+plugins/tsuga/skills/tsuga-investigate-errors/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 96
+plugins/telemetry/skills/signal-choice-advisor/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 109-110
+plugins/tsuga/skills/tsuga-investigate-service-health/SKILL.md
+  s_6c82b49119c1fe::t_d07a2d3b5d10b0 147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "32fdc859c9d08b7077c11d479154d648d711883c",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
