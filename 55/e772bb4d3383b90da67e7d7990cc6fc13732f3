@@ -1,0 +1,19 @@
+plugins/telemetry/skills/signal-choice-advisor/SKILL.md
+  s_d6d1ef2268c41b::t_98db23013139b3 3,8,10,12,14,16-20,22,24-26,28,30,32-34,36,38-85,87,89-92,94,96-97,100,106-110,114-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "55e772bb4d3383b90da67e7d7990cc6fc13732f3",
+  "prompts": {},
+  "sessions": {
+    "s_d6d1ef2268c41b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edefd-5e93-7ac2-b45f-4e926d389f65",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
