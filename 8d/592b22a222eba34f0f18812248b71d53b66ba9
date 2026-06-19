@@ -1,0 +1,31 @@
+.claude-plugin/marketplace.json
+  s_6c82b49119c1fe::t_f30cf9b2c05f18 9
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_6c82b49119c1fe::t_080489670869bb 14,31,127-128
+  s_6c82b49119c1fe::t_f30cf9b2c05f18 27-29
+plugins/tsuga/skills/tsuga-audit-monitor-coverage/SKILL.md
+  s_6c82b49119c1fe::t_080489670869bb 89,91,109
+  s_6c82b49119c1fe::t_f30cf9b2c05f18 92-93
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_6c82b49119c1fe::t_080489670869bb 76
+plugins/telemetry/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_f30cf9b2c05f18 4
+plugins/tsuga/.claude-plugin/plugin.json
+  s_6c82b49119c1fe::t_f30cf9b2c05f18 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "8d592b22a222eba34f0f18812248b71d53b66ba9",
+  "prompts": {},
+  "sessions": {
+    "s_6c82b49119c1fe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edebe-5e11-75b1-8b24-5a80def3a1e1",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
