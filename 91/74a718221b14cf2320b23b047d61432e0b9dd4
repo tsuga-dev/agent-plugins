@@ -1,0 +1,50 @@
+plugins/tsuga/skills/check-skill-health/references/RULES.md
+  s_de45c2f45c163b::t_7f0aa056e615ad 50,65,80,84,86,88,92-93
+plugins/tsuga/skills/check-skill-health/scripts/sample-execute-commands.sh
+  s_de45c2f45c163b::t_7f0aa056e615ad 2-3,7,26-30,41,45-51,85,91,103-105,114-123,141,145,152,155,158
+  s_5272792736dd4c::t_0464bbdf09b300 42-44,79,81-84
+  s_de45c2f45c163b::t_b311732d1e9ae1 25
+  s_5272792736dd4c::t_dac170b21f8ff4 57-61
+  s_e036fd7421dbec::t_578a92a0ebf2f0 78,80,87,92-98
+  s_5272792736dd4c::t_798031466b6c96 88-90
+  s_5272792736dd4c::t_b2748f23ca6c72 52-56,62-66
+  s_5272792736dd4c::t_21369a1400b9da 21,67-77,86,99-102,106-113
+plugins/tsuga/skills/check-skill-health/scripts/lint-all.sh
+  s_5272792736dd4c::t_21369a1400b9da 40,48,85
+  s_de45c2f45c163b::t_7f0aa056e615ad 7
+plugins/tsuga/skills/check-skill-health/SKILL.md
+  s_de45c2f45c163b::t_04c9aadf419c63 3
+  s_de45c2f45c163b::t_7f0aa056e615ad 15,18,20-21,39,64,79-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "9174a718221b14cf2320b23b047d61432e0b9dd4",
+  "prompts": {},
+  "sessions": {
+    "s_5272792736dd4c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee97e-bee8-73d1-865a-ae0457e65c05",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_de45c2f45c163b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee93e-e887-7732-aee6-0cd7b0777c56",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_e036fd7421dbec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eea1b-665f-7ef3-91c8-ab880f682f37",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
