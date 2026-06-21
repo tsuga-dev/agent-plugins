@@ -1,0 +1,46 @@
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_de45c2f45c163b::t_8ef8001f0acbe6 15-17,267,276,299,302,350
+  s_5272792736dd4c::t_c9b84156f41156 463
+  s_5272792736dd4c::t_45048cf26caeef 22,270,451,505
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_ca4f0fa94911a6::t_adf486f3a110f8 76,141
+  s_de45c2f45c163b::t_8ef8001f0acbe6 47-48,56,83,105-106,161
+  s_de45c2f45c163b::t_55fc209cbfd4f0 104
+  s_de45c2f45c163b::t_04c9aadf419c63 3
+  s_de45c2f45c163b::t_7a7ca0fb48dcf2 10
+  s_5272792736dd4c::t_45048cf26caeef 64,114
+plugins/tsuga/skills/tsuga-build-dashboard/references/layout-rules.md
+  s_5272792736dd4c::t_45048cf26caeef 103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "e461eba039fa658567e33a81b8a40bc1580bb442",
+  "prompts": {},
+  "sessions": {
+    "s_5272792736dd4c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee97e-bee8-73d1-865a-ae0457e65c05",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_ca4f0fa94911a6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eea2e-aa9a-7a01-8b71-c71f439c0656",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_de45c2f45c163b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee93e-e887-7732-aee6-0cd7b0777c56",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
