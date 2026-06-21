@@ -1,0 +1,51 @@
+plugins/tsuga/skills/signal-choice-advisor/SKILL.md
+  s_e036fd7421dbec::t_7ff2e059ed2641 122
+  s_e036fd7421dbec::t_cf93b33ac1b3ce 23,26,29,58
+  s_de45c2f45c163b::t_9d811df28a194a 3
+  s_5272792736dd4c::t_f2c336390a0fbc 12
+  s_5272792736dd4c::t_21369a1400b9da 91,104
+  s_de45c2f45c163b::t_7d99b4fcadb3c1 21,77,93-94,100
+plugins/tsuga/skills/signal-choice-advisor/references/signal-choice.md
+  s_5272792736dd4c::t_21369a1400b9da 55
+plugins/tsuga/skills/otel-instrumentation/SKILL.md
+  s_de45c2f45c163b::t_0692cbeb14ec5b 41,92,102,107,114
+  s_5272792736dd4c::t_21369a1400b9da 12,131
+  s_e036fd7421dbec::t_578a92a0ebf2f0 106
+  s_de45c2f45c163b::t_9d811df28a194a 3
+plugins/tsuga/skills/otel-collector/SKILL.md
+  s_de45c2f45c163b::t_04c9aadf419c63 3
+  s_5272792736dd4c::t_21369a1400b9da 12,62,80,84
+  s_de45c2f45c163b::t_0692cbeb14ec5b 19,40,48-55,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "b3670afbb8b9659714b6d53cc8b6a1bd02bf3b71",
+  "prompts": {},
+  "sessions": {
+    "s_5272792736dd4c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee97e-bee8-73d1-865a-ae0457e65c05",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_de45c2f45c163b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ee93e-e887-7732-aee6-0cd7b0777c56",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_e036fd7421dbec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eea1b-665f-7ef3-91c8-ab880f682f37",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
