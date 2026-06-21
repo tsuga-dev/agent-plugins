@@ -1,0 +1,21 @@
+.claude-plugin/marketplace.json
+  s_ca4f0fa94911a6::t_8a401a3002f228 9
+plugins/tsuga/.claude-plugin/plugin.json
+  s_ca4f0fa94911a6::t_8a401a3002f228 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "49b172eec8ba0208c624bc01f1180b8209571030",
+  "prompts": {},
+  "sessions": {
+    "s_ca4f0fa94911a6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eea2e-aa9a-7a01-8b71-c71f439c0656",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
