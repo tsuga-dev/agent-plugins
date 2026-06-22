@@ -1,0 +1,23 @@
+plugins/tsuga/skills/tsuga-cli/references/azure-translator.md
+  s_2bda689cfcc0ae::t_24f15de707a242 54-60
+plugins/tsuga/skills/tsuga-cli/references/gcp-translator.md
+  s_2bda689cfcc0ae::t_24f15de707a242 57-59
+plugins/tsuga/skills/tsuga-cli/references/aws-translator.md
+  s_2bda689cfcc0ae::t_24f15de707a242 51-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "ddd9dd91482ba3985e25f8bcc3c5e4a2b1faf581",
+  "prompts": {},
+  "sessions": {
+    "s_2bda689cfcc0ae": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eee56-bf06-72c0-a3f8-5a8450809803",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
