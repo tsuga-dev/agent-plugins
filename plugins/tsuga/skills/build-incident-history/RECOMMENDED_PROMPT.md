@@ -19,7 +19,7 @@ Output target: `skills/incident-history/references/incidents/` inside the repo.
 
 Phase 1 — build:
 Use the `$build-incident-history` skill. Specifically:
-1. Read `setup-skills/build-incident-history/SKILL.md` and every file under `setup-skills/build-incident-history/references/`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/SKILL.md` and every file under `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/`.
 2. Execute the phases in `PROCEDURE.md` in order. Do NOT skip Phase 0 (sanity check) or Phase 5 (verification).
 3. Fan out per-incident SUMMARY.md writing to parallel subagents — batches of 10–20. Each subagent gets one INC-id, the template, and the lessons doc. Prompt template is in `SUBAGENT_PROMPT.md`; copy verbatim, substitute `{inc_id}` and `{company}`.
 4. Before subagent fan-out, optionally run Phase 2 (per-incident helper extraction) to pre-digest raw inputs into `/tmp/incident-extracts/<inc_id>/`. This is faster than having each subagent parse the raw JSON.
@@ -27,7 +27,7 @@ Use the `$build-incident-history` skill. Specifically:
 
 Phase 2 — health check:
 Use the `$check-skill-health` skill. Specifically:
-1. Run `setup-skills/check-skill-health/scripts/lint-all.sh skills/incident-history/`.
+1. Run `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh skills/incident-history/`.
 2. If any FAIL appears, do NOT hand-edit the affected file. Find the root cause in the template / subagent prompt / lessons doc, fix it there, regenerate the affected incidents via subagent, then re-run lint. Iterate until `lint-all.sh` returns exit code 0.
 3. WARNs are informational — read them, decide whether to fix or annotate as intentional.
 
@@ -39,7 +39,7 @@ Return a concise summary:
 - The commit you made (or the diff you staged).
 
 Hard rules for the whole flow:
-- Every `tsuga` command you emit must be real CLI. No MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, `limit=`). No `rtk` prefix. `setup-skills/build-knowledge-company/references/CLI_TRANSLATION.md` has the full translation contract.
+- Every `tsuga` command you emit must be real CLI. No MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, `limit=`). No `rtk` prefix. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md` has the full translation contract.
 - No leakage of post-incident PR content (titles, bodies, diffs) into SUMMARY.md. Reference the PR number only. If your investigation runtime is evaluated under a time-bound cheat-prevention block, leaking fixes poisons future benchmarking.
 - Scrub PII before ingesting: customer API keys, user emails, session IDs must be redacted.
 - Do not delete anything outside `skills/incident-history/`. Do not touch any other skill.
@@ -56,7 +56,7 @@ Local paths, in order of preference:
 2. **Mounted volume** if running inside the docker-compose flow — mount the raw dump at `/mnt/inputs/incidents/` and symlink to `./inputs/incidents/` before kicking off.
 3. **Remote (S3 / Drive)** — sync down to `inputs/incidents/` first, don't try to stream during the build. Subagents expect a local filesystem.
 
-The expected per-incident layout (Slack JSON, github/, tsuga/commands.txt, etc.) is in `setup-skills/build-incident-history/references/INPUT_LAYOUT.md`. Don't improvise the shape.
+The expected per-incident layout (Slack JSON, github/, tsuga/commands.txt, etc.) is in `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/INPUT_LAYOUT.md`. Don't improvise the shape.
 
 ## Operator notes
 

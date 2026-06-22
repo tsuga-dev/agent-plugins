@@ -12,9 +12,9 @@ Write a SERVICE_KNOWLEDGE.md dossier for the {company} service `{svc}` (owning t
 **Output file:** `skills/knowledge-company/references/teams/{team}/services/{svc}/SERVICE_KNOWLEDGE.md` (create parent dir with `mkdir -p`).
 
 **MUST-READ references (in order, before writing anything):**
-1. `setup-skills/build-knowledge-company/references/SERVICE_KNOWLEDGE_TEMPLATE.md` — the canonical section list and every section's rules.
-2. `setup-skills/build-knowledge-company/references/CLI_TRANSLATION.md` — every command you write must be real `tsuga` CLI, not MCP-tool pseudo-syntax. Follow this contract.
-3. `setup-skills/build-knowledge-company/references/LESSONS.md` — read the full list. Every mistake listed cost us time on a previous run.
+1. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/SERVICE_KNOWLEDGE_TEMPLATE.md` — the canonical section list and every section's rules.
+2. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md` — every command you write must be real `tsuga` CLI, not MCP-tool pseudo-syntax. Follow this contract.
+3. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/LESSONS.md` — read the full list. Every mistake listed cost us time on a previous run.
 
 **Per-service helper inputs (pre-extracted for you):**
 - Monitors targeting this service: `/tmp/service-data/{svc}/monitors.json`

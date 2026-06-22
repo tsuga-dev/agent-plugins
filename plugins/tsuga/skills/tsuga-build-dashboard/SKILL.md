@@ -1,13 +1,13 @@
 ---
 name: tsuga-build-dashboard
-description: "Use when asked to create a Tsuga dashboard, add or fix widgets, correct a layout, or build a monitoring view for a service or team."
+description: "Use when asked to create, update, validate, delete, or review a Tsuga dashboard; add or fix widgets; correct layout; build a monitoring view for a service, team, system, SLO, capacity, latency, throughput, or error-rate question; verify dashboard payloads, widget queries, graph schemas, normalizers, formulas, table grouping, time presets, or layout rules."
 ---
 
 # Tsuga Build Dashboard
 
 Build, modify, and validate Tsuga dashboards from the command line. This skill leans on `tsuga-cli` (filter syntax, counter math, aggregation body construction, metric discovery, CRUD commands) — it owns only the dashboard-specific concerns: widget schemas, layout, and the create/update workflow.
 
-## When to Trigger
+## Example Requests
 
 - "Create a dashboard for service X"
 - "Add a widget to this dashboard"
@@ -44,8 +44,8 @@ Latency:    1× timeseries (p50/p95/p99), 1× top-list (slowest operations)
 **REQUIRED SUB-SKILL:** Use `tsuga-cli` for metric discovery. Never invent metric names.
 
 ```bash
-tsuga metrics list --from -1h | grep <service-or-prefix>
-tsuga metrics get <metric-name>
+tsuga metrics list --from <from> --to <to>
+tsuga metrics get <metric-name> --from <from> --to <to>
 ```
 
 For each candidate metric, record:
@@ -53,7 +53,7 @@ For each candidate metric, record:
 - `attributes` — filter and groupBy candidates
 - `unit` — normalizer hint for Step 4
 
-If no metrics appear: widen the window (`--from -24h`), or check `context.service.name` spelling with `tsuga services list`.
+Manually inspect returned metric names for the service/prefix; do not pipe through non-`tsuga` shell commands from this skill. If no metrics appear: widen the window (`--from <older-from> --to <to>`), or check `context.service.name` spelling with `tsuga services list`.
 
 ### Step 3 — Build and verify each widget query
 
@@ -61,7 +61,7 @@ Use `tsuga-cli` (Counter Math, filter syntax, aggregation body sections) to cons
 
 1. Pick `aggregate.type` and `functions` from metric `type` + `temporality` — gauge → `max`/`average` no function; delta counter → `sum` + `per-second`; cumulative counter → `sum` + `rate` (or `increase`); histogram → `percentile` with `field` + `percentile`.
 2. Compose the body: body-level `timeRange` (Unix seconds), `dataSource`, `groupBy`, `formula`; per-query `aggregate`, `filter`, optional `functions`.
-3. Verify with `tsuga aggregation scalar -f query.json` and confirm it returns data before embedding.
+3. Verify query shape and data before embedding: use `tsuga aggregation timeseries -d '<query-json>'` for timeseries/time-bucketed widgets, and `tsuga aggregation scalar -d '<query-json>'` for scalar/grouped widgets.
 
 Inputs for each widget:
 - Metric name
@@ -73,14 +73,14 @@ Do not embed an unverified query body. If a query returns no data, resolve at th
 
 ### Step 4 — Assemble the dashboard payload
 
-Embed the verified query bodies from Step 3 into widget JSON. Use `references/widget-reference.md` for schemas and `references/layout-rules.md` for grid positioning.
+Embed the verified query bodies from Step 3 into widget JSON. Use `tsuga dashboards create --generate-skeleton` or `tsuga dashboards update <id> --generate-skeleton` for payload shape; fetch `tsuga docs get api/createDashboard`, `tsuga docs get api/updateDashboard`, or `tsuga docs get api/updateDashboardGraph` only when field semantics, enums, or response shape are unclear. Use `references/widget-reference.md` for widget gotchas and `references/layout-rules.md` for grid composition.
 
 Key structural rules:
 - `owner` must be a team ID — resolve with `tsuga teams list`
 - Each graph requires a unique `id`, a `visualization` object, and a `layout` object
 - `query-value` does not support `groupBy` — the API silently drops it
 - List-style widgets take a single `query` string. Variants: `list` (logs matching a Tsuga query), `list-log-patterns` (logs clustered into patterns), `list-connection` (datastore rows via `connectionId` + read-only SQL)
-- Always include dashboard-level env + team filters:
+- Include dashboard-level env + team filters when they are relevant to the dashboard audience:
 
 ```json
 "filters": [
@@ -101,6 +101,9 @@ tsuga dashboards create -f dashboard.json
 tsuga dashboards get <id>
 tsuga dashboards update <id> -f dashboard.json
 
+# Delete also requires the same confirmation gate. Single-widget/API-equivalent updates are not exposed as a CLI command here; if used through another surface, gate them the same way.
+tsuga dashboards delete <id>
+
 # Verify
 tsuga dashboards get <id>
 ```
@@ -108,7 +111,7 @@ tsuga dashboards get <id>
 ## Evidence Requirements
 
 - Every metric name must come from `tsuga metrics list` — never invented
-- Every aggregation body must be run through `tsuga aggregation scalar` and return data before embedding
+- Every aggregation body must be run through the matching `tsuga aggregation scalar` or `tsuga aggregation timeseries` command and return data before embedding
 - `owner` must be a team ID from `tsuga teams list` — never inferred from a name
 
 ## Output Template
@@ -135,7 +138,7 @@ Time preset: <preset>
 
 ## Safety Rules
 
-- Never execute `tsuga dashboards create` or `tsuga dashboards update` without explicit user confirmation
+- Never execute `tsuga dashboards create`, `update`, `delete`, push/upsert, or dashboard API-equivalent writes without explicit user confirmation
 - Show the exact command and full payload before running
 - Never claim alert firing state — monitors show config only, not live state
 - Never claim deployment causality — no deployment markers are available in the CLI
@@ -153,5 +156,6 @@ Time preset: <preset>
 ## Related Skills / Next Steps
 
 - `tsuga-cli` — filter syntax, counter math, aggregation body construction, metric discovery, dashboard CRUD, time formats
-- `tsuga-audit-metrics` — audit metric quality before dashboarding
+- `tsuga-audit-telemetry-quality` — audit metric and telemetry quality before dashboarding
 - `tsuga-investigate-service-health` — the health triage workflow that dashboards should operationalize
+- `tsuga-debug-telemetry-ingestion` — if expected metrics or signals are missing

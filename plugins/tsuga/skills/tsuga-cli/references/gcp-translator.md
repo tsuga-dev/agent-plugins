@@ -1,158 +1,102 @@
-# `gcloud` → `tsuga` Translator
+# `gcloud` -> `tsuga` Translator
 
-For projects wired to a Cloud Monitoring → Tsuga pipeline, most read-only GCP CLI/Monitoring queries have a `tsuga aggregation` equivalent.
+Use this for read-only Cloud Monitoring metric equivalents in Tsuga. During skill execution, emit `tsuga` commands only. Do not add shell pipes, JSON processors, GCP CLI commands, or mutation commands.
 
-Unlike AWS, **metric names are kept in their native form**: `<service>.googleapis.com/<path>` (with literal slashes).
+## Metric Naming
 
-- Inside an aggregation `field`, raw slashes work as-is.
-- For `tsuga metrics get <name>`, slashes must be URL-encoded as `%2F` — otherwise the router returns `404 URL_NOT_FOUND`.
+GCP metric names keep their native form, including slashes:
 
-## What's queryable
+```text
+<service>.googleapis.com/<path>
+```
 
-What's **always** queryable: anything Cloud Monitoring publishes for the project, included in the export pipeline.
+Inside aggregation `field`, raw slashes work as-is. For `tsuga metrics get <name>`, URL-encode slashes as `%2F`; raw slash paths can route as nested URLs.
 
-What's **not** ingested:
+## What Is Queryable
 
-- GCP resource spec / configuration (everything `gcloud compute instances describe ...` returns).
-- Cloud Logging log entries (project log buckets) — only ingested when shipped via OTel collector.
-- IAM / Cloud Resource Manager. Refuse, point at `gcloud`.
+Queryable: Cloud Monitoring metrics included in the export pipeline.
 
-To enumerate the GCP service prefixes ingested into your tenant:
+Not queryable:
+
+- GCP resource spec/config from `gcloud * describe`
+- Cloud Logging buckets unless shipped into Tsuga separately
+- IAM / Cloud Resource Manager
+- Data-plane reads or mutations
+
+Discover available GCP metrics with:
 
 ```bash
-tsuga metrics list --from -1h | jq -r '.[].name' \
-  | grep 'googleapis.com' \
-  | awk -F'.googleapis.com' '{print $1}' | sort -u
+tsuga metrics list --from <from> --to <to>
 ```
 
-Common prefixes: `compute`, `cloudsql`, `pubsub`, `run`, `storage`, `loadbalancing`, `bigquery`, `router`, `serviceruntime`, `container`, `monitoring`, `artifactregistry`, `dns`, `logging`.
+Manually inspect metric names containing `googleapis.com`, then confirm attributes with:
 
-## Standard attributes (every GCP metric)
-
-```
-context.cloud.provider      "gcp"
-context.cloud_account_id    GCP project id (also exposed as context.project_id)
-context.project_id          GCP project id (canonical for scoping)
-context.cloud.region        e.g. "europe-west1"
-context.gcp.resource_type   monitored resource kind (e.g. "cloudsql_database", "gcs_bucket")
+```bash
+tsuga metrics get <metric-name> --from <from> --to <to>
 ```
 
-## Per-service resource-id dimensions
+## Standard Attributes
 
-Confirm per metric with `tsuga metrics get '<name with slashes encoded as %2F>' | jq '.attributes'`. Common shapes:
+- `context.cloud.provider`
+- `context.cloud_account_id`
+- `context.project_id`
+- `context.cloud_region`
+- `context.gcp.resource_type`
 
-| Service prefix | Resource dimension(s) |
+## Common Dimensions
+
+| Metric family | Common dimensions |
 |---|---|
-| `cloudsql.googleapis.com/*` | `context.database_id` (`<project>:<instance>` form) |
+| `cloudsql.googleapis.com/*` | `context.database_id` |
 | `compute.googleapis.com/instance/*` | `context.instance_id`, `context.instance_name` |
+| `loadbalancing.googleapis.com/*` | `context.backend_service_id`, `context.load_balancing_scheme`, `context.client_country`, `context.protocol`, `context.matcher_name` |
 | `pubsub.googleapis.com/subscription/*` | `context.subscription_id` |
 | `pubsub.googleapis.com/topic/*` | `context.topic_id` |
 | `storage.googleapis.com/*` | `context.bucket_name`, `context.storage_class`, `context.location` |
-| `loadbalancing.googleapis.com/*` | `context.backend_service_id`, `context.load_balancing_scheme`, `context.client_country`, `context.protocol`, `context.matcher_name` |
 | `run.googleapis.com/*` | `context.faas.name`, `context.faas.instance`, `context.faas.version` |
-| `bigquery.googleapis.com/*` | `context.project_id` (per-project metrics dominant) |
+| `bigquery.googleapis.com/*` | `context.project_id` |
+| `container.googleapis.com/*` | Kubernetes attributes such as `context.k8s.cluster.name`, `context.k8s.namespace.name`, `context.k8s.pod.name`, `context.k8s.node.name`; confirm per metric. |
+| Other known `*.googleapis.com` families | `router`, `serviceruntime`, `monitoring`, `artifactregistry`, `dns`, `logging`; confirm attributes with `tsuga metrics get`. |
 
-## Worked examples
+## Aggregation Template
 
-### CloudSQL — CPU
-
-```bash
-NOW=$(date +%s); FROM=$((NOW - 1800))
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"max",field:"cloudsql.googleapis.com/database/cpu/utilization"}}],
-  groupBy:[{fields:["context.database_id"],limit:10}]
-}')"
-```
-
-`context.database_id` is `<project>:<instance>` — use `context.project_id` to scope to a single project.
-
-### Pub/Sub — subscription backlog age
+Use this shape with one row from the use-case map. Confirm metric presence and attributes with `tsuga metrics get <metric-name> --from <from> --to <to>` before relying on it.
 
 ```bash
-NOW=$(date +%s); FROM=$((NOW - 1800))
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"max",field:"pubsub.googleapis.com/subscription/oldest_unacked_message_age"}}],
-  groupBy:[{fields:["context.subscription_id"],limit:5}]
-}')"
+tsuga aggregation scalar -d '{
+  "timeRange": {"from": <from_unix>, "to": <to_unix>},
+  "dataSource": "metrics",
+  "queries": [
+    {"aggregate": {"type": "<aggregate>", "field": "<metric>"}}
+  ],
+  "groupBy": [{"fields": ["<dimension>"], "limit": <limit>}],
+  "formula": "q1"
+}'
 ```
 
-Result is in **seconds**.
+For filtered cases, add `"filter": "<filter>"` inside the query object.
 
-### Cloud Storage — bucket size
+## Use-Case Map
 
-```bash
-NOW=$(date +%s); FROM=$((NOW - 7200))   # GCS publishes hourly
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"max",field:"storage.googleapis.com/storage/total_bytes"}}],
-  groupBy:[{fields:["context.bucket_name"],limit:5}]
-}')"
-```
+| Use case | Metric | Aggregate | Group by | Filter / notes |
+|---|---|---|---|---|
+| CloudSQL CPU | `cloudsql.googleapis.com/database/cpu/utilization` | `max` | `context.database_id` | `context.database_id` is usually `<project>:<instance>`. |
+| Pub/Sub subscription backlog age | `pubsub.googleapis.com/subscription/oldest_unacked_message_age` | `max` | `context.subscription_id` | Backlog age by subscription. |
+| Cloud Storage bucket size | `storage.googleapis.com/storage/total_bytes` | `max` | `context.bucket_name` | Storage is commonly hourly; use a long enough window. |
+| Compute Engine CPU | `compute.googleapis.com/instance/cpu/utilization` | `max` | `context.instance_name` | Use `context.instance_id` if names collide. |
+| Cloud Run request count | `run.googleapis.com/request_count` | `sum` | `context.faas.name` | Avoid grouping by short-lived `context.faas.instance`. |
+| GKE pod CPU | `k8s.pod.cpu.usage` | `max` | `context.k8s.pod.name` | Filter `context.k8s.cluster.name:<gke-cluster>`; prefer standard Kubernetes metrics when present. |
 
-### Compute Engine — instance CPU
+## Gotchas
 
-```bash
-NOW=$(date +%s); FROM=$((NOW - 600))
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"max",field:"compute.googleapis.com/instance/cpu/utilization"}}],
-  groupBy:[{fields:["context.instance_name"],limit:5}]
-}')"
-```
+- For `tsuga metrics get`, URL-encode metric slashes as `%2F`. Use raw slashes only inside aggregation `field`.
+- `context.database_id` is usually `<project>:<instance>`; use `context.project_id` for project scoping.
+- Use `context.gcp.resource_type` from `tsuga metrics get <metric-name> --from <from> --to <to>` as the monitored-resource sanity check.
+- Publish cadence varies by resource type; storage is commonly hourly, so narrow windows can look empty.
+- Cloud Run `context.faas.instance` is short-lived; prefer `context.faas.name`. Confirm `run.googleapis.com/request_latency/user_execution` type before using `percentile`.
 
-### Cloud Run — request count / instance count
+## Safety
 
-```bash
-NOW=$(date +%s); FROM=$((NOW - 3600))
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"sum",field:"run.googleapis.com/request_count"}}],
-  groupBy:[{fields:["context.faas.name"],limit:5}]
-}')"
-```
-
-Related: `run.googleapis.com/container/cpu/utilizations` (gauge), `run.googleapis.com/container/instance_count`, `run.googleapis.com/request_latency/user_execution` (use `percentile` only after confirming the metric type is gauge or histogram).
-
-## GKE — Kubernetes metrics
-
-GKE clusters produce the standard OTel `k8s.*` metric family. Use the `kubectl` translator pattern with `context.k8s.cluster.name:<gke-cluster-name>`:
-
-```bash
-NOW=$(date +%s); FROM=$((NOW - 600))
-tsuga aggregation scalar -d "$(jq -n --argjson from $FROM --argjson to $NOW '{
-  timeRange:{from:$from,to:$to},
-  dataSource:"metrics",
-  queries:[{aggregate:{type:"max",field:"k8s.pod.cpu.usage"},filter:"context.k8s.cluster.name:<gke-cluster>"}],
-  groupBy:[{fields:["context.k8s.pod.name"],limit:5}]
-}')"
-```
-
-See `${CLAUDE_PLUGIN_ROOT}/skills/tsuga-cli/references/kubectl-translator.md` for the full pattern.
-
-## Gotchas specific to GCP
-
-1. **Slashes in metric names**.
-   - Aggregation `field`: raw `cloudsql.googleapis.com/database/cpu/utilization` is correct.
-   - `tsuga metrics get`: URL-encode (`%2F`).
-2. **`context.database_id` format** is `<project>:<instance>`, not the bare instance name. Use `context.project_id` for project-only scoping.
-3. **Cloud Run instance churn**: `context.faas.instance` is short-lived; use `context.faas.name` (service name) for stable scoping.
-4. **Publish cadence is per-resource-type** — CloudSQL is 1m, GCS is hourly. Storage queries narrower than ~2h often return empty even when data exists.
-5. **`gcp.resource_type` is your sanity check** when a metric is missing dimensions: `tsuga metrics get <name> | jq '.attributes'` includes `context.gcp.resource_type`, naming the monitored-resource kind.
-
-## What's not coverable
-
-| `gcloud` verb | Reason |
-|---|---|
-| `gcloud compute instances describe ...` / any `describe` | Spec data; not ingested |
-| `gcloud sql instances describe ...` | Same |
-| `gcloud logging read ...` | Cloud Logging not wired by default |
-| `gcloud iam *` / `gcloud projects *` | Identity / IaC, out of scope |
-| `gcloud pubsub subscriptions pull ...` | Data plane, by design |
-| Anything that writes / mutates | By design |
+- Use explicit `--from`/`--to` or Unix-second `timeRange`.
+- Do not infer GCP resource inventory from metrics alone; idle resources may be absent.
+- Refuse GCP spec/IAM/data-plane/mutation requests from this skill and point the user to GCP tooling.

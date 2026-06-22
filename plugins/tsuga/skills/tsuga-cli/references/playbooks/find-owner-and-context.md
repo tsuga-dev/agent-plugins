@@ -64,4 +64,4 @@ Env: <env> | Last seen: <lastSeenAt> | Sources: <logs / traces / logs+traces>
 
 - `tsuga-investigate-service-health` skill — health check for the identified service
 - `tsuga-audit-monitor-coverage` skill — check alerting coverage for the team's services
-- `otel-instrumentation` skill — full observability review for the service (routes to per-lang `references/audit-checklist.md`)
+- `otel-instrumentation` skill — full observability review for the service via runtime docs

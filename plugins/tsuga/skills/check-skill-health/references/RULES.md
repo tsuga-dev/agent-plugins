@@ -47,7 +47,7 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 
 **Why:** the single most expensive bug class in the first build. Subagents emit plausible-looking pseudo-CLI, the document looks right on review, and it breaks when a real user tries to copy-paste.
 
-**How to fix a FAIL:** do NOT hand-edit the file. Go back to the subagent template / prompt, fix the rule, regenerate the affected files. See `setup-skills/build-knowledge-company/references/CLI_TRANSLATION.md` for the full translation contract.
+**How to fix a FAIL:** do NOT hand-edit the generated file. Go back to the subagent template / prompt, fix the rule, regenerate the affected files. Use the `build-knowledge-company` skill's CLI translation contract for the full command-shape rules.
 
 ## check-incident-history.sh
 
@@ -62,7 +62,7 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 - Retrieval depends on stable section names. Adding a section or renaming a heading breaks analogue search.
 - The inventory is the quick-access index for the investigation runtime's retrieval. A stale row count means orphaned entries.
 
-**How to fix a FAIL:** regenerate the specific INC-id via `setup-skills/build-incident-history/references/SUBAGENT_PROMPT.md`. Don't hand-edit.
+**How to fix a FAIL:** regenerate the specific INC-id via the `build-incident-history` skill. Don't hand-edit.
 
 ## check-knowledge-company.sh
 
@@ -77,24 +77,20 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 
 **Why:** same logic — retrieval and cross-linking are section-name-stable. The "must not exist" check on RAW_TELEMETRY guards against regression — it used to be a separate file and was folded in during a distillation pass.
 
-**How to fix a FAIL:** regenerate the affected service/team via `setup-skills/build-knowledge-company/references/SUBAGENT_PROMPT.md`.
+**How to fix a FAIL:** regenerate the affected service/team via the `build-knowledge-company` skill.
 
 ## sample-execute-commands.sh (opt-in)
 
-**Checks:** picks N random SERVICE_KNOWLEDGE.md files, extracts the first `tsuga` command from each, runs it against the live account.
+**Checks:** picks up to N SERVICE_KNOWLEDGE.md files, extracts the first `tsuga` command from each, and verifies that each command is a single read-only `tsuga` command with no shell metacharacters.
 
-**Why:** all the other checks are structural — they confirm the file *looks* right. This is the only check that confirms a command *runs*. Catches:
-- Metric names that don't exist (the subagent made them up).
-- Monitor IDs that don't resolve.
-- TQL syntax errors the grep didn't catch.
-- CLI version drift (the `tsuga` CLI changed under us).
+**Why:** all the other checks are structural — they confirm the file *looks* right. This check catches generated dossiers that would ask an agent to run mutating commands, shell pipelines, redirects, or copied MCP pseudo-syntax.
 
-**Why opt-in:** needs auth, touches prod, costs query quota. Not every lint run should pay that cost.
+**Why opt-in:** samples generated service dossiers and can fail archives that otherwise pass structural checks. It does not touch prod, require auth, or spend query quota.
 
 **How to fix a FAIL:**
 - Single file fails → regenerate that SERVICE_KNOWLEDGE.md.
-- Multiple files fail with the same error shape → the template or CLI_TRANSLATION.md is wrong. Fix the template, regenerate the batch.
-- Auth errors → `tsuga auth <token>` before retrying.
+- Multiple files fail with the same error shape → the template or CLI translation rules are wrong. Fix the template, regenerate the batch.
+- If a live query check is needed, do it manually with explicit approval and a copied read-only command.
 
 ## When a WARN is acceptable
 

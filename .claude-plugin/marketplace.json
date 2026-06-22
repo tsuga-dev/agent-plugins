@@ -5,22 +5,15 @@
     "email": "engineering@tsuga.com"
   },
   "metadata": {
-    "description": "Tsuga toolkit for AI coding agents — two plugins: `telemetry` for OpenTelemetry instrumentation/audits across 9 languages, and `tsuga` for live-platform investigation, dashboards, and the tsuga CLI driver.",
-    "version": "0.7.9"
+    "description": "Tsuga toolkit for AI coding agents: one plugin with the tsuga CLI driver, live-platform investigation, dashboards, incident workflows, OpenTelemetry instrumentation, Collector, signal-choice, telemetry debug, and audit skills.",
+    "version": "0.8.0"
   },
   "plugins": [
     {
       "name": "tsuga",
-      "description": "Tsuga platform plugin: the `tsuga` CLI driver (commands, TQL syntax, aggregation bodies, counter math, deep links, cloud/k8s translators) with embedded lookup playbooks for service ownership and reliability review; live-platform investigation skills for service health, errors, latency, and monitor coverage; dashboard building; the incident-investigation orchestrator; and meta-skills for building and validating skill bundles.",
+      "description": "Tsuga observability plugin: the `tsuga` CLI driver (commands, TQL syntax, aggregation bodies, counter math, deep links, cloud/k8s translators); live-platform investigation for service health, errors, latency, and monitor coverage; dashboard building; incident orchestration; OpenTelemetry SDK, Collector, OTTL, signal-choice, telemetry debug, and audit skills; and meta-skills for building and validating skill bundles.",
       "category": "observability",
       "source": "./plugins/tsuga",
-      "strict": false
-    },
-    {
-      "name": "telemetry",
-      "description": "Instrumentation-quality plugin: OpenTelemetry SDK setup for Python, Go, Node.js, Java, .NET, Ruby, PHP, Rust, and C++; Collector configuration; OTTL transformations; semantic conventions; signal-choice advice; instrumentation audits (metrics/traces/logs); smoke-testing; and telemetry-debugging skills. Pair with the `tsuga` plugin for the `tsuga-cli` reference when running audit/debug/smoke-test workflows.",
-      "category": "observability",
-      "source": "./plugins/telemetry",
       "strict": false
     }
   ]

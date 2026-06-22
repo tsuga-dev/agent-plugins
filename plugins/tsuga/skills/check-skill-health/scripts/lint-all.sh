@@ -4,7 +4,7 @@
 # Usage:
 #   lint-all.sh                                   # auto-discover in standard paths
 #   lint-all.sh <skill-dir> [<skill-dir> ...]     # lint specific dirs
-#   lint-all.sh --execute                         # include sample-execute-commands (live tsuga probes)
+#   lint-all.sh --execute                         # include sampled read-only command safety audit
 #   lint-all.sh --quiet                           # suppress PASS lines, show only WARN/FAIL
 
 set -uo pipefail
@@ -37,6 +37,7 @@ done
 if [ ${#targets[@]} -eq 0 ]; then
   candidates=()
   [ -d "./skills" ]                  && candidates+=("./skills")
+  [ -d "./plugins/tsuga/skills" ]     && candidates+=("./plugins/tsuga/skills")
   [ -d "$HOME/.claude/skills" ]      && candidates+=("$HOME/.claude/skills")
   [ -d "$HOME/.codex/skills" ]       && candidates+=("$HOME/.codex/skills")
   [ -d "./.agents/skills" ]          && candidates+=("./.agents/skills")
@@ -44,7 +45,7 @@ if [ ${#targets[@]} -eq 0 ]; then
   for root in "${candidates[@]}"; do
     while IFS= read -r skill_md; do
       targets+=("$(dirname "$skill_md")")
-    done < <(find "$root" -mindepth 2 -maxdepth 2 -name SKILL.md 2>/dev/null)
+    done < <(find "$root" -mindepth 1 -maxdepth 2 -name SKILL.md 2>/dev/null)
   done
 
   if [ ${#targets[@]} -eq 0 ]; then
@@ -81,8 +82,7 @@ for skill in "${targets[@]}"; do
   this_fail=0
   for c in "${checks[@]}"; do
     script="$SCRIPT_DIR/$c"
-    if [ ! -x "$script" ]; then chmod +x "$script" 2>/dev/null || true; fi
-    result=$("$script" "$skill" 2>&1 || true)
+    result=$(bash "$script" "$skill" 2>&1 || true)
     # Count tokens in the result.
     while IFS= read -r line; do
       [ -z "$line" ] && continue
