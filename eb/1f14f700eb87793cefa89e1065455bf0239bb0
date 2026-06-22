@@ -1,0 +1,24 @@
+plugins/tsuga/skills/signal-choice-advisor/references/signal-choice.md
+  s_366b8edb0cb6e2::t_966f47c5ad36a1 43
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_366b8edb0cb6e2::t_634eb90d87cbaa 112-117
+plugins/tsuga/skills/tsuga-cli/references/azure-translator.md
+  s_366b8edb0cb6e2::t_28f1efa433f630 13
+  s_366b8edb0cb6e2::t_c23a2fcf7efe04 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "eb1f14f700eb87793cefa89e1065455bf0239bb0",
+  "prompts": {},
+  "sessions": {
+    "s_366b8edb0cb6e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2540a486-208c-4477-bc66-e0663a1e7568",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
