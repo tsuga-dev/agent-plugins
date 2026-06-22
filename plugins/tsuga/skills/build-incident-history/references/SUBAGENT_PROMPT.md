@@ -14,8 +14,8 @@ Write a SUMMARY.md for {company} incident `{inc_id}`. This is one of many per-in
 **Also copy `metadata.json` verbatim:** `cp inputs/incidents/{inc_id}/metadata.json skills/incident-history/references/incidents/{inc_id}/metadata.json`
 
 **MUST-READ references:**
-1. `setup-skills/build-incident-history/references/SUMMARY_TEMPLATE.md` — canonical section list + exemplar.
-2. `setup-skills/build-incident-history/references/LESSONS.md` — every mistake from previous runs.
+1. `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/SUMMARY_TEMPLATE.md` — canonical section list + exemplar.
+2. `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/LESSONS.md` — every mistake from previous runs.
 
 **Inputs for this incident:**
 - Raw: `inputs/incidents/{inc_id}/` — all source material (slack/, github/, tsuga/, incident-report.md, notes.md, metadata.json).

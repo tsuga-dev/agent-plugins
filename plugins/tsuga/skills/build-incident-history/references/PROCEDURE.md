@@ -78,9 +78,9 @@ Each subagent gets:
 - Raw-input path: `inputs/incidents/<inc_id>/`
 - Helper path: `/tmp/incident-extracts/<inc_id>/` (if Phase 2 was run)
 - Output path: `skills/incident-history/references/incidents/<inc_id>/SUMMARY.md`
-- Canonical template: `setup-skills/build-incident-history/references/SUMMARY_TEMPLATE.md`
-- The lessons doc: `setup-skills/build-incident-history/references/LESSONS.md`
-- The verification doc: `setup-skills/build-incident-history/references/VERIFICATION.md`
+- Canonical template: `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/SUMMARY_TEMPLATE.md`
+- The lessons doc: `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/LESSONS.md`
+- The verification doc: `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/VERIFICATION.md`
 
 The subagent's contract is in `SUBAGENT_PROMPT.md` — do not retype it; copy verbatim and substitute only the `{inc_id}` placeholder.
 

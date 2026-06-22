@@ -27,7 +27,7 @@ Preconditions — verify before touching anything:
 
 Phase 1 — build:
 Use the `$build-knowledge-company` skill. Specifically:
-1. Read `setup-skills/build-knowledge-company/SKILL.md` and every file under `setup-skills/build-knowledge-company/references/`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/SKILL.md` and every file under `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/`.
 2. Execute the phases in `PROCEDURE.md` in order. Do NOT skip Phase 0 (access check), Phase 3 (service scoring — derive the list from live data, don't hardcode it), Phase 4 (per-service helper extraction into `/tmp/service-data/<svc>/`), or Phase 8 (verification).
 3. Phases 5 (top-level docs) and 6 (per-team dossiers) — YOU write these directly, not subagents. They need cross-team visibility.
 4. Phase 7 — fan out one subagent per service in `/tmp/services-to-dossier.txt`. Batches of 8–12 in parallel. Prompt template is in `SUBAGENT_PROMPT.md`; copy verbatim, substitute `{svc}`, `{team}`, `{team_id}`, `{company}`, `{N}`.
@@ -35,8 +35,8 @@ Use the `$build-knowledge-company` skill. Specifically:
 
 Phase 2 — health check:
 Use the `$check-skill-health` skill. Specifically:
-1. Run `setup-skills/check-skill-health/scripts/lint-all.sh skills/knowledge-company/` (structural checks, offline).
-2. Then run with live execution: `setup-skills/check-skill-health/scripts/lint-all.sh --execute skills/knowledge-company/` (samples 5 random SERVICE_KNOWLEDGE.md files and runs the first `tsuga` command from each against prod telemetry).
+1. Run `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh skills/knowledge-company/` (structural checks, offline).
+2. Then run with live execution: `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute skills/knowledge-company/` (samples 5 random SERVICE_KNOWLEDGE.md files and runs the first `tsuga` command from each against prod telemetry).
 3. If any FAIL: do NOT hand-edit the affected file. Fix the root cause in the template / subagent prompt / lessons doc, regenerate the affected services via subagent, re-run both lint passes. Iterate until `lint-all.sh --execute` returns exit code 0.
 4. WARNs are informational — read them, decide whether to fix or annotate.
 
@@ -49,7 +49,7 @@ Return a concise summary:
 - The commit (or staged diff).
 
 Hard rules for the whole flow:
-- Every `tsuga` command must be real CLI. Forbidden: MCP-tool pseudo-syntax (`search-logs`, `aggregate-*`, `query=`, `from=-`, `limit=`), `rtk` prefix, singular resource verbs (`tsuga monitor get` — it's `tsuga monitors get`), `tsuga spans search` (it's `tsuga traces search`), `--limit` (it's `--max-results`). Full translation contract in `setup-skills/build-knowledge-company/references/CLI_TRANSLATION.md`.
+- Every `tsuga` command must be real CLI. Forbidden: MCP-tool pseudo-syntax (`search-logs`, `aggregate-*`, `query=`, `from=-`, `limit=`), `rtk` prefix, singular resource verbs (`tsuga monitor get` — it's `tsuga monitors get`), `tsuga spans search` (it's `tsuga traces search`), `--limit` (it's `--max-results`). Full translation contract in `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md`.
 - Live data overrides the task brief. If the brief says service X does foo and live logs show it does bar, trust the logs and document the discrepancy in the service's Confidence note.
 - No duplication from top-level docs. Pointers only.
 - No invented metric names, monitor IDs, dashboard IDs. Ground everything in `tsuga metrics list` / `tsuga monitors list` / `tsuga dashboards list` output.
