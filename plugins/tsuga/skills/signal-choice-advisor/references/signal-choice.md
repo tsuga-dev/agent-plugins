@@ -40,7 +40,7 @@ These are the most common instrumentation mistakes and why they are wrong.
 
 **Why wrong:** Service identity belongs in the `service.name` resource attribute. Encoding it in the metric name makes all queries service-specific, prevents aggregation across a fleet, and creates naming drift when services are renamed.
 
-**Fix:** Use `http.server.request.count` (or the appropriate semconv name) and filter by `context.service.name:web-backend` in queries.
+**Fix:** Use `http.server.request.duration` (or the appropriate semconv name) and filter by `context.service.name:web-backend` in queries.
 
 ---
 

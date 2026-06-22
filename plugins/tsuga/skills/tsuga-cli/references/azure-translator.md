@@ -10,7 +10,7 @@ Azure Monitor pre-computes statistical aggregates, so Tsuga metric names include
 azure_<metric>_{minimum|maximum|average|total|count}
 ```
 
-Pick the suffix matching the question: `_maximum` for saturation, `_average` for baselines, `_total` for sums, `_minimum` for depth-style gauges when Azure emits that shape.
+Pick the suffix matching the question: `_maximum` for saturation, `_average` for baselines and backlog depth, `_total` for sums. Avoid `_minimum` for backlog/depth metrics; it reports the window's trough and understates the value you care about.
 
 ## What Is Queryable
 
@@ -82,7 +82,7 @@ For filtered cases, add `"filter": "<filter>"` inside the query object. For mult
 | Use case | Metric | Aggregate | Group by | Filter / notes |
 |---|---|---|---|---|
 | VM / VMSS CPU | `azure_percentage_cpu_maximum` | `max` | `context.name` | Use `context.azuremonitor.resource_id` if names collide. |
-| ServiceBus dead-letter depth | `azure_deadletteredmessages_minimum` | `max` | `context.name` | Depth-style gauge; confirm suffix with `metrics get`. |
+| ServiceBus dead-letter depth | `azure_deadletteredmessages_average` | `max` | `context.name` | Backlog gauge; confirm suffix with `metrics get`. |
 | Storage account used capacity | `azure_usedcapacity_average` | `max` | `context.name` | Storage metrics may publish hourly; use about a 2h+ window. |
 | Subscription x resource group | `azure_percentage_cpu_maximum` | `max` | `context.azuremonitor.subscription_id`, then `context.resource_group` | Use separate `groupBy` entries, not one multi-field entry. |
 | AKS pod CPU | `k8s.pod.cpu.usage` | `max` | `context.k8s.pod.name` | Filter `context.k8s.cluster.name:<aks-cluster>`; prefer portable Kubernetes metrics when present. |

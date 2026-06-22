@@ -109,6 +109,12 @@ Minimal shape:
 }
 ```
 
+## Service Graph
+
+`tsuga service-graph get <serviceId>` derives a service dependency graph from trace spans in the window: which services called which, and how often. Flags: `--from` (`-30m`), `--to` (`now`), `--query` (`*`). Pass a **service id** (not a name) from `tsuga services list`.
+
+> Empty graph usually means no traces in the window, not no dependencies. Widen `--from` before concluding isolation.
+
 ## Counter Math
 
 Run `tsuga metrics get <name>` before choosing aggregate/function. Wrong math produces plausible garbage.
