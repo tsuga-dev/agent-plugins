@@ -54,6 +54,9 @@ tsuga metrics get <metric-name> --from <from> --to <to>
 | `pubsub.googleapis.com/topic/*` | `context.topic_id` |
 | `storage.googleapis.com/*` | `context.bucket_name`, `context.storage_class`, `context.location` |
 | `run.googleapis.com/*` | `context.faas.name`, `context.faas.instance`, `context.faas.version` |
+| `bigquery.googleapis.com/*` | `context.project_id` |
+| `container.googleapis.com/*` | Kubernetes attributes such as `context.k8s.cluster.name`, `context.k8s.namespace.name`, `context.k8s.pod.name`, `context.k8s.node.name`; confirm per metric. |
+| Other known `*.googleapis.com` families | `router`, `serviceruntime`, `monitoring`, `artifactregistry`, `dns`, `logging`; confirm attributes with `tsuga metrics get`. |
 
 ## Aggregation Template
 

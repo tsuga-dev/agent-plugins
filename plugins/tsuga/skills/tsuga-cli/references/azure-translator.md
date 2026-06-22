@@ -51,9 +51,13 @@ tsuga metrics get <azure_metric_name> --from <from> --to <to>
 
 ## Azure Coverage Notes
 
-Common Azure Monitor families include VM/VMSS, AKS, ServiceBus, Storage, SQL/PostgreSQL Flexible Server, Application Gateway, Event Hub, Cosmos DB, and Container Apps. Discover with `tsuga metrics list --from <from> --to <to>` and confirm attributes with `tsuga metrics get <azure_metric_name> --from <from> --to <to>`.
-
-For AKS, also know `azure_kube_*` and `azure_node_*`. Prefer portable `k8s.*` metrics when present; use Azure families when subscription, resource-group, or `context.metadata_*` tag context matters.
+| Family | Metric hints / dimensions |
+|---|---|
+| VM / VMSS | `azure_percentage_cpu_*`; group by `context.name` or `context.azuremonitor.resource_id`. |
+| AKS | `azure_kube_*`, `azure_node_*`; prefer portable `k8s.*` metrics unless subscription, resource-group, or `context.metadata_*` tag context matters. |
+| ServiceBus | `azure_deadletteredmessages_*`, `azure_activemessages_*`, `azure_incomingmessages_*`, `azure_outgoingmessages_*`; group by `context.name`. |
+| Storage | `azure_usedcapacity_*`; group by `context.name`; storage metrics may publish hourly. |
+| SQL/PostgreSQL Flexible Server, Application Gateway, Event Hub, Cosmos DB, Container Apps | Exact `azure_*` names depend on Azure metric name plus aggregate suffix; confirm with `tsuga metrics list` and `tsuga metrics get`. |
 
 ## Aggregation Template
 

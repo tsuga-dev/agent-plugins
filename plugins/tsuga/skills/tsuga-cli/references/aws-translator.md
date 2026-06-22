@@ -48,6 +48,13 @@ tsuga metrics get <aws_metric_name> --from <from> --to <to>
 | `aws_firehose_*` | `context.deliverystreamname` |
 | `aws_kinesis_*` | `context.streamname` |
 | `aws_eks_*` | `context.clustername` |
+| `aws_logs_*` | `context.loggroupname` |
+| `aws_kms_*` | `context.keyarn`, `context.operation` |
+| `aws_certificatemanager_*` | `context.certificatearn` |
+| `aws_ecr_*` | `context.repositoryname` |
+| `aws_sns_*` | `context.topicname` |
+| `aws_states_*` | `context.statemachinearn` |
+| Other known `aws_*` namespaces | `aws_secretsmanager_*`, `aws_ses_*`, `aws_events_*`, `aws_bedrock_*`, `aws_cloudwatch_*`, `aws_config_*`, `aws_guardduty_*`, `aws_efs_*`, `aws_timestream_*`, `aws_acmprivateca_*`, `aws_privatelinkendpoints_*`, `aws_privatelinkservices_*`, `aws_scheduler_*`, `aws_ssm_runcommand_*`; confirm attributes with `tsuga metrics get`. |
 
 ## Name Examples
 
