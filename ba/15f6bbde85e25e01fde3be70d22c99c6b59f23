@@ -1,0 +1,30 @@
+plugins/tsuga/skills/build-incident-history/RECOMMENDED_PROMPT.md
+  s_427daba747d2c7::t_5393f5c429e2c2 22,30,42,59
+AGENTS.md
+  s_427daba747d2c7::t_27666fc8c0bf4a 141
+  s_427daba747d2c7::t_5393f5c429e2c2 147,156,186
+plugins/tsuga/skills/build-knowledge-company/RECOMMENDED_PROMPT.md
+  s_427daba747d2c7::t_5393f5c429e2c2 30,38-39,52
+plugins/tsuga/skills/build-incident-history/references/PROCEDURE.md
+  s_427daba747d2c7::t_5393f5c429e2c2 81-83
+plugins/tsuga/skills/build-incident-history/references/SUBAGENT_PROMPT.md
+  s_427daba747d2c7::t_5393f5c429e2c2 17-18
+plugins/tsuga/skills/build-knowledge-company/references/SUBAGENT_PROMPT.md
+  s_427daba747d2c7::t_5393f5c429e2c2 15-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "ba15f6bbde85e25e01fde3be70d22c99c6b59f23",
+  "prompts": {},
+  "sessions": {
+    "s_427daba747d2c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eee31-daae-7100-80f9-891be1bbd335",
+        "model": "databricks-gpt-5-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
