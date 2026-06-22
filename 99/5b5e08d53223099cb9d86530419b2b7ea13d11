@@ -1,0 +1,20 @@
+AGENTS.md
+  s_366b8edb0cb6e2::t_d5cd0ab8c32300 39
+  s_366b8edb0cb6e2::t_077369e314bcc7 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "995b5e08d53223099cb9d86530419b2b7ea13d11",
+  "prompts": {},
+  "sessions": {
+    "s_366b8edb0cb6e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2540a486-208c-4477-bc66-e0663a1e7568",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
