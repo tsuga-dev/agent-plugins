@@ -1,6 +1,6 @@
 # AGENTS.md — Conventions for AI Coding Agents in This Repo
 
-This repo distributes **one plugin**, `tsuga`, from a single marketplace using the canonical Anthropic per-plugin subdirectory layout. It contains Tsuga live-platform workflows, CLI reference, incident orchestration, OpenTelemetry instrumentation, Collector, signal-choice, telemetry-debug, and telemetry-audit skills. Read this before making changes.
+This repo distributes **one plugin**, `tsuga`, from a single marketplace using the canonical Anthropic per-plugin subdirectory layout. It contains Tsuga live-platform workflows, CLI reference, incident orchestration, OpenTelemetry instrumentation, Collector, signal-choice, telemetry debug, and audit skills. Read this before making changes.
 
 ## Layout
 
@@ -36,7 +36,7 @@ Notes:
 1. Create `plugins/tsuga/skills/<new-skill>/SKILL.md` with proper frontmatter (`name:`, `description:`).
 2. Use existing naming patterns:
    - `otel-*` for SDK, Collector, and code-facing OpenTelemetry guidance.
-   - `tsuga-*` for live Tsuga workflows, dashboards, audits, smoke/debug workflows, and CLI-backed tasks.
+   - `tsuga-*` for live Tsuga workflows, dashboards, audits, telemetry debug workflows, and CLI-backed tasks.
    - Unprefixed names for platform-agnostic advisory skills.
 3. Minor version bump in both manifests (see above).
 
