@@ -67,6 +67,6 @@ Teams flagged in both this review and a monitor coverage audit:
 ## Related / Next Steps
 
 - `tsuga-audit-monitor-coverage` skill — alerting gap audit
-- `otel-instrumentation` skill — full observability audit for a specific service (routes to per-lang `references/audit-checklist.md`)
-- `tsuga-audit-metrics` skill — metric design and naming quality audit
-- `./find-owner-and-context.md` — identify team owners for failing services (sibling playbook)
+- `otel-instrumentation` skill — full observability audit for a specific service via runtime docs
+- `tsuga-audit-telemetry-quality` skill — metric design and telemetry quality audit
+- `tsuga-cli` — identify team owners for failing services; use the bundled owner/context playbook when needed

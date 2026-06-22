@@ -89,6 +89,6 @@ https://app.tsuga.com/explorer?clusterId=j9k-9Ln-vnV
 
 - Build the JSON value first, then `encodeURIComponent` it **once**. Don't double-encode.
 - `filter` (logs/traces/dashboards) is **simple filters** — `Array<[field, string[]]>`, distinct from the TQL string in `query`/`search`. Don't confuse the two.
-- Each route's `stripSearchParams` middleware drops values equal to the page default, so omitting `query=""`, `timeRange=<default>`, etc. is fine.
+- Each route's `stripSearchParams` middleware drops values equal to the page default, so omitting empty `query`, default `timeRange`, etc. is fine.
 - IDs in the URL are the same ids returned by `tsuga <resource> list` (monitors, dashboards, notification-rules, services, teams, …). Metrics are addressed by **name**, traces by **traceId**, spans by **spanId** inside a `traceId`.
 - Use a relative `timeRange` (`past-24-hours`, etc.) for links a human will click later; use absolute (`{from,to}` ms) when pointing at a specific incident window so the view doesn't drift.

@@ -12,14 +12,14 @@ All widget types, their schemas, and usage guidance.
 | `top-list` | "Who is highest?" triage | Yes (max 7) | logs, metrics, traces |
 | `bar` | Category comparisons (bounded set) | Yes (max 7) | logs, metrics, traces |
 | `pie` | Part-to-whole breakdown (≤6 slices) | Yes (max 7) | logs, metrics, traces |
-| `distribution` | Spread of a value (latency, token counts) | Yes (max 7) | logs, metrics, traces |
-| `heatmap` | Density across two dimensions (group × time) | Yes (max 7) | logs, metrics, traces |
-| `table` | Per-entity scorecard — many metrics as columns | Yes (max 7, multi-level) | logs, metrics, traces |
+| `distribution` | Spread of a value (latency, token counts) | No | logs, metrics, traces |
+| `heatmap` | Time × value density | No | logs, metrics, traces |
+| `table` | Per-entity scorecard — many metrics as columns | Yes (max 3, multi-level) | logs, metrics, traces |
 | `list` | Log evidence table | N/A | logs only |
 | `list-log-patterns` | Clustered log patterns from noisy streams | N/A | logs only |
 | `note` | Section headers, context blocks | N/A | N/A |
 
-Each aggregation widget also has a `*-connection` twin (`timeseries-connection`, `list-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`) that runs read-only SQL against a datastore connection instead of a Tsuga aggregation — see "Database connection variants" at the end.
+Supported connection variants (`timeseries-connection`, `list-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`) run read-only SQL against a datastore connection instead of a Tsuga aggregation — see "Database connection variants" at the end.
 
 Max 15 queries per widget. `formula` references queries by position: `"q1"` = first query, `"q2"` = second, etc.
 
@@ -69,7 +69,7 @@ Displays a single aggregated number. Use for KPIs on the dashboard's top row.
 ```json
 {
   "id": "g-error-count",
-  "name": "Error Count (1h)",
+  "name": "Error Count",
   "visualization": {
     "type": "query-value",
     "source": "logs",
@@ -264,16 +264,16 @@ Displays the spread of an aggregated value as a histogram. Use when the *shape* 
 ```
 
 **Required:** `source`, `queries`
-**Optional:** `formula`, `groupBy`, `percentileMarkers`, `normalizer`, `precision`
+**Optional:** `formula`, `percentileMarkers`, `normalizer`, `precision`
 **Gotchas:**
 - `percentileMarkers` are integers 0–100 (e.g. `[50, 95, 99]`) drawn as vertical reference lines on the histogram.
-- The widget buckets the queried numeric `field`, so point the aggregate at a numeric field (`duration_ms`, `output_tokens`, …) — `count` with no field gives nothing to distribute. Verify the rendered shape with `tsuga aggregation scalar` + the app before embedding.
+- The widget buckets the queried numeric `field`, so point the aggregate at a numeric field (`duration_ms`, `output_tokens`, …) — `count` with no field gives nothing to distribute. Verify the aggregation body with `tsuga aggregation scalar`; rendered distribution/heatmap shape remains a limitation unless the user separately asks for UI validation.
 
 ---
 
 ## `heatmap`
 
-Displays an aggregated value as a color-intensity grid — `groupBy` on one axis, time on the other, the aggregate as the cell color. Use for density across two dimensions: activity per user over time, latency band over time, errors per route over time.
+Displays an aggregated value as a color-intensity grid over time. Use for density or intensity trends where the aggregate is the cell color.
 
 ```json
 {
@@ -288,7 +288,6 @@ Displays an aggregated value as a color-intensity grid — `groupBy` on one axis
         "filter": "context.service.name:claude-code event.name:user_prompt"
       }
     ],
-    "groupBy": [{"fields": ["user.email"], "limit": 30}],
     "palette": "green",
     "normalizer": {"type": "custom", "unit": "prompts"}
   },
@@ -297,11 +296,10 @@ Displays an aggregated value as a color-intensity grid — `groupBy` on one axis
 ```
 
 **Required:** `source`, `queries`
-**Optional:** `formula`, `groupBy`, `palette`, `normalizer`, `precision`
+**Optional:** `formula`, `palette`, `normalizer`, `precision`
 **Gotchas:**
 - `palette` is one color from `red`, `pink`, `violet`, `blue`, `cyan`, `green`, `yellow`, `orange` — it sets the intensity gradient.
-- Without `groupBy` the heatmap collapses to a single time-banded row; group by the dimension you want on the y-axis.
-- High-cardinality `groupBy` makes rows unreadable — cap `limit` to what fits vertically (~20–30).
+- `groupBy` is not supported for heatmap widgets. Use `timeseries` or `top-list` for grouped comparisons.
 
 ---
 
@@ -349,7 +347,7 @@ Displays several independent aggregations as columns, with rows defined by `grou
 
 **Required:** `columns` (≥1; each column needs `name`, `source`, `queries`)
 **Optional per column:** `formula`, `normalizer`, `precision`, `aliases`
-**Optional top-level:** `groupBy` (max 7, applied as multi-level row grouping), `defaultSorting` (`[{"id": "<column id>", "desc": true}]`)
+**Optional top-level:** `groupBy` (max 3, applied as multi-level row grouping), `defaultSorting` (`[{"id": "<column id>", "desc": true}]`)
 **Gotchas:**
 - Unlike every other widget, `source` / `queries` live **per column**, not at the visualization root.
 - `groupBy` defines the rows; each column aggregates within those rows.
@@ -450,7 +448,7 @@ Displays static markdown text. Use as section headers and context blocks.
 
 ## Database connection variants
 
-Every aggregation widget has a `*-connection` twin that runs read-only SQL against a configured datastore connection instead of a Tsuga aggregation: `timeseries-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`, `list-connection`. They drop `source` + aggregation `queries` and use instead:
+Supported aggregation widgets can have a `*-connection` twin that runs read-only SQL against a configured datastore connection instead of a Tsuga aggregation: `timeseries-connection`, `top-list-connection`, `pie-connection`, `bar-connection`, `query-value-connection`, `list-connection`. They drop `source` + aggregation `queries` and use instead:
 
 - `connectionId` — the datastore connection to query (not a Tsuga `source`)
 - `queries` — an array of read-only SQL strings (`SELECT` only); `list-connection` uses a single `query` string
@@ -458,11 +456,11 @@ Every aggregation widget has a `*-connection` twin that runs read-only SQL again
 ```json
 {
   "id": "g-signups",
-  "name": "Signups (last 7d)",
+  "name": "Signups",
   "visualization": {
     "type": "timeseries-connection",
     "connectionId": "<connection-id>",
-    "queries": ["SELECT date_trunc('day', created_at) AS t, count(*) FROM users GROUP BY 1 ORDER BY 1"]
+    "queries": ["SELECT date_trunc('day', created_at) AS time, COUNT(*) AS value FROM users WHERE created_at BETWEEN '{{ time_from }}' AND '{{ time_to }}' GROUP BY 1 ORDER BY 1"]
   },
   "layout": {"x": 0, "y": 0, "w": 6, "h": 4}
 }
@@ -504,4 +502,4 @@ Formulas reference queries by position. Place the formula at body level (same le
 
 ## Functions
 
-The `functions` array transforms a raw aggregation result (e.g. `[{"type": "per-second"}]`). Which function a given metric requires depends on its type and temporality — see the Counter Math section of `tsuga-cli` for the type/temporality → aggregate + function mapping. Verify each body with `tsuga aggregation scalar` before embedding here.
+The `functions` array transforms a raw aggregation result (e.g. `[{"type": "per-second"}]`). Which function a given metric requires depends on its type and temporality — see the Counter Math section of `tsuga-cli` for the type/temporality → aggregate + function mapping. Verify each body with `tsuga aggregation scalar` or `tsuga aggregation timeseries` before embedding here.

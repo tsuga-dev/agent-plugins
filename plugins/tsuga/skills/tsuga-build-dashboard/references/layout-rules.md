@@ -100,7 +100,7 @@ Starting with `blue.200` reserves red for genuinely alert-adjacent sections if n
 
 ## Dashboard-Level Filters
 
-Always include these two filters so users can scope the dashboard without editing JSON:
+Include these filters when they are relevant to the dashboard audience or scope so users can scope the dashboard without editing JSON:
 
 ```json
 "filters": [

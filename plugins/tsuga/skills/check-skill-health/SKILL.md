@@ -1,6 +1,6 @@
 ---
 name: check-skill-health
-description: "Lint the runtime skills — `knowledge-company`, `incident-history`, plus any other skill bundle with a standard SKILL.md layout — and report frontmatter, length, structure, forbidden-token, and cross-link violations. Use after running `build-incident-history` or `build-knowledge-company`, or whenever a skill tree is edited. Targets skills under `./skills/`, `~/.claude/skills/`, `~/.codex/skills/`, and `.agents/skills/`. Produces a pass/warn/fail report per check and an overall exit code. Optional `--execute` flag runs live `tsuga` CLI probes sampled from each service dossier to confirm the commands actually run."
+description: "Use when linting Tsuga skill bundles after editing runtime skills, generated incident-history or knowledge-company archives, or skill references; use when checking frontmatter, SKILL.md length, forbidden Tsuga CLI patterns, cross-links, required sections, generated dossier structure, sampled read-only command shape, local reference validation, release readiness, or whether a skill tree is ready for review."
 ---
 <!-- skill-lint: allow-forbidden-examples — this file documents the forbidden patterns as teaching examples -->
 
@@ -12,13 +12,13 @@ Automated health checks for the runtime skill bundles. Catches the mechanical vi
 
 ```bash
 # Lint every skill found in the standard locations
-./scripts/lint-all.sh
+${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh
 
 # Lint a specific skill dir
-./scripts/lint-all.sh /Users/me/proj/skills/knowledge-company
+${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh /Users/me/proj/skills/knowledge-company
 
-# Include the live-execution gate (requires tsuga auth)
-./scripts/lint-all.sh --execute
+# Include sampled command safety audit; this does not execute commands
+${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute
 ```
 
 ## What it checks
@@ -36,7 +36,7 @@ Automated (pass/warn/fail):
 
 Opt-in (`--execute`):
 
-- **Sampled execution** — pick 5 random SERVICE_KNOWLEDGE.md files, extract the first `tsuga` command from each, run it. Fail if any return non-zero or emit a CLI error. Requires `tsuga auth` to be set.
+- **Sampled command safety audit** — pick up to 5 SERVICE_KNOWLEDGE.md files, extract the first `tsuga` command from each, and verify it is a single read-only command with no shell metacharacters. It does not run the commands.
 
 ## What it does NOT check
 
@@ -61,7 +61,7 @@ check-skill-health/
 │   ├── check-forbidden-tokens.sh    ← Tsuga-specific (MCP-pseudo-syntax + rtk + singular verbs)
 │   ├── check-incident-history.sh    ← skill-specific (INC-*/SUMMARY.md + metadata.json)
 │   ├── check-knowledge-company.sh   ← skill-specific (teams/services/ structure + canonical sections)
-│   └── sample-execute-commands.sh   ← opt-in, requires tsuga auth
+│   └── sample-execute-commands.sh   ← opt-in command safety audit; does not execute
 └── references/
     ├── CHECKLIST.md                 ← the human-review rubric (non-automatable rules)
     └── RULES.md                     ← why each check exists + how to fix a violation
@@ -76,3 +76,15 @@ check-skill-health/
 ## Extending
 
 Each script is standalone and can be dropped into another skill's lint flow. Shared argument contract: first arg is the skill directory, optional `--quiet` flag suppresses PASS lines.
+
+## Related Skills / Next Steps
+
+- `build-incident-history` - regenerate incident-history archives before checking them.
+- `build-knowledge-company` - regenerate knowledge-company archives before checking them.
+- `tsuga-cli` - validate command syntax and resource names when a lint failure cites CLI shape.
+
+## Limitations
+
+- Passing lint is not proof that a skill works under pressure; still review the workflow and run pressure scenarios.
+- `--execute` is a historical flag name. It audits sampled command shape only and must not run live Tsuga queries.
+- Generated archives can contain company-specific context; summarize findings and avoid reproducing sensitive values.
