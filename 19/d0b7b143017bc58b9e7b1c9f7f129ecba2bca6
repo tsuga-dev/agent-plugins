@@ -1,0 +1,19 @@
+plugins/tsuga/skills/incident-investigation/SKILL.md
+  s_7e60ed408febe2::t_bc66b0365d4c6a 59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "19d0b7b143017bc58b9e7b1c9f7f129ecba2bca6",
+  "prompts": {},
+  "sessions": {
+    "s_7e60ed408febe2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "17ab3b25-de66-46c7-82e7-e9666d5123b1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
