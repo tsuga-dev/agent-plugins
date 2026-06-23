@@ -36,7 +36,7 @@ The load-bearing artifact is the **per-service SERVICE_KNOWLEDGE.md**. It's what
 ## Before you start
 
 - **Build `incident-history` first.** `knowledge-company`'s service dossiers cross-link to incidents — that requires a populated `skills/incident-history/references/incidents/` tree. See `../build-incident-history/` for that procedure.
-- **Confirm `tsuga` CLI works.** Run `tsuga teams list` and `tsuga logs search --query '*' --from -5m --max-results 1`. Both must succeed. If not, fix auth (`tsuga auth <token>`) before continuing.
+- **Confirm `tsuga` CLI works.** Run `tsuga teams list` and `tsuga logs search --query '*' --from -5m --max-results 1`. Both must succeed. If not, fix auth (`tsuga auth login`, or `tsuga auth operation-key <key>` for non-interactive use) before continuing.
 - **Confirm the runtime agent's `knowledge-technology` skill exists** — many cross-links in `knowledge-company` point at it (for Postgres / Kafka / etc. metric catalogs). If absent, either build it or adjust the cross-refs.
 
 ## Procedure — read in order
