@@ -1,0 +1,25 @@
+plugins/tsuga/.claude-plugin/plugin.json
+  s_c9e70a01542f57::t_761c74fe540ec7 4
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_c9e70a01542f57::t_fcec6f4bf43c3d 82
+.claude-plugin/marketplace.json
+  s_c9e70a01542f57::t_bc67aa8dea556c 9
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_c9e70a01542f57::t_3d98bb54b8b7b9 28-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "8868fc3018378f6aec29bfcb25fac1f246bc3f92",
+  "prompts": {},
+  "sessions": {
+    "s_c9e70a01542f57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dfa9d035-576b-4d15-9303-d80b5158e699",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
