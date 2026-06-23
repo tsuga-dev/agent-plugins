@@ -79,6 +79,7 @@ Key structural rules:
 - `owner` must be a team ID — resolve with `tsuga teams list`
 - Each graph requires a unique `id`, a `visualization` object, and a `layout` object
 - `query-value` does not support `groupBy` — the API silently drops it
+- Name each series in the legend via `visualization.aliases.queries`, keyed by the query's zero-based index as a string (`"0"`, `"1"`, ...) — NOT `formula`'s `"q1"`/`"q2"`; wrong keys are silently ignored (see `references/widget-reference.md`)
 - List-style widgets take a single `query` string. Variants: `list` (logs matching a Tsuga query), `list-log-patterns` (logs clustered into patterns), `list-connection` (datastore rows via `connectionId` + read-only SQL)
 - Include dashboard-level env + team filters when they are relevant to the dashboard audience:
 
