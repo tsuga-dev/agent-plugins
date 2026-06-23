@@ -1,0 +1,27 @@
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_448b92436eee85::t_5e0d3c29a98165 12
+.claude-plugin/marketplace.json
+  s_448b92436eee85::t_5c554e1ff58559 9
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_448b92436eee85::t_683cfd5df28ffc 47
+plugins/tsuga/.claude-plugin/plugin.json
+  s_448b92436eee85::t_33a444e514648f 4
+plugins/tsuga/skills/build-knowledge-company/SKILL.md
+  s_448b92436eee85::t_51c33bb4b2964a 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "c5aa848c111f6b0ae15f9f33e83ca2e0362bb65f",
+  "prompts": {},
+  "sessions": {
+    "s_448b92436eee85": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "21180de9-8931-4da8-aa98-6f897443f005",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
