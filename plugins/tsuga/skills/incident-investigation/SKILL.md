@@ -56,6 +56,7 @@ Check these during synthesis:
 9. **Blame a PR without tracing the signal to its emitting code.** A PR that merged in the right window and touches "the right area" is a candidate, not a confirmation. Pin each verbatim signal (error string, metric name, log pattern) to the `file:line` that emits it _first_, then check whether the PR's diff modifies that exact path.
 10. **Skip the monitor's own query.** If the case came from a monitor firing, that monitor's filter + threshold IS the first `Saw` of your diagnostic path. Pull it with `tsuga monitors get <id>` before running broader log searches.
 11. **Read the error string literally.** Before building a narrative, re-read the raw verbatim error. If the text says `"invalid type: map, expected a sequence"`, the payload being an array is the first thing to check — don't stack indirections on top. If literal reading contradicts your hypothesis, restart from the literal reading.
+12. **Empty metric series is not a measured zero.** A query that returns no points can mean the metric is not emitted for that scope, a wrong name, or a scrape gap, not a healthy value. Before a hypothesis dies on "the metric shows nothing", confirm the metric actually emits for that scope (does another cluster or scope return it?) or switch to a signal that answers the same question.
 
 ## Workflow
 
