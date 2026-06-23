@@ -9,7 +9,7 @@ Use when asked for an observability posture overview, quality scores, reliabilit
 
 ## Workflow
 
-1. `tsuga quality-reports list` (pass `--cluster <id>` in multi-cluster orgs) — returns a flat array of rule-evaluation rows. Each row has `ruleId`, `owner` (team id or absent for global), `status`, `score`, `weight`, `reportOverallScore` and `reportTotalWeight` (per-owner aggregates), `createdAt`, optional `recommendation` and `examples`.
+1. `tsuga quality-reports list` (pass `--cluster <id>` in multi-cluster orgs; when a team filter is provided, add `--team <name>` to scope server-side, which omits global cluster rows) — returns a flat array of rule-evaluation rows. Each row has `ruleId`, `owner` (team id or absent for global), `status`, `score`, `weight`, `reportOverallScore` and `reportTotalWeight` (per-owner aggregates), `createdAt`, optional `recommendation` and `examples`.
 2. Group rows by `owner` to get per-team scores. Within each team's rows, every row carries the same `reportOverallScore` — use that as the team score. The report timestamp is `min(.[].createdAt)`. Rows where `owner` is absent are global (cluster-level) rules.
 3. If the derived report timestamp is more than 48 hours ago: flag as potentially stale before continuing.
 4. Flag teams below threshold; for each, list rows where `status == "failed"` — key fields: `ruleId`, `recommendation`, optional `examples`.
