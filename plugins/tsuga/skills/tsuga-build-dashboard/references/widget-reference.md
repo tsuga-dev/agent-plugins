@@ -25,6 +25,21 @@ Max 15 queries per widget. `formula` references queries by position: `"q1"` = fi
 
 **Never send an empty `name` or `description` (`""`)** — the API rejects it with a 400 (`must NOT have fewer than 1 characters`). When a widget has no label (common for notes), **omit the key entirely** rather than passing `""`. (For aggregate/query-body rules — `count` not valid on `metrics`, Unix-seconds `timeRange`, etc. — see `tsuga-cli`.)
 
+### Series names in the legend (`aliases`)
+
+Every series renders with an auto-generated label like `Count on (<filter>)` unless you name it. To set legible legend names, add `aliases` to the visualization:
+
+```json
+"aliases": {
+  "queries": {"0": "Humans", "1": "AI agents", "2": "Automation"},
+  "formula": "Programmatic %"
+}
+```
+
+- `aliases.queries` is keyed by each query's **zero-based index as a string** — `"0"` is the first query in `queries`, `"1"` the second, and so on.
+- ⚠️ this key is NOT the `formula` syntax. `formula` references queries as `"q1"`, `"q2"`; `aliases.queries` uses `"0"`, `"1"`. Using `"q1"` as an alias key is silently ignored and the generated label stays.
+- Works on every aggregation widget (`timeseries`, `top-list`, `pie`, `bar`, `gauge`, ...). On `table`, aliases are set per column instead (see the `table` section).
+
 ---
 
 ## `timeseries`
