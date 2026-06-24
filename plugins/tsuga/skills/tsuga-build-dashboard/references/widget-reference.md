@@ -27,7 +27,7 @@ Max 15 queries per widget. `formula` references queries by position: `"q1"` = fi
 
 ### Series names in the legend (`aliases`)
 
-Every series renders with an auto-generated label like `Count on (<filter>)` unless you name it. To set legible legend names, add `aliases` to the visualization:
+**Always set `aliases` on any widget with more than one query/series or a `formula`.** Otherwise every series renders as `Count on (<filter>)`, which is unreadable when two series share a filter prefix (for example, two `http.headers.x-tsuga-source:mcp-server AND ...` counts both show as the same truncated `Count on (http.headers.x-tsuga-...)`). To set legible legend names, add `aliases` to the visualization:
 
 ```json
 "aliases": {
@@ -496,10 +496,12 @@ Every numeric widget should have a `normalizer` so values display with meaningfu
 |------|------|---------|
 | Duration | `{"type": "duration", "unit": "ms"}` | Latency — set `unit` to the metric's actual unit (ns, us, ms, s, m, h, days) |
 | Data | `{"type": "data", "unit": "B"}` | Bytes — set `unit` to the value's actual unit; OTel byte metrics are bytes → `B` (B, KB, MB, GB, TB, PB) |
-| Percent | `{"type": "percent"}` | Ratios, utilization |
+| Percent | `{"type": "percent"}` | Percentages (appends `%` to the value as-is; does NOT multiply by 100, see note) |
 | Custom | `{"type": "custom", "unit": "req/s"}` | Everything else — provide a unit label |
 
 **Critical — for `data` and `duration`, `unit` is the unit the raw value is ALREADY in, not a display target.** The UI auto-scales *up* from that base unit and picks the readable magnitude itself, so set it to the metric's true unit and let the widget format. OTel byte metrics (`*_bytes`, `intake_api_batch_bytes`, `quickwit_*_bytes`, …) emit **bytes** → use `"B"`, and the widget renders `58 TB`, `4.2 GB`, etc. on its own. Setting a larger base like `"GB"` on a bytes value overstates the reading by 1e9 — e.g. 58 TB displays as "58M PB". Always confirm the metric's unit with `tsuga metrics get <name>` before choosing.
+
+**Critical: `percent` does NOT multiply by 100.** It only appends a `%` sign to the value as-is, so a raw ratio of `0.12` renders as `0.12%`, not `12%`. Always scale to a 0-100 number in the `formula` (`q1/q2*100`), so `0.12` becomes `12` and displays as `12%`. Consequence: `query-value` `conditions` (and `gauge` / `bar` thresholds) compare the post-`*100` value, so set them on the 0-100 scale: `5` and `20` for 5% / 20%, not `0.05` / `0.2`.
 
 ---
 
@@ -512,6 +514,8 @@ Formulas reference queries by position. Place the formula at body level (same le
 | Error ratio % | `(q1 / (q1 + q2)) * 100` | `{"type": "percent"}` |
 | Utilization % | `(q1 / q2) * 100` | `{"type": "percent"}` |
 | Gap / delta | `q1 - q2` | Match the unit of q1 and q2 |
+
+The `*100` in the percentage rows is mandatory: the `percent` normalizer appends `%` without scaling (see Normalizer Reference). Keep any matching `conditions` thresholds on the same 0-100 scale.
 
 ---
 
