@@ -1,0 +1,30 @@
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_ad0306b4e30fda::t_fdb7dd1fa53ca5 83
+  s_ad0306b4e30fda::t_11c4f92b4e5a0f 82
+plugins/tsuga/.claude-plugin/plugin.json
+  s_ad0306b4e30fda::t_7150a8715df2d0 4
+plugins/tsuga/skills/tsuga-build-dashboard/references/widget-reference.md
+  s_ad0306b4e30fda::t_ac23f351938835 30
+  s_ad0306b4e30fda::t_88c6f3883e3f68 499
+  s_ad0306b4e30fda::t_f405c3aff280b0 504
+  s_ad0306b4e30fda::t_27c13e13eac9cb 505
+  s_ad0306b4e30fda::t_e3235afd15f7a7 518-519
+.claude-plugin/marketplace.json
+  s_ad0306b4e30fda::t_8b7a43a1d723b5 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "c39989ef6f092739ed2c41a5fb4296fc41281caf",
+  "prompts": {},
+  "sessions": {
+    "s_ad0306b4e30fda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b1c78399-8390-4bdc-8c84-5229ab65823f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
