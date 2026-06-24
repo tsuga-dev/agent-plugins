@@ -58,7 +58,7 @@ If docs are unavailable, report the CLI error and use `--help` / `--generate-ske
 These fail silently or are easy to misread:
 
 - AND is the default. `OR` and `NOT` must be uppercase.
-- No field-distributed OR: `field:(a OR b)` matches nothing. Use `(field:a OR field:b)`.
+- Field-level OR is supported: `field:(a OR b)` matches any listed value (same as `(field:a OR field:b)`).
 - No `_exists_:field`. Use `field:*`.
 - Inclusive ranges use `field:[A TO B]`. Exclusive `{A TO B}` is rejected; emulate with `field:>A field:<B`.
 - Bare tokens search log message text. `message:X` matches the entire exact message; use `message:*token*` only for a single-token substring.
