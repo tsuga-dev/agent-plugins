@@ -1,0 +1,19 @@
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_ad0306b4e30fda::t_9919b6f6932dc0 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "f7e78ab943abc8da0aaa6b8100cf8e2512cb1e05",
+  "prompts": {},
+  "sessions": {
+    "s_ad0306b4e30fda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b1c78399-8390-4bdc-8c84-5229ab65823f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Arthur Verrez <arthurverrez@gmail.com>"
+    }
+  }
+}
