@@ -21,6 +21,7 @@ Use CLI help and `--generate-skeleton` first for CLI CRUD payload shape. Fetch d
 | Traces product/query docs | `tsuga docs get explore/traces` |
 | Monitors product docs | `tsuga docs get alert/monitors/index` |
 | Dashboards product docs | `tsuga docs get visualize/dashboards/index` |
+| Metric aggregation choice / temporality edge cases | `tsuga docs get visualize/guides/how-to-choose-a-metric-aggregation` |
 | Aggregation API bodies | `tsuga docs get api/aggregateScalar` and `tsuga docs get api/aggregateTimeseries` |
 | Logs API body | `tsuga docs get api/searchLogs` |
 | Traces API body | `tsuga docs get api/searchSpans` |
@@ -125,6 +126,8 @@ Run `tsuga metrics get <name>` before choosing aggregate/function. Wrong math pr
 | Counter, delta | `sum` | `per-second` |
 | Counter, cumulative | `sum` | `rate` or `increase` |
 | Histogram | `percentile` with `field` and `percentile` | none |
+
+This table is a quick reference, not the full model. For temporality nuances — why cumulative counters need an upstream `cumulativetodelta` processor, and how Tsuga sums a gauge across dimensions within a bucket (average within each dimension, then sum — not a naive sum, and not Prometheus's instant-vector `sum`) — fetch `tsuga docs get visualize/guides/how-to-choose-a-metric-aggregation` rather than hand-deriving it.
 
 When the right metric is unclear, inspect existing dashboards before the metric catalog; dashboards contain validated metric/filter/aggregation combinations.
 
