@@ -1,6 +1,6 @@
 ---
 name: tsuga-audit
-description: "Use for Tsuga audits: broad setup health checks, quality reports/scores/rules, telemetry quality, monitor and alerting coverage, dashboard hygiene, telemetry routes, and resource governance. Trigger on asks about log/metric/trace quality, naming, cardinality, correlation, resource identity, services without monitors, notification routing, silences, stale teams, empty/stale/unused dashboards, unrouted or over-routed logs, unused ingestion keys, tag policies, or retention policies. Ask which class to run when the request is broad or unclear."
+description: "Use for Tsuga setup audits, including quality reports, telemetry quality, alerting coverage, dashboard hygiene, routing, ingestion keys, tag policies, and retention policies. For broad or unclear audit requests, ask which audit class to run."
 ---
 
 # Tsuga Audit
