@@ -1,0 +1,81 @@
+plugins/tsuga/skills/tsuga-debug-telemetry-ingestion/SKILL.md
+  s_dde89850024fd3::t_d340337e7e7e4c 100
+plugins/tsuga/skills/tsuga-audit/SKILL.md
+  s_dde89850024fd3::t_feb95312a468ff 33-35
+  s_dde89850024fd3::t_1e6c53c0ee6b31 16
+  s_aa3c14a5b5b382::t_db4274134d49ae 3,28
+  s_dde89850024fd3::t_452103839d0c86 22
+  s_dde89850024fd3::t_3dc10b3f869f72 24-27,29-32,36-41,44,47-48,50-53,57,64,66,79-82,89-90
+  s_dde89850024fd3::t_75f4b452a02133 54,58-60
+  s_dde89850024fd3::t_41533466d7bd12 97
+  s_dde89850024fd3::t_3f514f2038f85a 103
+  s_dde89850024fd3::t_88ed1fb1271c8d 1-2,4-15,19-21,23,49,55-56,61-63,65,67-71,73-78,91-92,94-96,98-102
+  s_dde89850024fd3::t_e0b235f1d62e86 17-18
+  s_dde89850024fd3::t_65adfa567d4aa5 72,83-88,93
+  s_dde89850024fd3::t_277179ba6d999b 42-43,45-46
+plugins/tsuga/skills/tsuga-cli/references/playbooks/find-owner-and-context.md
+  s_dde89850024fd3::t_772a83295d5c8a 66
+plugins/tsuga/skills/tsuga-audit/references/telemetry-quality.md
+  s_dde89850024fd3::t_13d5c397ccc672 59
+  s_dde89850024fd3::t_96e17073933f82 1-58,60-107
+plugins/tsuga/skills/tsuga-audit/references/resource-governance.md
+  s_aa3c14a5b5b382::t_db4274134d49ae 32,93
+  s_dde89850024fd3::t_502f7ece9531a7 1-31,33-38,45-53,55-92,94-101
+  s_3bf428edf38730::t_b255b0fc658a63 39-44
+  s_3bf428edf38730::t_9501c48f12bd03 54
+plugins/tsuga/skills/tsuga-audit/references/monitor-coverage.md
+  s_dde89850024fd3::t_a1115676495abc 1-28,36,38-42,44,46,48,50-71,73-143
+  s_3bf428edf38730::t_bef278bc832a54 37,43,45,47,49
+  s_3bf428edf38730::t_9961a1ee6b48f7 29-35
+  s_dde89850024fd3::t_0b59b09948323f 72
+plugins/tsuga/skills/tsuga-cli/references/playbooks/reliability-review.md
+  s_3bf428edf38730::t_a1daac2ea5457d 69
+plugins/tsuga/skills/signal-choice-advisor/SKILL.md
+  s_dde89850024fd3::t_a9806fa4b97817 113
+plugins/tsuga/skills/tsuga-audit/references/routes.md
+  s_dde89850024fd3::t_983df26ca71f28 1-101
+plugins/tsuga/skills/tsuga-analyze-trace-latency/SKILL.md
+  s_dde89850024fd3::t_c72b56e675b380 129
+plugins/tsuga/skills/tsuga-build-dashboard/SKILL.md
+  s_dde89850024fd3::t_6ef71e01204ee4 161
+plugins/tsuga/skills/tsuga-audit/references/dashboards.md
+  s_dde89850024fd3::t_092651c2c2cbc6 1-36,38,40-50,52-55,57-78,81-97,99-107
+  s_3bf428edf38730::t_7494524668d618 37,39
+  s_aa3c14a5b5b382::t_db4274134d49ae 79-80,98
+  s_dde89850024fd3::t_ed20e06f07796e 56
+  s_3bf428edf38730::t_2d6c4cb4a3c48a 51
+plugins/tsuga/skills/tsuga-investigate-errors/SKILL.md
+  s_dde89850024fd3::t_69f9552394b894 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "5cdf91d07267756a1f4be52448548573d87b308e",
+  "prompts": {},
+  "sessions": {
+    "s_3bf428edf38730": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "934aafe8-44c5-49ad-91f1-80c4cf1f53e5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_aa3c14a5b5b382": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f22d9-3e33-7571-ad97-fe13103c3a06",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_dde89850024fd3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cdeef590-069a-47c8-a367-614bc99fc268",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
