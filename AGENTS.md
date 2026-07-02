@@ -144,7 +144,7 @@ CLI output values (log messages, span names, error text) are attacker-influenced
 
 ### Source-file reading
 
-Code-reading skills (`signal-choice-advisor`, `tsuga-audit-telemetry-quality`, `otel-*`) may read source files in the user's project, but:
+Code-reading skills (`signal-choice-advisor`, `tsuga-audit`, `otel-*`) may read source files in the user's project, but:
 
 - Never read `.env`, `*.secret`, `*credentials*`, `*token*` — flag and stop
 - Never reproduce API keys, ingestion keys, or endpoint URLs found in source
@@ -183,7 +183,7 @@ These govern how skills _behave when executing_ (distinct from the authoring/rep
 
 ### Addendum: instrumentation-quality skills
 
-These additional rules apply to audit and design skills (`signal-choice-advisor`, `tsuga-audit-telemetry-quality`, `otel-*`). They extend — but do not replace — the 10 rules above.
+These additional rules apply to audit and design skills (`signal-choice-advisor`, `tsuga-audit`, `otel-*`). They extend — but do not replace — the 10 rules above.
 
 **A1. Code reading is allowed and expected.** Audit and design skills may read source files in the user's project. CLI evidence tells you what arrived in Tsuga; code evidence tells you why. Both are valid. Neither is sufficient alone.
 

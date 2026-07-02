@@ -126,4 +126,4 @@ Trace-log correlation: <N> matching traces found via trace_id / not attempted (s
 - `tsuga-investigate-service-health` — broader health triage including logs and metrics
 - `tsuga-investigate-errors` — error deep-dive if latency correlates with errors
 - `tsuga-debug-telemetry-ingestion` — verify traces are arriving if no spans found
-- `tsuga-audit-telemetry-quality` — audit span design quality
+- `tsuga-audit` — audit span design quality

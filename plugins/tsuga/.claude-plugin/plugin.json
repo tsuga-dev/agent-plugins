@@ -1,7 +1,7 @@
 {
   "name": "tsuga",
   "description": "Tsuga observability plugin: the `tsuga` CLI driver (commands, TQL syntax, aggregation bodies, counter math, deep links, cloud/k8s translators); live-platform investigation for service health, errors, latency, and monitor coverage; dashboard building; incident orchestration; OpenTelemetry SDK, Collector, OTTL, signal-choice, telemetry debug, and audit skills; and meta-skills for building and validating skill bundles.",
-  "version": "0.8.4",
+  "version": "0.9.0",
   "author": {
     "name": "Tsuga Engineering",
     "email": "engineering@tsuga.com"
