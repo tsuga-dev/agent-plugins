@@ -1,0 +1,27 @@
+plugins/tsuga/skills/tsuga-cli/SKILL.md
+  s_dde89850024fd3::t_4c83c71b4f2d7c 24
+  s_dde89850024fd3::t_3e917011b8fd6f 130-131
+plugins/tsuga/skills/tsuga-audit-monitor-coverage/SKILL.md
+  s_dde89850024fd3::t_22b356390e8d83 40,44
+  s_dde89850024fd3::t_0ca077ad69a4ed 67-68
+  s_dde89850024fd3::t_611421da1da07b 82,89-92
+  s_dde89850024fd3::t_7ba52a2c43f749 52
+  s_dde89850024fd3::t_a2872df170b340 21-31
+  s_dde89850024fd3::t_98f7e75fc19b1b 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "4b75ab7d40e07f4c1411225d0de08e4550d88f1c",
+  "prompts": {},
+  "sessions": {
+    "s_dde89850024fd3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cdeef590-069a-47c8-a367-614bc99fc268",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
