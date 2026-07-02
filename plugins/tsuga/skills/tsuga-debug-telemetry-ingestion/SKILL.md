@@ -97,5 +97,5 @@ Use `otel-instrumentation` for confirmed-language source fixes after the ingesti
 
 - `otel-instrumentation` - language-specific SDK setup, exporter config, log correlation, and source fixes.
 - `otel-collector` - Collector pipeline, exporter, processor, OTTL, and redaction debugging.
-- `tsuga-audit-telemetry-quality` - audit signal shape after telemetry is arriving.
+- `tsuga-audit` - audit signal shape after telemetry is arriving.
 - `signal-choice-advisor` - redesign signal choice, semantic naming, or cardinality after the ingestion issue is isolated.

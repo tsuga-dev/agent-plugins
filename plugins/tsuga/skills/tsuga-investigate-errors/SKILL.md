@@ -108,4 +108,4 @@ Source: aggregation scalar, filter: context.service.name:"<name>" level:ERROR <e
 - `tsuga-investigate-service-health` — broader health triage (metrics + traces)
 - `tsuga-analyze-trace-latency` — if errors correlate with latency spikes
 - `tsuga-debug-telemetry-ingestion` — verify signals after deploying a fix
-- `tsuga-audit-telemetry-quality` — full telemetry quality audit if the error pattern points to instrumentation gaps
+- `tsuga-audit` — full telemetry quality audit if the error pattern points to instrumentation gaps

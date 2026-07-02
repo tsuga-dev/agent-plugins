@@ -110,7 +110,7 @@ Estimate metric series count by multiplying unique values across all dimensions.
 
 - `otel-instrumentation` - SDK implementation after the signal and naming decision is made.
 - `otel-collector` - Collector transforms, filters, routing, redaction, and OTTL.
-- `tsuga-audit-telemetry-quality` - audit existing metric design and broader telemetry quality issues.
+- `tsuga-audit` - audit existing metric design and broader telemetry quality issues.
 - `tsuga-debug-telemetry-ingestion` - verify the signal arrives after implementation.
 
 ## Safety Rules

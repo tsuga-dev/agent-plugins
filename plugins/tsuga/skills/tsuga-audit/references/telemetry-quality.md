@@ -1,11 +1,6 @@
----
-name: tsuga-audit-telemetry-quality
-description: "Use when auditing telemetry quality for logs, metrics, traces, or resource identity: log structure/correlation, metric naming/units/temporality/instrument type/cardinality, span naming/status/kind/links/noisy spans, semantic naming/cardinality, telemetry quality reviews, quality reports, downstream metric usage, noisy signals, missing labels, malformed attributes, resource drift, source labels, broken correlation, or recommendations to rename metrics or right-size high-cardinality attributes."
----
+# Telemetry Quality Audit
 
-# Tsuga Audit Telemetry Quality
-
-Use this as the read-only quality audit workflow for telemetry Tsuga is receiving. Keep SKILL.md focused on evidence, classification, and safety; use runtime docs for product, OTel, and language details.
+Use this as the read-only quality audit workflow for telemetry Tsuga is receiving. Keep this reference focused on evidence, classification, and safety; use runtime docs for product, OTel, and language details.
 
 ## Required Inputs
 
@@ -61,6 +56,7 @@ Use `otel-instrumentation` for confirmed-language implementation patterns after 
 - Cardinality group-by results are proxies, not exact measurements; state query limits.
 - Source-code findings cite file path and line. If not confirmed in Tsuga, label as `Recommendation (not verified in Tsuga)`.
 - Root cause requires at least two corroborating signals. A single signal is only consistent with a hypothesis.
+- Quality-report findings: carry the row's `recommendation` text into Recommended Actions close to verbatim, and prioritize multiple findings by estimated impact — see `tsuga-audit`'s Quality Reports step for the exact rule.
 
 ## Safety
 

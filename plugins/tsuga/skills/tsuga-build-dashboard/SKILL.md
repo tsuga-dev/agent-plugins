@@ -158,6 +158,6 @@ Time preset: <preset>
 ## Related Skills / Next Steps
 
 - `tsuga-cli` — filter syntax, counter math, aggregation body construction, metric discovery, dashboard CRUD, time formats
-- `tsuga-audit-telemetry-quality` — audit metric and telemetry quality before dashboarding
+- `tsuga-audit` — audit metric and telemetry quality before dashboarding
 - `tsuga-investigate-service-health` — the health triage workflow that dashboards should operationalize
 - `tsuga-debug-telemetry-ingestion` — if expected metrics or signals are missing
