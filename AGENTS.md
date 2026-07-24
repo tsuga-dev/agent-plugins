@@ -8,6 +8,7 @@ This repo distributes **one plugin**, `tsuga`, from a single marketplace using t
 .claude-plugin/marketplace.json            ← marketplace listing; each plugin points to its own subdir via source
 plugins/tsuga/
   .claude-plugin/plugin.json               ← per-plugin manifest
+  skills/index.json                        ← OpenCode skills index (lists every skill + its files)
   skills/<skill-name>/SKILL.md             ← skills auto-discovered by Claude Code / Codex
 ```
 
@@ -20,7 +21,8 @@ Notes:
 ## When changing a skill
 
 1. Edit `plugins/tsuga/skills/<skill>/SKILL.md` (or files under its `references/`).
-2. **Bump versions in lockstep.** Two places:
+2. **Update `plugins/tsuga/skills/index.json`** — if files were added or removed, update the `files[]` array for that skill.
+3. **Bump versions in lockstep.** Two places:
    - `.claude-plugin/marketplace.json` → `metadata.version`
    - `plugins/tsuga/.claude-plugin/plugin.json` → `version`
 
@@ -34,7 +36,8 @@ Notes:
 ## When adding a new skill
 
 1. Create `plugins/tsuga/skills/<new-skill>/SKILL.md` with proper frontmatter (`name:`, `description:`).
-2. Use existing naming patterns:
+2. **Add the skill to `plugins/tsuga/skills/index.json`** — add an entry with `name`, `description`, and `files[]` listing every file in the skill directory (use relative paths, e.g. `references/foo.md`).
+3. Use existing naming patterns:
    - `otel-*` for SDK, Collector, and code-facing OpenTelemetry guidance.
    - `tsuga-*` for live Tsuga workflows, dashboards, audits, telemetry debug workflows, and CLI-backed tasks.
    - Unprefixed names for platform-agnostic advisory skills.
@@ -91,6 +94,20 @@ done
 
 # No stray top-level skills/ directory
 [ -d skills ] && echo "FAIL: skills/ should be empty/absent — move into plugins/tsuga/skills/"
+
+# index.json is valid JSON and every skill dir has an entry
+jq empty plugins/tsuga/skills/index.json
+for d in plugins/tsuga/skills/*/; do
+  name=$(basename "$d")
+  jq -e ".skills[] | select(.name == \"$name\")" plugins/tsuga/skills/index.json >/dev/null 2>&1 || \
+    echo "FAIL: $name missing from index.json"
+done
+
+# Every file in index.json files[] exists on disk
+jq -r '.skills[] | .name as $s | .files[] | "\($s)/\(.)"' plugins/tsuga/skills/index.json | \
+  while IFS= read -r f; do
+    [ -f "plugins/tsuga/skills/$f" ] || echo "FAIL: index.json references missing file: $f"
+  done
 ```
 
 ## Release
@@ -112,6 +129,7 @@ claude plugin tag ./plugins/tsuga
 - Don't add a `skills[]` array to marketplace.json. Skills auto-discover from the plugin's subdir.
 - Don't restore standalone telemetry packaging.
 - Don't rename a skill folder without grepping the repo for cross-references (`tsuga-cli`, `otel-instrumentation`, etc.).
+- Don't let `plugins/tsuga/skills/index.json` drift — every skill directory must have a matching entry, and `files[]` must list every file on disk.
 
 ## Skill authoring rules
 
