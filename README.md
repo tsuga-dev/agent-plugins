@@ -34,6 +34,26 @@ codex plugin marketplace add tsuga-dev/agent-plugins
 codex plugin add tsuga@tsuga
 ```
 
+### OpenCode
+
+> [!IMPORTANT]
+This has only been tested with opencode v1, as v2 is still in beta.
+
+Add the skills URL to your `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "urls": ["https://raw.githubusercontent.com/tsuga-dev/agent-plugins/main/plugins/tsuga/skills/"]
+  }
+}
+```
+
+You can replace `main` with any valid SHA of the repository to pin the skills if you want to opt-out of "auto update".
+
+The trailing slash is required. OpenCode fetches `index.json` from that URL, discovers all skills, and downloads them to `~/.cache/opencode/skills/`.
+
 ## Ownership & contributions
 
 Tsuga owns and maintains this plugin — anything generic about operating Tsuga or instrumenting with OpenTelemetry belongs here, and installs with `autoUpdate` receive new versions automatically.

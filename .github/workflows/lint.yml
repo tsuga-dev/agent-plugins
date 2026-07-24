@@ -63,3 +63,31 @@ jobs:
             echo "::error::Found {{SKILLS_DIR}} in plugins/. This is the npx-skills install-time placeholder and is NOT substituted by Claude Code. Use \${CLAUDE_PLUGIN_ROOT}/skills/<skill-name>/... instead."
             exit 1
           fi
+
+      - name: Validate skills index.json (OpenCode)
+        run: |
+          set -e
+          INDEX=plugins/tsuga/skills/index.json
+          jq empty "$INDEX"
+
+          # Every skill dir must have an entry in index.json
+          fail=0
+          for d in plugins/tsuga/skills/*/; do
+            name=$(basename "$d")
+            [ "$name" = "index.json" ] && continue
+            if ! jq -e ".skills[] | select(.name == \"$name\")" "$INDEX" >/dev/null 2>&1; then
+              echo "::error file=$INDEX::skill '$name' missing from index.json"
+              fail=1
+            fi
+          done
+
+          # Every file referenced in index.json must exist on disk
+          jq -r '.skills[] | .name as $s | .files[] | "\($s)/\(.)"' "$INDEX" | \
+            while IFS= read -r f; do
+              if [ ! -f "plugins/tsuga/skills/$f" ]; then
+                echo "::error file=$INDEX::index.json references missing file: $f"
+                fail=1
+              fi
+            done
+
+          exit $fail
