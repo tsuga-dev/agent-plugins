@@ -1,0 +1,19 @@
+plugins/tsuga/skills/tsuga-audit/SKILL.md
+  s_aa3c14a5b5b382::t_0fe56ff10474ec 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "9523560a10ffd50f9c4d26a8236f56b2e44ffe0e",
+  "prompts": {},
+  "sessions": {
+    "s_aa3c14a5b5b382": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f22d9-3e33-7571-ad97-fe13103c3a06",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+.claude-plugin/marketplace.json
+  s_aa3c14a5b5b382::t_db4274134d49ae 9
+plugins/tsuga/.claude-plugin/plugin.json
+  s_aa3c14a5b5b382::t_db4274134d49ae 4
+AGENTS.md
+  s_dde89850024fd3::t_74e4eac6a1a05a 147,186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "df118b614e230c581d12c3b53980f9edf2dab1bd",
+  "prompts": {},
+  "sessions": {
+    "s_aa3c14a5b5b382": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f22d9-3e33-7571-ad97-fe13103c3a06",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    },
+    "s_dde89850024fd3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cdeef590-069a-47c8-a367-614bc99fc268",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pierre Guceski <pierre.guceski@tsuga.com>"
+    }
+  }
+}
