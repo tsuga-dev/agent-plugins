@@ -5,15 +5,17 @@ description: "Primary entry point for active-incident investigation, post-incide
 
 # Incident Investigation
 
-Primary entry point. Read-only for everything **except the two standing deliverables** — the Tsuga investigation record and the proofs dashboard ([references/investigation-record.md](./references/investigation-record.md)) — which every concluded investigation publishes by default (skip conditions in step 10). All other mutations require an explicit user ask.
+Primary entry point. Read-only for everything **except the two standing deliverables** — the Tsuga investigation record and the proofs dashboard (`references/incident-response/investigation-record`) — which every concluded investigation publishes by default (skip conditions in step 10). All other mutations require an explicit user ask.
 
 ## How to read this skill
 
-This skill covers the full investigation loop — orchestrator-level workflow AND the detailed procedures for each parallel branch. Read selectively based on your role:
+This skill covers the full investigation loop — orchestrator-level workflow AND the detailed procedures for each parallel branch. Read selectively based on your role.
 
-- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-10) → Output contract → Evidence rules → Guardrails, plus [references/investigation-record.md](./references/investigation-record.md) for the two durable deliverables you publish at step 10. You spawn subagents at step 5 and synthesize their outputs at step 8/9. The branch procedures live in their own reference files; the subagents own those — you don't read them.
-- **Telemetry-sweep subagent:** read [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — that file is everything you need. Skip the workflow, ledger, gate, verdict, and the change-correlation branch.
-- **Change-correlation subagent:** read [references/branch-change-correlation.md](./references/branch-change-correlation.md) — that file is yours.
+Every `references/incident-response/...` path below is a page served by Tsuga, not a local file. Fetch one with `tsuga docs get <path> | jq -r .content`. These pages are path-addressed only and never show up in `tsuga docs search`.
+
+- **Orchestrator (primary agent running the whole investigation):** read Anti-patterns → Workflow (steps 1-10) → Output contract → Evidence rules → Guardrails, plus `references/incident-response/investigation-record` for the two durable deliverables you publish at step 10. You spawn subagents at step 5 and synthesize their outputs at step 8/9. The branch procedures live in their own reference pages; the subagents own those — you don't read them.
+- **Telemetry-sweep subagent:** fetch `references/incident-response/branch-telemetry-sweep` — that page is everything you need. Skip the workflow, ledger, gate, verdict, and the change-correlation branch.
+- **Change-correlation subagent:** fetch `references/incident-response/branch-change-correlation` — that page is yours.
 - **Codebase-grep subagent:** you're spawned with one verbatim signal (error string, metric name, log pattern). Grep the mounted codebases under `{{CODEBASES_DIR}}` for that literal string; return the `file:line` and ~5 lines of surrounding context (the enclosing function + nearby conditions that trigger the emission). Nothing else. You do not interpret — you locate.
 - **Challenger subagent:** you're spawned with the leading hypothesis and the current evidence. Name the single piece of evidence that would most cleanly falsify it, and say whether it's been checked. Do not build competing hypotheses; just falsify.
 
@@ -27,7 +29,7 @@ Minimum viable case:
 - when it started (the incident's `declared_at` is your "now")
 - scope: service, cluster, customer, env, or monitor
 
-Accept a human summary or a case manifest ([references/case-manifest.md](./references/case-manifest.md)). If scope is unclear, ask for the smallest missing fact — do not launch a generic sweep.
+Accept a human summary or a case manifest (`references/incident-response/case-manifest`). If scope is unclear, ask for the smallest missing fact — do not launch a generic sweep.
 
 ## Time discipline (hard rule)
 
@@ -90,7 +92,7 @@ Do not let `failing subsystem` silently replace `root cause`.
 
 For an active incident with ongoing impact, mitigation is the first question, not the last. Identify the fastest action that restores service — rollback, failover, scale, flag flip — and surface it early, in parallel with the RCA; never gate stopping the bleeding on a completed root cause. Mitigation actions postdate `declared_at`; that does not violate Time discipline — they document the response and never feed the causal chain.
 
-Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first (`tsuga config` — right key, right cluster; see the hygiene notes in [references/investigation-record.md](./references/investigation-record.md)):
+Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first (`tsuga config` — right key, right cluster; see the hygiene notes in `references/incident-response/investigation-record`):
 
 ```bash
 tsuga investigations create -d '{
@@ -101,7 +103,7 @@ tsuga investigations create -d '{
 }'
 ```
 
-Keep `name` short — the app displays it everywhere; never restate it inside `contentMd`. Keep the returned `id` — you will update this record at checkpoints and finish it at step 10 with the structured document from [references/investigation-record.md](./references/investigation-record.md). Updates are full PUTs: always resend `name` and `owner` (omitted optional fields keep their current values). If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
+Keep `name` short — the app displays it everywhere; never restate it inside `contentMd`. Keep the returned `id` — you will update this record at checkpoints and finish it at step 10 with the structured document from `references/incident-response/investigation-record`. Updates are full PUTs: always resend `name` and `owner` (omitted optional fields keep their current values). If the call returns 403 the key lacks the `investigations` permission: skip it silently and run the investigation as normal; never block on it.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -120,12 +122,12 @@ Then re-run that same query against the incident window AND a control window —
 
 One sentence of matching is enough to load one. Zero is fine. All-of-them-from-fear is not.
 
-- DB / RDS / Postgres / MySQL / connections / replication → [playbooks/database.md](./references/playbooks/database.md)
-- Kubernetes / pod / OOM / CrashLoopBackOff / node → [playbooks/kubernetes.md](./references/playbooks/kubernetes.md)
-- Deploy / config drift / flag / IAM / key rotation → [playbooks/deploy-drift.md](./references/playbooks/deploy-drift.md)
-- Queue / pub-sub / lag / backpressure → [playbooks/queue-backpressure.md](./references/playbooks/queue-backpressure.md)
-- Cert / TLS / SSO / OAuth / credentials → [playbooks/auth-tls.md](./references/playbooks/auth-tls.md)
-- Data quality / schema / upstream API / empty output → [playbooks/data-quality.md](./references/playbooks/data-quality.md)
+- DB / RDS / Postgres / MySQL / connections / replication → `references/incident-response/playbooks/database`
+- Kubernetes / pod / OOM / CrashLoopBackOff / node → `references/incident-response/playbooks/kubernetes`
+- Deploy / config drift / flag / IAM / key rotation → `references/incident-response/playbooks/deploy-drift`
+- Queue / pub-sub / lag / backpressure → `references/incident-response/playbooks/queue-backpressure`
+- Cert / TLS / SSO / OAuth / credentials → `references/incident-response/playbooks/auth-tls`
+- Data quality / schema / upstream API / empty output → `references/incident-response/playbooks/data-quality`
 
 If scope names a specific tech (Postgres, Redis, Kafka, …), the telemetry branch loads its `$knowledge-technology` reference. You don't need to orchestrate that.
 
@@ -133,8 +135,8 @@ If scope names a specific tech (Postgres, Redis, Kafka, …), the telemetry bran
 
 Disjoint goals, run concurrently. Each branch is its own subagent; do not serialize.
 
-- **telemetry sweep** — Tsuga evidence, monitor anchor, config-threshold preflight, surface verbatim signals. Procedure: [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md).
-- **change correlation** — local git + `$gh`, strict mechanism fit (diff must touch emitter line). Procedure: [references/branch-change-correlation.md](./references/branch-change-correlation.md).
+- **telemetry sweep** — Tsuga evidence, monitor anchor, config-threshold preflight, surface verbatim signals. Procedure: `references/incident-response/branch-telemetry-sweep`.
+- **change correlation** — local git + `$gh`, strict mechanism fit (diff must touch emitter line). Procedure: `references/incident-response/branch-change-correlation`.
 - **history** — `$incident-history` (prior incident archive mining, if mounted).
 - **codebase-grep** — the emphasis branch. For every distinct verbatim signal the telemetry sweep surfaces (error string, log pattern, metric name, monitor filter), spawn **one subagent per signal** that greps the mounted codebases under `{{CODEBASES_DIR}}` to find the `file:line` where that signal is emitted. Output: file path, surrounding function context, nearby conditions that trigger the emission. 5 signals → 5 parallel greps — this scales linearly and each one returns a sharp pin, not a vague area.
 - **challenger** — attack the leading hypothesis. Its job is to name the single piece of evidence that would falsify the leader and say whether it's been checked.
@@ -236,7 +238,7 @@ Hallucinated citations are worse than missing ones. When in doubt, demote.
 
 ### 10. Publish deliverables (default, not optional)
 
-Verdict assigned → publish the two durable artifacts. Full spec and templates: [references/investigation-record.md](./references/investigation-record.md).
+Verdict assigned → publish the two durable artifacts. Full spec and templates: `references/incident-response/investigation-record`.
 
 1. **Proofs dashboard** — one graph per validated telemetry claim, assertion-style graph names, every query probe-verified before create, tagged with the incident id, owned by the affected team.
 2. **Final investigation record** — replace the in-progress notes with the structured document (Summary / Key facts / Timeline / Symptoms / Contributing causes / Mitigation & action items / Open questions / Falsified along the way / Lessons learned draft). Deep-link every ID, use absolute time windows on evidence links, populate `linkedAssets` (dashboard, service, fired monitor).
@@ -247,8 +249,8 @@ These ship by default — do not ask permission for them. The only reasons to sk
 
 Each parallel branch from step 5 has its own procedure file. The orchestrator does not read these inline — it spawns a subagent and points it at the file:
 
-- **telemetry sweep** → [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — Tsuga evidence, monitor anchor, config-threshold preflight, verbatim-signal surfacing, completeness check.
-- **change correlation** → [references/branch-change-correlation.md](./references/branch-change-correlation.md) — time-bounded git + `$gh`, strict `diff → emitter → observation` mechanism fit, candidate classification.
+- **telemetry sweep** → `references/incident-response/branch-telemetry-sweep` — Tsuga evidence, monitor anchor, config-threshold preflight, verbatim-signal surfacing, completeness check.
+- **change correlation** → `references/incident-response/branch-change-correlation` — time-bounded git + `$gh`, strict `diff → emitter → observation` mechanism fit, candidate classification.
 
 ## Output contract
 
@@ -298,7 +300,7 @@ Deliverables:
 
 ### Finish the investigation record (beta)
 
-End with one last clean update that replaces the in-progress notes with the **structured document** from [references/investigation-record.md](./references/investigation-record.md) — NOT a dump of the chat verdict. The name drops the "investigating" suffix and stays short (the app displays it; don't repeat it in `contentMd`):
+End with one last clean update that replaces the in-progress notes with the **structured document** from `references/incident-response/investigation-record` — NOT a dump of the chat verdict. The name drops the "investigating" suffix and stays short (the app displays it; don't repeat it in `contentMd`):
 
 ```bash
 tsuga investigations update <id> -d '{
@@ -335,9 +337,9 @@ Beta — the API will likely change. Any 403 means the key lacks the `investigat
 
 Load when needed:
 
-- [references/branch-telemetry-sweep.md](./references/branch-telemetry-sweep.md) — telemetry-sweep subagent procedure
-- [references/branch-change-correlation.md](./references/branch-change-correlation.md) — change-correlation subagent procedure
-- [references/investigation-record.md](./references/investigation-record.md) — durable deliverables (record + proofs dashboard) spec + templates
-- [references/case-manifest.md](./references/case-manifest.md) — JSON shape for structured case input
-- [references/playbooks/](./references/playbooks/) — domain disambiguation guides
-- [references/tsuga-rules.md](./references/tsuga-rules.md) — `tsuga` command patterns for the telemetry branch
+- `references/incident-response/branch-telemetry-sweep` — telemetry-sweep subagent procedure
+- `references/incident-response/branch-change-correlation` — change-correlation subagent procedure
+- `references/incident-response/investigation-record` — durable deliverables (record + proofs dashboard) spec + templates
+- `references/incident-response/case-manifest` — JSON shape for structured case input
+- `references/incident-response/playbooks/` — domain disambiguation guides
+- `references/incident-response/tsuga-rules` — `tsuga` command patterns for the telemetry branch

@@ -1,6 +1,6 @@
 ---
 name: tsuga-build-dashboard
-description: "Use when asked to create, update, validate, delete, or review a Tsuga dashboard; add or fix widgets; correct layout; build a monitoring view for a service, team, system, SLO, capacity, latency, throughput, or error-rate question; verify dashboard payloads, widget queries, graph schemas, normalizers, formulas, table grouping, time presets, or layout rules."
+description: 'Use when asked to create, update, validate, delete, or review a Tsuga dashboard; add or fix widgets; correct layout; build a monitoring view for a service, team, system, SLO, capacity, latency, throughput, or error-rate question; verify dashboard payloads, widget queries, graph schemas, normalizers, formulas, table grouping, time presets, or layout rules.'
 ---
 
 # Tsuga Build Dashboard
@@ -26,6 +26,7 @@ Build, modify, and validate Tsuga dashboards from the command line. This skill l
 ### Step 1 — Clarify goal
 
 Determine:
+
 - What service or system is this for?
 - What questions should the dashboard answer? (health, throughput, latency, capacity)
 - Who is the audience — on-call engineers, team leads, or executives?
@@ -33,6 +34,7 @@ Determine:
 Audience determines density and complexity. On-call → dense, operational. Exec → sparse, trend-focused.
 
 Sketch the planned sections and widget types before touching any CLI commands. Example:
+
 ```
 Health:     3× query-value (error rate, p99, availability)
 Throughput: 1× timeseries (request rate by endpoint)
@@ -49,6 +51,7 @@ tsuga metrics get <metric-name> --from <from> --to <to>
 ```
 
 For each candidate metric, record:
+
 - `type` and `temporality` — drives `aggregate.type` and `functions` selection in Step 3 (see `tsuga-cli`'s Counter Math section)
 - `attributes` — filter and groupBy candidates
 - `unit` — normalizer hint for Step 4
@@ -64,6 +67,7 @@ Use `tsuga-cli` (Counter Math, filter syntax, aggregation body sections) to cons
 3. Verify query shape and data before embedding: use `tsuga aggregation timeseries -d '<query-json>'` for timeseries/time-bucketed widgets, and `tsuga aggregation scalar -d '<query-json>'` for scalar/grouped widgets.
 
 Inputs for each widget:
+
 - Metric name
 - `type` and `temporality` (from Step 2)
 - What the widget should show — e.g. "per-second error rate grouped by HTTP route"
@@ -73,14 +77,15 @@ Do not embed an unverified query body. If a query returns no data, resolve at th
 
 ### Step 4 — Assemble the dashboard payload
 
-Embed the verified query bodies from Step 3 into widget JSON. Use `tsuga dashboards create --generate-skeleton` or `tsuga dashboards update <id> --generate-skeleton` for payload shape; fetch `tsuga docs get api/createDashboard`, `tsuga docs get api/updateDashboard`, or `tsuga docs get api/updateDashboardGraph` only when field semantics, enums, or response shape are unclear. Use `references/widget-reference.md` for widget gotchas and `references/layout-rules.md` for grid composition.
+Embed the verified query bodies from Step 3 into widget JSON. Use `tsuga dashboards create --generate-skeleton` or `tsuga dashboards update <id> --generate-skeleton` for payload shape; fetch `tsuga docs get api/createDashboard`, `tsuga docs get api/updateDashboard`, or `tsuga docs get api/updateDashboardGraph` only when field semantics, enums, or response shape are unclear. Fetch `tsuga docs get references/dashboards/widget-reference` for widget gotchas and `tsuga docs get references/dashboards/layout-rules` for grid composition.
 
 Key structural rules:
+
 - `owner` must be a team ID — resolve with `tsuga teams list`
 - Each graph requires a unique `id`, a `visualization` object, and a `layout` object
 - `query-value` does not support `groupBy` — the API silently drops it
-- Always name each series in the legend via `visualization.aliases.queries`, keyed by the query's zero-based index as a string (`"0"`, `"1"`, ...), NOT `formula`'s `"q1"`/`"q2"`; wrong keys are silently ignored (see `references/widget-reference.md`)
-- A `percent` normalizer only appends `%`; it does not multiply by 100. Scale in the `formula` (`q1/q2*100`) and put `query-value` `conditions` thresholds on the resulting 0-100 scale (see `references/widget-reference.md`)
+- Always name each series in the legend via `visualization.aliases.queries`, keyed by the query's zero-based index as a string (`"0"`, `"1"`, ...), NOT `formula`'s `"q1"`/`"q2"`; wrong keys are silently ignored (see `references/dashboards/widget-reference`)
+- A `percent` normalizer only appends `%`; it does not multiply by 100. Scale in the `formula` (`q1/q2*100`) and put `query-value` `conditions` thresholds on the resulting 0-100 scale (see `references/dashboards/widget-reference`)
 - List-style widgets take a single `query` string. Variants: `list` (logs matching a Tsuga query), `list-log-patterns` (logs clustered into patterns), `list-connection` (datastore rows via `connectionId` + read-only SQL)
 - Include dashboard-level env + team filters when they are relevant to the dashboard audience:
 

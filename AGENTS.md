@@ -54,6 +54,22 @@ ${CLAUDE_PLUGIN_ROOT}/skills/<skill-name>/references/foo.md
 
 **Never use `{{SKILLS_DIR}}/...`** — that's the `npx skills` install-time placeholder, NOT substituted by Claude Code or Codex.
 
+## Served reference bundles
+
+Operational reference content lives in the product repo at `packages/documentation/agents/references/` and is served by Tsuga. Skills fetch it by exact path:
+
+```
+tsuga docs get references/technologies/postgres/overview | jq -r .content
+```
+
+Bundles in use: `references/cli/`, `references/dashboards/`, `references/incident-response/`, `references/technologies/`, `references/telemetry/`.
+
+- Do **not** re-add local `references/` dirs for this content. A local copy silently goes stale; the served copy is the source of truth.
+- These pages are path-addressed only. They are deliberately absent from `tsuga docs search`, so any path a skill needs must be written out in that `SKILL.md`.
+- Content edits go to the product repo, not here.
+
+The three bundle-authoring meta-skills (`build-incident-history`, `build-knowledge-company`, `check-skill-health`) keep local `references/` on purpose: they are authoring-time tooling and must work without a live Tsuga org.
+
 ## Cross-skill references
 
 Skills can reference other skills by **name** (e.g. `tsuga-cli`, `otel-instrumentation`). Claude Code and Codex resolve skill names across installed plugins.

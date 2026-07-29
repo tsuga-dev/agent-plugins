@@ -1,6 +1,6 @@
 ---
 name: tsuga-cli
-description: "Use when a task involves Tsuga CLI commands, TQL log or trace search, aggregation bodies, metric temporality math, resource lookup or CRUD planning, service ownership, reliability posture, quality reports, monitor or dashboard context, notification rules, retention/tag policies, ingestion keys, docs lookup, command help, skeleton payloads, or Tsuga app deep links."
+description: 'Use when a task involves Tsuga CLI commands, TQL log or trace search, aggregation bodies, metric temporality math, resource lookup or CRUD planning, service ownership, reliability posture, quality reports, monitor or dashboard context, notification rules, retention/tag policies, ingestion keys, docs lookup, command help, skeleton payloads, or Tsuga app deep links.'
 ---
 
 # Tsuga CLI
@@ -13,20 +13,20 @@ Examples omit `--rationale` for brevity. Add it to docs/API-calling commands whe
 
 Use CLI help and `--generate-skeleton` first for CLI CRUD payload shape. Fetch docs when skeleton output is missing, ambiguous, or you need field semantics, enums, responses, or direct API integration details:
 
-| Need | Fetch |
-|---|---|
-| CLI install/auth/defaults/resources | `tsuga docs get account-and-settings/ai-access/tsuga-cli` |
-| TQL syntax | `tsuga docs get explore/query-syntax` |
-| Logs product/query docs | `tsuga docs get explore/logs` |
-| Traces product/query docs | `tsuga docs get explore/traces` |
-| Monitors product docs | `tsuga docs get alert/monitors/index` |
-| Dashboards product docs | `tsuga docs get visualize/dashboards/index` |
-| Aggregation API bodies | `tsuga docs get api/aggregateScalar` and `tsuga docs get api/aggregateTimeseries` |
-| Logs API body | `tsuga docs get api/searchLogs` |
-| Traces API body | `tsuga docs get api/searchSpans` |
-| Monitor API bodies | `tsuga docs get api/createMonitor` and `tsuga docs get api/updateMonitor` |
-| Notification rule API bodies | `tsuga docs get api/createNotificationRule` and `tsuga docs get api/updateNotificationRule` |
-| Dashboard API bodies | `tsuga docs get api/createDashboard`, `tsuga docs get api/updateDashboard`, and `tsuga docs get api/updateDashboardGraph` |
+| Need                                | Fetch                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| CLI install/auth/defaults/resources | `tsuga docs get account-and-settings/ai-access/tsuga-cli`                                                                 |
+| TQL syntax                          | `tsuga docs get explore/query-syntax`                                                                                     |
+| Logs product/query docs             | `tsuga docs get explore/logs`                                                                                             |
+| Traces product/query docs           | `tsuga docs get explore/traces`                                                                                           |
+| Monitors product docs               | `tsuga docs get alert/monitors/index`                                                                                     |
+| Dashboards product docs             | `tsuga docs get visualize/dashboards/index`                                                                               |
+| Aggregation API bodies              | `tsuga docs get api/aggregateScalar` and `tsuga docs get api/aggregateTimeseries`                                         |
+| Logs API body                       | `tsuga docs get api/searchLogs`                                                                                           |
+| Traces API body                     | `tsuga docs get api/searchSpans`                                                                                          |
+| Monitor API bodies                  | `tsuga docs get api/createMonitor` and `tsuga docs get api/updateMonitor`                                                 |
+| Notification rule API bodies        | `tsuga docs get api/createNotificationRule` and `tsuga docs get api/updateNotificationRule`                               |
+| Dashboard API bodies                | `tsuga docs get api/createDashboard`, `tsuga docs get api/updateDashboard`, and `tsuga docs get api/updateDashboardGraph` |
 
 If docs are unavailable, report the CLI error and use `--help` / `--generate-skeleton` for CLI shape. Do not invent direct API schemas from memory.
 
@@ -119,12 +119,12 @@ Minimal shape:
 
 Run `tsuga metrics get <name>` before choosing aggregate/function. Wrong math produces plausible garbage.
 
-| Metric | Aggregation | Function |
-|---|---|---|
-| Gauge | `max` for saturation or `average` for baseline | none |
-| Counter, delta | `sum` | `per-second` |
-| Counter, cumulative | `sum` | `rate` or `increase` |
-| Histogram | `percentile` with `field` and `percentile` | none |
+| Metric              | Aggregation                                    | Function             |
+| ------------------- | ---------------------------------------------- | -------------------- |
+| Gauge               | `max` for saturation or `average` for baseline | none                 |
+| Counter, delta      | `sum`                                          | `per-second`         |
+| Counter, cumulative | `sum`                                          | `rate` or `increase` |
+| Histogram           | `percentile` with `field` and `percentile`     | none                 |
 
 When the right metric is unclear, inspect existing dashboards before the metric catalog; dashboards contain validated metric/filter/aggregation combinations.
 
@@ -134,21 +134,24 @@ When the right metric is unclear, inspect existing dashboards before the metric 
 - Fetch `account-and-settings/ai-access/tsuga-cli` or the relevant `api/*` doc only when skeleton output is unavailable, ambiguous, or direct API integration details are needed. During skill execution stay CLI-first; do not curl the API yourself.
 - Dashboard authoring belongs to `tsuga-build-dashboard` when available.
 
-## Local Reference Files Still Used
+## Reference Bundles
 
-Use bundled references only for content not proven covered by docs. If a translator needs local post-processing, describe what to inspect in the returned `tsuga` output instead of adding non-`tsuga` shell commands.
+Fetch these with `tsuga docs get <path>` for content not covered by the product docs. They are served by path only and are not returned by `tsuga docs search`. If a translator needs local post-processing, describe what to inspect in the returned `tsuga` output instead of adding non-`tsuga` shell commands.
 
-- `references/app-deep-links.md` - app URL shapes.
-- `references/kubectl-translator.md`, `references/aws-translator.md`, `references/gcp-translator.md`, `references/azure-translator.md` - cloud/Kubernetes command translators.
-- `references/playbooks/find-owner-and-context.md` - ownership/context lookup.
-- `references/playbooks/reliability-review.md` - quality report review.
+- `references/cli/app-deep-links` - app URL shapes.
+- `references/cli/kubectl-translator`, `references/cli/aws-translator`, `references/cli/gcp-translator`, `references/cli/azure-translator` - cloud/Kubernetes command translators.
+- `references/cli/playbooks/find-owner-and-context` - ownership/context lookup.
+- `references/cli/playbooks/reliability-review` - quality report review.
 
 ## Output Template
 
 ```markdown
 ## Summary
+
 ## Signals / Findings
+
 ## Recommended Actions
+
 ## Limitations
 ```
 
