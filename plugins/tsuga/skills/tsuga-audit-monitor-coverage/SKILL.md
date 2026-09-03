@@ -16,11 +16,13 @@ description: "Use when asked to check monitor coverage, services without monitor
 
 ## Required Inputs
 
-- **Scope** (optional, default: all services): can be narrowed to a specific team or service. If scoping to all services, warn if the list exceeds 100 services before proceeding.
+- **Scope** (optional, default: all services): can be narrowed to a specific team or service. If scoping to all services, read `metadata.pagination.totalCount` from the first page and warn before proceeding when it exceeds 100.
 
 ## Workflow
 
-1. Resolve requested service/team/env scope first. `tsuga services list` has no filter flags, so filter returned rows locally; if a full all-service audit would exceed 100 services, confirm scope with the user before continuing.
+1. Resolve requested service/team/env scope first. `tsuga services list` has no filter flags, so filter returned rows locally; if `totalCount` shows a full all-service audit would exceed 100 services, confirm scope with the user before continuing.
+
+   **`services`, `monitors`, `teams` and `notification-rules` lists are paginated and default to 100 rows.** Coverage computed from one page is wrong. Pass `--limit 1000` (the maximum) and, while `offset + returned < totalCount`, request the next page with `--offset`. The CLI prints the exact next-page command when a response is truncated; treat that notice as a hard stop, not a hint. `notification-silences list` is not paginated: it returns every row and accepts no `--limit`/`--offset`.
 
 2. `tsuga monitors list` — monitor definitions. Use `-d '<json-filter>'` when a read-only server-side filter is available; otherwise filter locally. Build coverage using the same shapes the app uses for service-related resources:
    - Aggregation monitors: parse `configuration.queries[].filter` for exact or glob `service:` and `context.service.name:` values, including quoted values.
@@ -46,7 +48,7 @@ Before creating any monitors or notification rules, show the full proposed list 
 2. Wait for explicit user confirmation ("yes" / "no" / "select specific ones")
 3. Apply only after confirmation
 
-After deploy, recommend running `tsuga-debug-telemetry-ingestion` to verify signal arrival — do not block on it or treat it as a required step.
+After deploy, recommend the `tsuga-debug-telemetry-ingestion` skill to verify signal arrival — do not block on it or treat it as a required step.
 
 ## Evidence Requirements
 
@@ -57,7 +59,7 @@ After deploy, recommend running `tsuga-debug-telemetry-ingestion` to verify sign
 
 ## Output Template
 
-```
+````
 ## Monitor Coverage Audit
 Scope: <all services / team <name> / service <name>> | As of: <query timestamp>
 
@@ -105,7 +107,7 @@ tsuga notification-rules create -d '<reviewed-json-payload>'
 - Services are telemetry-derived inventory snapshots, not an authoritative service ownership registry
 - Monitor firing state not available (config audit only, not runtime audit)
 - Config audit reflects state at query time; newly created monitors/rules not reflected until next query
-```
+````
 
 ## Safety Rules
 

@@ -61,8 +61,18 @@ required=(
   "## Lessons / follow-ups"
 )
 for f in "$OUTPUT"/INC-*/SUMMARY.md; do
+  grep -qE '^# INC-[0-9]+ — .+' "$f" || echo "MISSING or malformed H1 '# {incident_id} — {title}' in $f"
+  # Presence and order: a dossier with the right headings in the wrong order is not canonical.
+  prev=0
   for h in "${required[@]}"; do
-    grep -qF "$h" "$f" || echo "MISSING '$h' in $f"
+    n=$(grep -nxF "$h" "$f" | head -1 | cut -d: -f1)
+    if [ -z "$n" ]; then
+      echo "MISSING '$h' in $f"
+    elif [ "$n" -lt "$prev" ]; then
+      echo "OUT OF ORDER '$h' in $f"
+    else
+      prev=$n
+    fi
   done
 done
 ```
@@ -78,11 +88,13 @@ The Diagnostic path sections must not contain MCP-tool pseudo-syntax or `rtk` pr
 grep -rnE "^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|list-notification-rules|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b" "$OUTPUT"
 
 # Pseudo-syntax argument shape
-grep -rnE "\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=" "$OUTPUT" \
-  | grep -v "/explorer?query="     # URL query params are fine
-  | grep -v '"aggregationWindow":' # inside JSON bodies is fine
-  | grep -v '"dataSource":'
-  | grep -v '"filter":'
+# Strip URL params and JSON keys from each line first: dropping whole lines would mask a real
+# violation that happens to share a line with a legitimate URL or key.
+grep -rl . "$OUTPUT" | while IFS= read -r f; do
+  sed -E 's#/explorer\?query=[^ )"`]*##g; s#"(aggregationWindow|dataSource|filter)":##g' "$f" \
+    | grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' \
+    | sed "s#^#$f:#"
+done
 
 # rtk prefix
 grep -rnE "^rtk |[[:space:]]rtk " "$OUTPUT" | head -20
@@ -135,11 +147,17 @@ awk -F, 'NR>1 && ($1=="" || $2=="" || $3=="" || $4=="") {print NR": "$0}' "$OUTP
 `entrypoint.sh` filters the archive by `SNAPSHOT_AT` at container start. Simulate that filter to confirm `metadata.json` dates are actually usable:
 
 ```bash
-# Pick an arbitrary incident with a known declared_at
-inc=INC-0001
-jq -r '.last_iso' "$OUTPUT/$inc/metadata.json" | xargs -I{} date -u -d {} +%s \
-  && echo "OK: $inc last_iso parses as Unix seconds" \
-  || echo "FAIL: $inc last_iso does not parse"
+# Every incident, not just one. Parse with python so the check works on BSD and GNU alike, and
+# so an empty last_iso fails instead of being skipped.
+bad=0
+for f in "$OUTPUT"/INC-*/metadata.json; do
+  iso=$(jq -r '.last_iso // empty' "$f")
+  if [ -z "$iso" ] || ! python3 -c 'import sys,datetime; datetime.datetime.fromisoformat(sys.argv[1].replace("Z","+00:00"))' "$iso" 2>/dev/null; then
+    echo "FAIL: $(dirname "$f") last_iso does not parse: '${iso:-<missing>}'"
+    bad=$((bad+1))
+  fi
+done
+[ "$bad" -eq 0 ] && echo "OK: every last_iso parses as an ISO-8601 timestamp"
 ```
 
 **Pass:** every `metadata.json`'s `last_iso` parses to Unix seconds. If any don't, `entrypoint.sh` will silently drop those incidents on filter.

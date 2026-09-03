@@ -51,13 +51,15 @@ Example helper script skeleton (keep outside this skill; it's your ops-side glue
 ```bash
 for inc in "$INPUTS"/INC-*/; do
   inc_id=$(basename "$inc")
+  rm -rf "/tmp/incident-extracts/$inc_id"
   mkdir -p "/tmp/incident-extracts/$inc_id"
 
   # Flatten Slack thread to one line per message, most important first
-  jq -r '.messages | sort_by(.ts) | .[] | "\(.ts) [\(.user_name)] \(.text)"' \
-    "$inc/slack/thread-*.json" > "/tmp/incident-extracts/$inc_id/slack-flat.txt" 2>/dev/null
+  jq -r '.messages | sort_by(.ts) | .[] | "\(.ts) [\(.user_profile.real_name // .username // .user)] \(.text)"' \
+    "$inc"/slack/thread-*.json > "/tmp/incident-extracts/$inc_id/slack-flat.txt" 2>/dev/null
 
-  # Flatten PRs to title/author/merge-date/url
+  # Flatten PRs to title/author/merge-date/url. `mergedAt` is only present if the capture
+  # requested it (`gh pr list --json number,state,title,mergedAt,url`).
   jq -r '.[] | "#\(.number) [\(.state)] \(.title) (merged=\(.mergedAt // "n/a")) \(.url)"' \
     "$inc/github/prs.json" > "/tmp/incident-extracts/$inc_id/prs-flat.txt" 2>/dev/null
 
@@ -70,7 +72,7 @@ Result: per-incident helper files the subagent reads instead of raw JSON. Saves 
 
 ## Phase 3 — fan out subagents
 
-**One subagent per incident. Run in parallel — aim for batches of 10–20 at a time.** The per-service fan-out in `knowledge-company` used 32 in parallel; incident-history can match that or go wider since each subagent has less to do.
+**One subagent per incident, run in parallel.** Batch 10–20 at a time; each subagent has less to do than a service dossier, so wider waves are fine if the host tolerates them. Keep the batch size consistent with `SUBAGENT_PROMPT.md`.
 
 Each subagent gets:
 
@@ -82,7 +84,7 @@ Each subagent gets:
 - The lessons doc: `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/LESSONS.md`
 - The verification doc: `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/VERIFICATION.md`
 
-The subagent's contract is in `SUBAGENT_PROMPT.md` — do not retype it; copy verbatim and substitute only the `{inc_id}` placeholder.
+The subagent's contract is in `SUBAGENT_PROMPT.md` — do not retype it; copy verbatim and substitute the `{inc_id}` and `{company}` placeholders.
 
 ## Phase 4 — write `metadata.json` + `_inventory.csv`
 
@@ -95,7 +97,7 @@ OUTPUT=./skills/incident-history/references/incidents
 {
   echo "incident_id,title,declared_at,last_iso,severity,affected_team,affected_services"
   for f in "$OUTPUT"/INC-*/metadata.json; do
-    jq -r '[.incident_id, .title, .declared_at, .last_iso, .severity, .affected_team, (.affected_services | join(";"))] | @csv' "$f"
+    jq -r '[.incident_id, .title, .declared_at, .last_iso, .severity, .affected_team, ((.affected_services // []) | join(";"))] | @csv' "$f"
   done
 } > "$OUTPUT/_inventory.csv"
 ```

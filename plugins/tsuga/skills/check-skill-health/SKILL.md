@@ -2,6 +2,7 @@
 name: check-skill-health
 description: "Use when linting Tsuga skill bundles after editing runtime skills, generated incident-history or knowledge-company archives, or skill references; use when checking frontmatter, SKILL.md length, forbidden Tsuga CLI patterns, cross-links, required sections, generated dossier structure, sampled read-only command shape, local reference validation, release readiness, or whether a skill tree is ready for review."
 ---
+
 <!-- skill-lint: allow-forbidden-examples — this file documents the forbidden patterns as teaching examples -->
 
 # check-skill-health
@@ -27,12 +28,12 @@ Automated (pass/warn/fail):
 
 - **Frontmatter** — `name:` and `description:` fields present; description 50–120 words (warn outside, fail outside 30–200).
 - **SKILL.md length** — body ≤ 500 lines (warn at 400, fail at 500).
-- **References depth** — warn if references/ has paths > 1 level deep (with an exemption for `knowledge-company`'s hierarchical teams/services taxonomy).
+- **References depth** — warn if references/ has paths > 1 level deep (exempt: `knowledge-company`'s teams/services taxonomy and `incident-history`'s per-incident folders).
 - **Bundle size** — fail at 15 MB.
-- **Forbidden tokens** — MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, …), `rtk` prefix, wrong singular resource verbs (`tsuga monitor get`), `tsuga spans search`.
+- **Forbidden tokens** — MCP-tool pseudo-syntax (search-logs, aggregate-timeseries, query=, …), `rtk` prefix, wrong singular resource verbs (`tsuga monitor get`), `tsuga spans search`. The two MCP verb names appear without code formatting on purpose: they are the forbidden text itself, not a tool you should call.
 - **`incident-history` structure** — every INC-* folder has metadata.json + SUMMARY.md with canonical sections; `_inventory.csv` row count matches folder count.
 - **`knowledge-company` structure** — top-level COMPANY_*.md present; every team dir has TEAM_KNOWLEDGE.md; every service dir has SERVICE_KNOWLEDGE.md with canonical sections.
-- **Cross-links** — every file path referenced from SKILL.md resolves.
+- **Cross-links** — every file path referenced from SKILL.md resolves. Only `check-knowledge-company.sh` implements this, so it fires for knowledge-company skills.
 
 Opt-in (`--execute`):
 
@@ -75,7 +76,7 @@ check-skill-health/
 
 ## Extending
 
-Each script is standalone and can be dropped into another skill's lint flow. Shared argument contract: first arg is the skill directory, optional `--quiet` flag suppresses PASS lines.
+Each script is standalone and can be dropped into another skill's lint flow. Shared argument contract: first arg is the skill directory. `--quiet` is accepted by `lint-all.sh` only, and suppresses PASS lines across the run.
 
 ## Related Skills / Next Steps
 

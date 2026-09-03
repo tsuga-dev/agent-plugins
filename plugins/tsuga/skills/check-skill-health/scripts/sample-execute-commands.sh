@@ -16,18 +16,35 @@ if [ -z "$SKILL_DIR" ]; then
   exit 2
 fi
 
+case "$N" in
+  '' | *[!0-9]*) echo "sample-count must be a positive integer (got '$N')" >&2; exit 2 ;;
+esac
+if [ "$N" -lt 1 ]; then
+  echo "sample-count must be at least 1 (got '$N')" >&2
+  exit 2
+fi
+
 TEAMS="$SKILL_DIR/references/teams"
 if [ ! -d "$TEAMS" ]; then
   # Not a knowledge-company skill; skip silently (no service dossiers to audit).
   exit 0
 fi
 
-# Pick up to N SERVICE_KNOWLEDGE.md files with portable shell builtins.
-files=()
+# Pick up to N SERVICE_KNOWLEDGE.md files. Shuffle first: taking the traversal prefix would audit
+# the same dossiers on every run and never reach the rest of the fleet.
+candidates=()
 while IFS= read -r f; do
-  files+=("$f")
-  [ "${#files[@]}" -ge "$N" ] && break
+  candidates+=("$f")
 done < <(find "$TEAMS" -name SERVICE_KNOWLEDGE.md -path '*/services/*' 2>/dev/null)
+
+for ((i = ${#candidates[@]} - 1; i > 0; i--)); do
+  j=$((RANDOM % (i + 1)))
+  tmp="${candidates[i]}"
+  candidates[i]="${candidates[j]}"
+  candidates[j]="$tmp"
+done
+
+files=("${candidates[@]:0:$N}")
 
 if [ ${#files[@]} -eq 0 ]; then
   echo "WARN [sample-execute] $SKILL_DIR — no SERVICE_KNOWLEDGE.md files found"
@@ -43,8 +60,17 @@ is_read_only_tsuga_command() {
   local cluster_id=""
   local rest=""
 
+  # Shell metacharacters. `>` and `<` are only rejected next to whitespace: TQL comparisons such
+  # as `duration:>10000` are ordinary argument text, not redirections.
   case "$cmd" in
-    *"|"*|*";"*|*"&"*|*">"*|*"<"*|*"\`"*|*'$('*)
+    *"|"*|*";"*|*"&"*|*"\`"*|*'$('*)
+      return 1
+      ;;
+    *" >"*|*">"|*" <"*|*"<"|*"> "*|*"< "*)
+      return 1
+      ;;
+    # Descriptor redirections (`2>file`, `1>>file`) carry no whitespace before the `>`.
+    *[0-9]">"*)
       return 1
       ;;
   esac
@@ -75,22 +101,30 @@ is_read_only_tsuga_command() {
     has_arg --from && has_arg --to
   }
 
-  has_max_results_10() {
+  # Bounded, not a specific number: templates legitimately use other small limits.
+  # $1 is the endpoint's own ceiling — logs cap at 1000, traces at 10000.
+  has_bounded_max_results() {
+    local value
     case " $cmd " in
-      *" --max-results 10 "*|*" --max-results=10 "*) return 0 ;;
+      *" --max-results "*) value="${cmd##*--max-results }"; value="${value%% *}" ;;
+      *" --max-results="*) value="${cmd##*--max-results=}"; value="${value%% *}" ;;
       *) return 1 ;;
     esac
+    case "$value" in
+      '' | *[!0-9]*) return 1 ;;
+    esac
+    [ "$value" -ge 1 ] && [ "$value" -le "$1" ]
   }
 
   case "$cmd" in
     tsuga\ logs\ search\ *)
-      if has_from_to && has_max_results_10; then
+      if has_from_to && has_bounded_max_results 1000; then
         return 0
       fi
       return 1
       ;;
     tsuga\ traces\ search\ *)
-      if has_from_to && has_max_results_10; then
+      if has_from_to && has_bounded_max_results 10000; then
         return 0
       fi
       return 1
@@ -104,6 +138,8 @@ is_read_only_tsuga_command() {
       ;;
     tsuga\ aggregation\ scalar\ *|tsuga\ aggregation\ timeseries\ *)
       case "$cmd" in
+        # A body file is the documented form; its timeRange lives in the file, not the command.
+        *" -f "*|*" --file "*) return 0 ;;
         *" -d "*|*" --data "*)
           case "$cmd" in
             *timeRange*from*to*) return 0 ;;
@@ -112,7 +148,7 @@ is_read_only_tsuga_command() {
       esac
       return 1
       ;;
-    tsuga\ services\ list*|tsuga\ services\ get\ *|tsuga\ teams\ list*|tsuga\ teams\ get\ *|tsuga\ monitors\ list*|tsuga\ monitors\ get\ *|tsuga\ dashboards\ list*|tsuga\ dashboards\ get\ *|tsuga\ routes\ list*|tsuga\ routes\ get\ *|tsuga\ notification-rules\ list*|tsuga\ notification-rules\ get\ *|tsuga\ notification-silences\ list*|tsuga\ notification-silences\ get\ *|tsuga\ quality-reports\ list*|tsuga\ docs\ search\ *|tsuga\ docs\ get\ *)
+    tsuga\ services\ list*|tsuga\ services\ get\ *|tsuga\ teams\ list*|tsuga\ teams\ get\ *|tsuga\ monitors\ list*|tsuga\ monitors\ get\ *|tsuga\ dashboards\ list*|tsuga\ dashboards\ get\ *|tsuga\ log-routes\ list*|tsuga\ log-routes\ get\ *|tsuga\ notification-rules\ list*|tsuga\ notification-rules\ get\ *|tsuga\ notification-silences\ list*|tsuga\ notification-silences\ get\ *|tsuga\ quality-reports\ list*|tsuga\ docs\ search\ *|tsuga\ docs\ get\ *)
       return 0
       ;;
     *)
@@ -130,7 +166,16 @@ for f in "${files[@]}"; do
     in_ready && /^## / { in_ready=0 }
     in_ready && /^```bash$/ { in_bash=1; next }
     in_ready && /^```$/ { in_bash=0 }
-    in_ready && in_bash && /^tsuga / { print; exit }
+    in_ready && in_bash && /^tsuga / {
+      line = $0
+      while (line ~ /\\$/) {
+        sub(/\\$/, "", line)
+        if ((getline nextline) <= 0) break
+        line = line " " nextline
+      }
+      print line
+      exit
+    }
   ' "$f")
 
   if [ -z "$cmd" ]; then

@@ -1,6 +1,6 @@
 ---
 name: knowledge-technology
-description: 'Per-technology reference bundles with exact Tsuga metric names, incident shapes, derived signals, and log patterns for ~35 techs (postgres, mysql, redis, kafka, rabbitmq, cassandra, kubernetes, nginx, haproxy, envoy, istio, jvm, otel-collector, quickwit, aws-rds, aws-lambda, aws-ecs, aws-sqs, aws-dynamodb, aws-elasticache, gcp-pubsub, gcp-storage, …). Trigger before composing any `tsuga aggregation / tsuga logs / tsuga traces` query, or when an incident scope / error log / monitor name mentions a covered tech or a classic symptom (OOMKilled, CrashLoopBackOff, connection pool, deadlock, queue lag, compaction, throttle, replication lag, cold start, 5xx). Bundles are fetched from Tsuga with `tsuga docs get references/technologies/<tech>/{overview,metrics,queries}`. Source-system metric names (CloudWatch CPUUtilization, etc.) do NOT work in Tsuga — use the `tsuga_metric_name` column of the `metrics` page (AWS metrics register as `aws_rds_cpu_utilization`, `aws_lambda_errors`, …).'
+description: 'Per-technology reference bundles with exact Tsuga metric names, incident shapes, derived signals, and log patterns for ~35 techs (postgres, mysql, redis, kafka, rabbitmq, cassandra, kubernetes, nginx, haproxy, envoy, istio, jvm, otel-collector, quickwit, aws-rds, aws-lambda, aws-ecs, aws-sqs, aws-dynamodb, aws-elasticache, gcp-pubsub, gcp-storage, …). Trigger before composing any Tsuga aggregation, logs, or traces query, or when an incident scope, error log, or monitor name mentions a covered tech or a classic symptom (OOMKilled, CrashLoopBackOff, connection pool, deadlock, queue lag, compaction, throttle, replication lag, cold start, 5xx). Source-system metric names (CloudWatch CPUUtilization, etc.) do NOT work in Tsuga: use the `tsuga_metric_name` column of a bundle''s metrics page.'
 ---
 
 # Knowledge — Technology
@@ -44,16 +44,19 @@ Fetch a page once into a variable, then filter locally. Do not re-fetch per look
 RDS=$(tsuga docs get references/technologies/aws-rds/metrics | jq -r .content)
 
 # List every tsuga_metric_name (exact strings for Tsuga queries)
-printf '%s\n' "$RDS" | awk -F, 'NR>1 {print $7}' | sort -u
+printf '%s\n' "$RDS" | python3 -c 'import csv,sys; [print(r[6]) for r in list(csv.reader(sys.stdin))[1:] if len(r)>6]' | sort -u
 
 # Filter metrics by theme (Availability/Health, Capacity/Saturation, Performance/Latency, Errors/Failures, Throughput/Usage)
-printf '%s\n' "$RDS" | awk -F, 'NR>1 && $1=="Capacity/Saturation" {print $7}'
+printf '%s\n' "$RDS" | python3 -c 'import csv,sys; [print(r[6]) for r in list(csv.reader(sys.stdin))[1:] if len(r)>6 and r[0]=="Capacity/Saturation"]'
 
 # Look up a metric's definition + aggregation + group_by
-printf '%s\n' "$RDS" | awk -F, 'NR>1 && $2=="FreeStorageSpace" {print "def:"$4"\nagg:"$9"\npost:"$10"\ngroup_by:"$11}'
+printf '%s\n' "$RDS" | python3 -c 'import csv,sys
+for r in list(csv.reader(sys.stdin))[1:]:
+    if len(r) > 10 and r[1] == "FreeStorageSpace":
+        print(f"def:{r[3]}\nagg:{r[8]}\npost:{r[9]}\ngroup_by:{r[10]}")'
 
 # Source-name to tsuga-name lookup (critical for AWS)
-printf '%s\n' "$RDS" | awk -F, 'NR>1 {print $2" -> "$7}' | grep -i cpu
+printf '%s\n' "$RDS" | python3 -c 'import csv,sys; [print(f"{r[1]} -> {r[6]}") for r in list(csv.reader(sys.stdin))[1:] if len(r)>6]' | grep -i cpu
 
 # Incident shapes and query recipes for a tech (fastest read)
 tsuga docs get references/technologies/postgres/queries | jq -r .content
@@ -69,7 +72,10 @@ Cross-tech search ("which techs expose a replication metric?") needs one fetch p
 Once you have the exact `tsuga_metric_name`, compose via `$tsuga-cli`. Aggregation body uses `timeRange` + `dataSource` + `queries` (see `$tsuga-cli/SKILL.md` for the full schema). GNU `date -d` works on the container (Linux); avoid BSD-only flags like `-v-2H`.
 
 ```bash
-METRIC=$(printf '%s\n' "$RDS" | awk -F, 'NR>1 && $2=="FreeStorageSpace" {print $7; exit}')
+METRIC=$(printf '%s\n' "$RDS" | python3 -c 'import csv,sys
+for r in list(csv.reader(sys.stdin))[1:]:
+    if len(r) > 6 and r[1] == "FreeStorageSpace":
+        print(r[6]); break')
 echo "$METRIC"   # -> aws_rds_free_storage_space
 
 FROM_EPOCH=$(date -u -d '-2 hours' +%s)

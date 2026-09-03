@@ -45,7 +45,7 @@ inputs/
 ]
 ```
 
-This file feeds the "owner team" annotation in each service dossier's header. If you don't supply it, Phase 3 infers ownership from the `context.team` telemetry tag — which is authoritative but occasionally gives surprising answers (e.g., `analytics-engine` may live in a `platform`-owned repo but its team tag is `data`). Both inference sources are correct in their own way; the JSON file lets you decide which to prefer.
+This file feeds the "owner team" annotation in each service dossier's header. If you don't supply it, ownership falls back to the `teams` field on `tsuga services list` (the same mapping Phase 1 scores teams with) — which is authoritative but occasionally gives surprising answers (e.g., `analytics-engine` may live in a `platform`-owned repo but its team tag is `data`). Both inference sources are correct in their own way; the JSON file lets you decide which to prefer.
 
 ## What the raw docs contribute (if present)
 
@@ -76,24 +76,24 @@ Phase 0/1 in `PROCEDURE.md` runs these calls against the live Tsuga account. Not
 tsuga teams list                                    # all teams + metadata
 tsuga monitors list                                 # all monitors
 tsuga dashboards list                               # all dashboards
-tsuga routes list                                   # all telemetry routes
+tsuga log-routes list                                   # all telemetry routes
 tsuga services list                                 # all services with 24h activity counters
 tsuga notification-rules list                       # all notification routing rules
 tsuga metrics list                                  # all metric names currently reporting
 
 # Log-volume by service (fuel for service scoring)
-FROM=$(date -u -v-7d +%s); TO=$(date -u +%s)
+TO=$(date -u +%s); FROM=$((TO - 7 * 86400))      # 7 days; portable on BSD and GNU
 cat > /tmp/svc-vol.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":200}],"formula":"q1"}
 JSON
-tsuga aggregation scalar -f /tmp/svc-vol.json   # save to inputs/cache/svc-volume-7d.json
+tsuga aggregation scalar -f /tmp/svc-vol.json > inputs/cache/svc-volume-7d.json
 ```
 
 Cache these outputs under `inputs/cache/` if you plan to iterate — they are slow enough that re-running Phase 3 five times will hit your patience before it hits any rate limit.
 
 ## Per-service helper extraction
 
-Phase 3 pre-digests discovery output into per-service helper directories so each subagent has a narrow, focused input to read. See `PROCEDURE.md §"Phase 3"` for the exact script. The end state looks like:
+Phase 4 pre-digests discovery output into per-service helper directories so each subagent has a narrow, focused input to read. See `PROCEDURE.md §"Phase 4"` for the exact script. The end state looks like:
 
 ```
 /tmp/service-data/

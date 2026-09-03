@@ -36,7 +36,7 @@ Use the `$build-knowledge-company` skill. Specifically:
 Phase 2 — health check:
 Use the `$check-skill-health` skill. Specifically:
 1. Run `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh skills/knowledge-company/` (structural checks, offline).
-2. Then run with live execution: `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute skills/knowledge-company/` (samples 5 random SERVICE_KNOWLEDGE.md files and runs the first `tsuga` command from each against prod telemetry).
+2. Then run the sampling audit: `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute skills/knowledge-company/` (samples random SERVICE_KNOWLEDGE.md files and audits whether the first `tsuga` command in each is read-only and well-shaped — it never executes them).
 3. If any FAIL: do NOT hand-edit the affected file. Fix the root cause in the template / subagent prompt / lessons doc, regenerate the affected services via subagent, re-run both lint passes. Iterate until `lint-all.sh --execute` returns exit code 0.
 4. WARNs are informational — read them, decide whether to fix or annotate.
 

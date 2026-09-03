@@ -22,7 +22,7 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 
 **Checks:**
 - SKILL.md body ≤ 500 lines.
-- references/ depth ≤ 1 level (exempt for `knowledge-company`'s teams/services taxonomy).
+- references/ depth ≤ 1 level (exempt for `knowledge-company`'s teams/services taxonomy and `incident-history`'s per-incident folders).
 - Bundle size ≤ 15 MB.
 - No "When to use" heading in the body.
 
@@ -53,8 +53,8 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 
 **Checks (only fires if target is an incident-history skill):**
 - Every `INC-*/` has SUMMARY.md + metadata.json.
-- Every metadata.json parses + has `incident_id`, `declared_at`, `last_iso`.
-- Every SUMMARY.md has the canonical heading set (Incident at a glance, Timeline, Paging surface, Diagnostic path, Root cause, Remediation, Lessons).
+- Every metadata.json parses + has ISO-shaped `last_iso`, `declared_at`, and one of `inc_id` / `incident_id` matching the folder name.
+- Every SUMMARY.md carries the canonical headings. The checker enforces the core set (`## Root cause`, `## Diagnostic path`) as whole heading lines; the rest are conventions.
 - `_inventory.csv` row count == folder count.
 
 **Why:**

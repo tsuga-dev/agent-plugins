@@ -14,18 +14,18 @@ tsuga teams list      | jq 'length'              # > 0
 tsuga services list   | jq 'length'              # > 0
 tsuga monitors list   | jq 'length'              # > 0
 tsuga dashboards list | jq 'length'              # > 0
-tsuga routes list     | jq 'length'              # > 0
+tsuga log-routes list     | jq 'length'              # > 0
 gh auth status                                   # authenticated
 
 # Aggregation body path — exercise once to confirm heredoc shape works
-FROM=$(date -u -v-5M +%s); TO=$(date -u +%s)
+TO=$(date -u +%s); FROM=$((TO - 300))            # 5 minutes; portable on BSD and GNU
 cat > /tmp/q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"*"}],"formula":"q1"}
 JSON
 tsuga aggregation scalar -f /tmp/q.json          # returns {"results":[{"id":"q1","group":{},"value":N}]}
 ```
 
-All four `list`s non-empty + the scalar aggregation returning a number = **go**. Anything else → fix auth, verify `--agent-type` env, or raise bandwidth with the account owner before continuing. The procedure will burn hours of subagent work if credentials drop mid-fanout.
+All five `list`s non-empty + the scalar aggregation returning a number = **go**. Anything else → fix auth, verify `--agent-type` env, or raise bandwidth with the account owner before continuing. The procedure will burn hours of subagent work if credentials drop mid-fanout.
 
 ## Phase 1 — discover the team taxonomy (live)
 
@@ -63,11 +63,11 @@ These feed the top-level docs:
 
 ```bash
 tsuga notification-rules list > /tmp/notification-rules.json
-tsuga routes list              > /tmp/routes.json
+tsuga log-routes list              > /tmp/routes.json
 tsuga metrics list             > /tmp/metrics.json
 
 # Service-to-log-volume table (fuel for service scoring)
-FROM=$(date -u -v-7d +%s); TO=$(date -u +%s)
+TO=$(date -u +%s); FROM=$((TO - 604800))
 cat > /tmp/svc-vol-q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":500}],"formula":"q1"}
 JSON
@@ -93,8 +93,7 @@ Compute the ranking:
 jq -r '.results[] | [.group."context.service.name", .value] | @tsv' /tmp/svc-volume-7d.json | sort -k2,2nr | head -60 > /tmp/top-by-vol.tsv
 
 # Services targeted by a monitor's name
-jq -r '.[] | .name' /tmp/service-data-monitors.json 2>/dev/null \
-  || jq -r '.[] | .name' <(tsuga monitors list) \
+tsuga monitors list | jq -r '.[] | .name' \
   | awk 'match($0, /([a-z][a-z0-9-]*-)+[a-z][a-z0-9-]*/) { print substr($0, RSTART, RLENGTH) }' \
   | sort -u > /tmp/monitor-named-services.txt
 
@@ -138,7 +137,7 @@ while read svc; do
   )]' <(tsuga dashboards list) > "$SVC_DATA/$svc/dashboards.json"
 
   # Incident files mentioning the service
-  grep -l "context.service.name:${svc}" skills/incident-history/references/incidents/*/SUMMARY.md 2>/dev/null \
+  grep -lE "context\.service\.name:${svc}([^a-zA-Z0-9_-]|$)" skills/incident-history/references/incidents/*/SUMMARY.md 2>/dev/null \
     > "$SVC_DATA/$svc/incident-files.txt"
 done < /tmp/services-to-dossier.txt
 ```
@@ -167,7 +166,7 @@ Write yourself. Pulls from `/tmp/teams-raw.json`, `/tmp/notification-rules.json`
 
 ## Phase 6 — write per-team dossiers (serial, by orchestrator)
 
-For each team in `/tmp/team-score.tsv`, write `teams/<team>/TEAM_KNOWLEDGE.md` following `TEAM_KNOWLEDGE_TEMPLATE.md`. These are short (60–120 lines), are narrative, and benefit from the orchestrator's broader context (cross-team references). **Do not fan out to subagents for this phase** — a subagent doesn't have the visibility to explain cross-team ownership splits (e.g., a service whose code is owned by one team but whose paging monitors are owned by another).
+For each team in `/tmp/team-score.tsv` that owns at least one monitor, dashboard or service, write `teams/<team>/TEAM_KNOWLEDGE.md` following `TEAM_KNOWLEDGE_TEMPLATE.md`. Skip empty teams, per Phase 1. These are short (60–120 lines), are narrative, and benefit from the orchestrator's broader context (cross-team references). **Do not fan out to subagents for this phase** — a subagent doesn't have the visibility to explain cross-team ownership splits (e.g., a service whose code is owned by one team but whose paging monitors are owned by another).
 
 Per-team inputs the orchestrator uses:
 
@@ -189,7 +188,7 @@ Per-team inputs the orchestrator uses:
 - Team context: `$OUT/teams/<team>/TEAM_KNOWLEDGE.md`
 - Output path: `$OUT/teams/<team>/services/<svc>/SERVICE_KNOWLEDGE.md` (subagent must `mkdir -p`)
 
-Prompt template: `SUBAGENT_PROMPT.md` — copy verbatim, substitute `{svc}` + `{team}` + `{team_id}`.
+Prompt template: `SUBAGENT_PROMPT.md` — copy verbatim, substitute `{svc}` + `{team}` + `{team_id}` + `{company}` + `{N}` + `{svc-prefix}`.
 
 **Batch size:** 8–12 in parallel is the sweet spot. Wider batches hit MCP rate limits; narrower batches waste wall-clock time. The first-pass `knowledge-company` used 4 waves of 8 subagents each.
 
@@ -197,12 +196,13 @@ Prompt template: `SUBAGENT_PROMPT.md` — copy verbatim, substitute `{svc}` + `{
 
 ## Phase 8 — verification
 
-Run `VERIFICATION.md`'s full gate set. The two gates you cannot skip:
+Run `VERIFICATION.md`'s full gate set. The three gates you cannot skip:
 
 - **Gate 4 — forbidden tokens.** Every SERVICE_KNOWLEDGE.md must be free of MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, etc.) and `rtk` prefixes.
 - **Gate 5 — sampled execution.** Pick 5 random SERVICE_KNOWLEDGE.md files, copy every `tsuga` command in their Ready-to-run section into a shell, confirm it executes. If any fail, it is a fleet-wide template bug — fix the template and regenerate the affected batch.
+- **Gate 6 — aggregation body sanity.** Aggregation heredocs have the most places to get wrong; Phase 2 writes them, so spot-check 3 at random.
 
-If Gate 4 or Gate 5 fails, you do NOT hand-patch the affected files. Fix the root template / prompt / lesson doc, then re-run Phase 7 for just the failing services.
+If Gate 4, Gate 5 or Gate 6 fails, you do NOT hand-patch the affected files. Fix the root template / prompt / lesson doc, then re-run Phase 7 for just the failing services.
 
 ## Phase 9 — cross-link and commit
 
@@ -215,7 +215,7 @@ Cross-links to verify:
 ```bash
 OUT=./skills/knowledge-company/references
 # Services named in COMPANY_TELEMETRY's symptom table vs actual dossier files
-grep -oE "`[a-z][a-z0-9-]+`" "$OUT/COMPANY_TELEMETRY_KNOWLEDGE.md" | sort -u > /tmp/svc-named-in-top.txt
+grep -oE '`[a-z][a-z0-9-]+`' "$OUT/COMPANY_TELEMETRY_KNOWLEDGE.md" | sort -u > /tmp/svc-named-in-top.txt
 find "$OUT/teams" -name SERVICE_KNOWLEDGE.md -path '*/services/*' | awk -F/ '{print "`" $(NF-1) "`"}' | sort -u > /tmp/svc-dossier-files.txt
 comm -23 /tmp/svc-named-in-top.txt /tmp/svc-dossier-files.txt | head    # named but no dossier (may be intentional)
 comm -13 /tmp/svc-named-in-top.txt /tmp/svc-dossier-files.txt | head    # dossier exists but not in top — fine

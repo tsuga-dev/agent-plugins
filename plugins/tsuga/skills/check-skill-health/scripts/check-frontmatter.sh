@@ -2,7 +2,7 @@
 # check-frontmatter.sh — validate a skill's SKILL.md frontmatter.
 #
 # Usage: check-frontmatter.sh <skill-dir>
-# Exit:  0 = PASS, 1 = FAIL, 2 = script error.
+# Exit:  0 = PASS/WARN, 1 = FAIL, 2 = script error.
 #
 # Checks:
 #   - SKILL.md exists
@@ -27,9 +27,19 @@ if [ ! -f "$SKILL_MD" ]; then
 fi
 
 # Extract the first frontmatter block (lines between the first two `---`).
-fm=$(awk 'BEGIN{state=0} /^---$/{state++; next} state==1 {print} state==2 {exit}' "$SKILL_MD")
+# The opening `---` must be line 1 and the block must be closed, otherwise arbitrary body text
+# could be read as frontmatter.
+if [ "$(head -1 "$SKILL_MD")" != "---" ]; then
+  echo "FAIL [frontmatter] $SKILL_DIR — SKILL.md must open with \`---\` on line 1"
+  exit 1
+fi
+if [ "$(grep -c '^---$' "$SKILL_MD")" -lt 2 ]; then
+  echo "FAIL [frontmatter] $SKILL_DIR — frontmatter block is not closed with \`---\`"
+  exit 1
+fi
+fm=$(awk 'NR==1 && /^---$/ {state=1; next} state==1 && /^---$/ {exit} state==1 {print}' "$SKILL_MD")
 if [ -z "$fm" ]; then
-  echo "FAIL [frontmatter] $SKILL_DIR — no frontmatter block found (expected \`---\` delimiters at top)"
+  echo "FAIL [frontmatter] $SKILL_DIR — frontmatter block is empty"
   exit 1
 fi
 
@@ -73,7 +83,9 @@ fi
 folder_name=$(basename "$SKILL_DIR")
 name_match_note=""
 if [ "$name" != "$folder_name" ]; then
-  name_match_note=" (note: folder '$folder_name' != name '$name')"
+  name_match_note=" (folder '$folder_name' != name '$name')"
+  # Surface it: lint-all only counts WARN/FAIL lines, so a note alone is invisible.
+  [ "$status" = "PASS" ] && status="WARN"
 fi
 
 echo "$status [frontmatter] $SKILL_DIR — name: $name, description: $word_count words${msg:+ — $msg}${name_match_note}"

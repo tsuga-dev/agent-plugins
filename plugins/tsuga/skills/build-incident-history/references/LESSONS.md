@@ -30,7 +30,7 @@ Translation table the subagent MUST follow:
 | `get-metric name=X` | `tsuga metrics get X` |
 | `list-monitors` / `get-monitor id=X` | `tsuga monitors list` / `tsuga monitors get X` (note the plural "monitors"!) |
 | `list-dashboards` / `get-dashboard id=X` | `tsuga dashboards list` / `tsuga dashboards get X` |
-| `list-routes`, `list-teams`, `list-services`, `list-notification-rules` | all singular→plural: `tsuga routes list`, `tsuga teams list`, etc. |
+| `list-routes`, `list-teams`, `list-services`, `list-notification-rules` | all singular→plural: `tsuga log-routes list`, `tsuga teams list`, etc. |
 | `aggregate-scalar dataSource=logs aggregate=count filter="X"` | heredoc into `/tmp/q.json` + `tsuga aggregation scalar -f /tmp/q.json` |
 | `aggregate-timeseries dataSource=metrics aggregationWindow=5m …` | heredoc + `tsuga aggregation timeseries -f /tmp/q.json`, body has `aggregationWindow: "5m"` |
 
@@ -46,7 +46,7 @@ The data source is "spans" in the TQL sense but the CLI command is `traces searc
 
 ### 4. Singular vs plural resource names
 
-`tsuga monitor get X` is wrong. The CLI follows the pattern `tsuga <resources-plural> <verb>`: `tsuga monitors get`, `tsuga dashboards list`, `tsuga routes get`, `tsuga teams list`, `tsuga services get`, etc. Always plural.
+`tsuga monitor get X` is wrong. The CLI follows the pattern `tsuga <resources-plural> <verb>`: `tsuga monitors get`, `tsuga dashboards list`, `tsuga log-routes get`, `tsuga teams list`, `tsuga services get`, etc. Always plural.
 
 ### 5. `rtk` prefix is noise in docs
 
@@ -56,7 +56,7 @@ The RTK hook rewrites commands transparently at execution time. Writing `rtk tsu
 
 - `timeRange` in the JSON body requires **Unix seconds integers**, not relative strings like `"-1h"`. Use the helper:
   ```bash
-  FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)   # macOS
+  TO=$(date -u +%s); FROM=$((TO - 3600))
   # Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
   ```
 - `groupBy` goes at body level, not inside query items: `"groupBy": [{"fields": ["context.cluster_id"], "limit": 10}]`.
@@ -77,7 +77,7 @@ If the responder's `tsuga/commands.txt` is missing or empty for an incident, the
 
 - Leave the Diagnostic path section empty except for a one-line note:
   > _No command log captured for this incident. Reconstruction would be invention — flagged in Confidence._
-- Add a Confidence note at the bottom of the SUMMARY.md: "low — Diagnostic path not recoverable from inputs."
+- Add a `## Confidence` section at the bottom of the SUMMARY.md: "low — Diagnostic path not recoverable from inputs."
 
 A SUMMARY.md with an honest empty section is far more useful than one with hallucinated probes, because the retrieval layer can filter out low-confidence entries from analogue search.
 
@@ -110,7 +110,7 @@ When writing a Diagnostic path probe, use the OR-match idiom:
 tsuga logs search --query "(context.service.name:app-order-ingest OR context.service.name:ingest) level:ERROR" --from -1h
 ```
 
-If the responder's original probe used only one form and that caused them to miss a subset, note this in the Findings — it's the most common source of "we couldn't see half the problem" confusion.
+If the responder's original probe used only one form and that caused them to miss a subset, note this in that probe's `Finding:` line — it's the most common source of "we couldn't see half the problem" confusion.
 
 ### 13. Engine roles are not first-party services
 

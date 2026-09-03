@@ -2,7 +2,7 @@
 
 The `scripts/` in this skill catch every mechanical violation. Before shipping a skill, also walk through this checklist by eye. Each item is a judgment call — no script can substitute.
 
-## Trigger quality (rule 1)
+## Trigger quality
 
 - [ ] Does the description name the specific service / data shape / task the skill should fire on, not just a topic?
 - [ ] Would an agent reading the description know _when_ to pick this skill over a similar one?
@@ -10,7 +10,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** generic description like "helps investigate Tsuga problems". Fix: add 3–5 specific triggers ("service name like `api-gateway`, `data-intake`, `bridge` appears", "a P1 monitor fires on the monitoring pipeline").
 
-## Scope (rule 4)
+## Scope
 
 - [ ] Does this skill do one job with one output shape?
 - [ ] Is anything here that would be easier to factor out into a sibling skill?
@@ -18,7 +18,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** one skill covering "investigation + knowledge + cli driving + history". Split into four.
 
-## Scripts vs prose (rule 6)
+## Scripts vs prose
 
 - [ ] Is anything in the skill body describing step-by-step deterministic work that would be more reliable as a script?
 - [ ] Are there `bash` code blocks the reader is expected to run verbatim? Those should live in `scripts/`, not inline.
@@ -26,14 +26,14 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** 20 lines of "do A, then do B, then do C, then verify D". Fix: `scripts/do-all.sh` + a one-line prose mention.
 
-## Imperative instructions (rule 9)
+## Imperative instructions
 
 - [ ] Do the action-section verbs start with imperatives ("Read", "Extract", "Validate") not descriptions ("The agent should read…")?
 - [ ] Are conditional branches crisp ("If X, do Y") not vague ("When necessary, consider Y")?
 
 **Failure pattern:** passive voice. Fix: rewrite as direct commands.
 
-## Guardrails (rule 11)
+## Guardrails
 
 - [ ] What does the skill say to do when required input is missing?
 - [ ] What if a connector (MCP, CLI, API) is unavailable?
@@ -42,7 +42,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** no mention of failure modes. Fix: add a "When this fails" section enumerating 3–5 common breakages.
 
-## Examples over prose (rule 12)
+## Examples over prose
 
 - [ ] Count the examples — is there at least one per major operation the skill describes?
 - [ ] Are the examples concrete (real input, real output shape) or abstract ("something like …")?
@@ -50,7 +50,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** long paragraphs explaining format rules. Fix: add a 10-line sample.
 
-## Tested on real prompts (rule 13)
+## Tested on real prompts
 
 - [ ] Has this skill been run end-to-end on at least 3 real tasks?
 - [ ] Did the agent pick it up correctly from the description alone?
@@ -59,7 +59,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 **Failure pattern:** shipping without dogfooding. Fix: run it against 3 representative inputs, iterate.
 
-## Narrative coherence (our addition — not in the 15 rules)
+## Narrative coherence
 
 - [ ] Read the top-level SKILL.md cover-to-cover. Does the layout + when-to-read-what + shell-commands flow sensibly?
 - [ ] Pick 3 random reference files. Do they explain why they exist, not just what they contain?

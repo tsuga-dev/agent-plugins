@@ -34,7 +34,7 @@ The single most expensive bug in the first `knowledge-company` build was subagen
 | `list-dashboards` | `tsuga dashboards list` |
 | `list-dashboards owners=A,B` | `tsuga dashboards list -d '{"filters":{"owners":{"values":["A","B"]}}}'` |
 | `get-dashboard id=X` | `tsuga dashboards get X` |
-| `list-routes` / `get-route id=X` | `tsuga routes list` / `tsuga routes get X` |
+| `list-routes` / `get-route id=X` | `tsuga log-routes list` / `tsuga log-routes get X` |
 | `list-teams` / `get-team id=X` | `tsuga teams list` / `tsuga teams get X` |
 | `list-services` / `get-service id=X` | `tsuga services list` / `tsuga services get X` |
 | `list-notification-rules` | `tsuga notification-rules list` |
@@ -54,7 +54,7 @@ aggregate-timeseries dataSource=metrics aggregationWindow=5m aggregate=sum field
 have no one-liner equivalent in the CLI. They require a JSON body file. Translate to **heredoc + CLI invocation**:
 
 ```bash
-FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)   # macOS
+TO=$(date -u +%s); FROM=$((TO - 3600))
 # or on Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
 
 cat > /tmp/q.json <<JSON

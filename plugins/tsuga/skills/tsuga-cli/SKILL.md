@@ -111,7 +111,7 @@ Minimal shape:
 
 ## Service Graph
 
-`tsuga service-graph get <serviceId>` derives a service dependency graph from trace spans in the window: which services called which, and how often. Flags: `--from` (`-30m`), `--to` (`now`), `--query` (`*`). Pass a **service id** (not a name) from `tsuga services list`.
+`tsuga service-graph get <serviceId>` derives a service dependency graph from trace spans in the window: which services called which, and how often. Flags: `--from` (`-30m`), `--to` (`now`), `--query` (`*`). Pass a **service id** (not a name) from `tsuga services list`. Those defaults are the CLI's own and a saved default can change them, so state the window you actually queried rather than assuming `-30m`.
 
 > Empty graph usually means no traces in the window, not no dependencies. Widen `--from` before concluding isolation.
 

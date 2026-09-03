@@ -26,7 +26,7 @@ description: "Use when asked about slow requests, high latency, latency spikes, 
 
 ## Workflow
 
-1. `tsuga services list` plus `tsuga teams list/get` — confirm service, env, owner, and `sources[]`; note query time and `tracesCount24h` as rolling snapshot state. `teams get` takes a team ID; map service team names/IDs through `teams list` before calling it, or skip `get` unless team details are needed. If `tracesCount24h` is 0, warn that no traces were seen in the last 24h, but do not stop for historical windows until the requested-window trace query also returns no data.
+1. `tsuga services list` plus `tsuga teams list/get` — confirm service, env, owner, and `traceRequestRate` / `traceErrorRate`; note query time and `lastSeenAt` as rolling snapshot state. `teams get` takes a team ID; map service team names/IDs through `teams list` before calling it, or skip `get` unless team details are needed. If `traceRequestRate` is 0, warn that no recent trace traffic was observed; if it is absent, the trace query failed and the snapshot says nothing either way. Either way do not stop for historical windows until the requested-window trace query also returns no data.
 
 2. `tsuga aggregation timeseries -d '<body>'` — selected percentile latency grouped by `span.name`, limit 10, over window with 5-minute aggregation windows:
    ```json
@@ -62,7 +62,7 @@ description: "Use when asked about slow requests, high latency, latency spikes, 
 
 6. `tsuga logs search --query "context.service.name:\"<name>\" level:ERROR <env/team filters if provided>" --from <peak_window_start> --to <peak_window_end> --max-results 10` — correlate errors at peak time.
 
-**Optional trace-log correlation:** If the service emits both traces and logs (`sources[]` includes both), first fetch up to 5 slow-window traces and extract a trace ID from those results:
+**Optional trace-log correlation:** The service response carries no signal inventory, so probe instead: if step 2 returned spans and a bounded `tsuga logs search --max-results 1` returns a row, fetch up to 10 slow-window traces and extract a trace ID from those results:
 ```bash
 tsuga traces search --query "context.service.name:\"<name>\" span.name:\"<top_operation>\" duration:><threshold_ms>" --from <peak_window_start> --to <peak_window_end> --max-results 10
 tsuga logs search --query "trace_id:<trace_id>" --from <peak_window_start> --to <peak_window_end> --max-results 10
@@ -109,7 +109,7 @@ This is the **trace summary**. It collapses groups of similar spans into synthet
 ## Latency Investigation: <service> (<from> → <to>)
 Service snapshot queried at: <timestamp>
 Owner: <team name or not found in Tsuga> | Env: <env or all>
-tracesCount24h: <N> (rolling 24h snapshot)
+traceRequestRate: <N> req/s | traceErrorRate: <N>% | lastSeenAt: <timestamp>
 
 ## p<percentile> by Operation (top 10, 5-minute windows)
 | Operation (span.name) | Peak p<percentile> | Sustained (≥2 windows)? | Span count |
@@ -133,16 +133,16 @@ Trace-log correlation: <N> matching traces found via trace_id / not attempted (s
 ## Limitations
 - No service topology map — downstream attribution requires running this skill per suspected downstream service
 - 5-minute aggregation windows assumed; low-traffic services may show noisy results; widen to 15m or 30m if needed
-- Trace-log correlation only works when service emits both traces and logs (check sources[] in services list)
+- Trace-log correlation only works when the service emits both traces and logs; `services list` has no signal inventory, so this is established by probe, not by a field
 - Percentile groupBy is limited to top 10 operations; additional operations may exist beyond this limit
 - Duration values are milliseconds throughout
-- `services list` counters are snapshot state, not proof that traces exist or do not exist in a historical window
+- `services list` rates are snapshot state, not proof that traces exist or do not exist in a historical window
 - `traces latency-summary` and `traces summarize` describe a single trace — one sample, not a sustained pattern. `latency-summary` durations are nanoseconds-as-strings (not ms), and a `truncated` summary attributes an incomplete trace
 ```
 
 ## Safety Rules
 
-- If `tracesCount24h` is 0: warn that recent traces were not observed, then verify the requested window before stopping.
+- If `traceRequestRate` is 0: warn that recent trace traffic was not observed, then verify the requested window before stopping. An omitted rate means the trace query failed — report that, do not read it as zero.
 - Use explicit `--from`/`--to` or state the CLI default; ask for exact bounds on ambiguous natural-language windows.
 - Resolve ownership with `tsuga services list` plus `tsuga teams list/get`; never infer ownership from names.
 - Do not attribute latency to a downstream service without running this skill against that service explicitly.

@@ -21,8 +21,8 @@ Phase 1 — build:
 Use the `$build-incident-history` skill. Specifically:
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/SKILL.md` and every file under `${CLAUDE_PLUGIN_ROOT}/skills/build-incident-history/references/`.
 2. Execute the phases in `PROCEDURE.md` in order. Do NOT skip Phase 0 (sanity check) or Phase 5 (verification).
-3. Fan out per-incident SUMMARY.md writing to parallel subagents — batches of 10–20. Each subagent gets one INC-id, the template, and the lessons doc. Prompt template is in `SUBAGENT_PROMPT.md`; copy verbatim, substitute `{inc_id}` and `{company}`.
-4. Before subagent fan-out, optionally run Phase 2 (per-incident helper extraction) to pre-digest raw inputs into `/tmp/incident-extracts/<inc_id>/`. This is faster than having each subagent parse the raw JSON.
+3. Optionally run Phase 2 (per-incident helper extraction) first, pre-digesting raw inputs into `/tmp/incident-extracts/<inc_id>/`. This is faster than having each subagent parse the raw JSON.
+4. Then fan out per-incident SUMMARY.md writing to parallel subagents — batches of 10–20. Each subagent gets one INC-id, the template, and the lessons doc. Prompt template is in `SUBAGENT_PROMPT.md`; copy verbatim, substitute `{inc_id}` and `{company}`.
 5. After fan-out, run Phase 4 to emit `_inventory.csv`.
 
 Phase 2 — health check:
