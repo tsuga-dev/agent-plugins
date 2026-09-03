@@ -81,6 +81,6 @@ See `services/<service-name>/SERVICE_KNOWLEDGE.md` for:
 2. **Ownership-mismatch traps must be called out up front.** If a team's monitors are owned by another team's ID (like the health-aggregator / infra situation above), document it in both team dossiers.
 3. **Don't duplicate from top-level docs.** The cluster ↔ customer table lives in `COMPANY_TELEMETRY_KNOWLEDGE.md`; don't paste it into every team file. Reference it.
 4. **Don't list every owned service in prose.** The closing section has the dossier list. Prose services in "What they own" should be the headline ones, not an exhaustive inventory.
-5. **"Typical incident shapes" must cite real incidents.** Not fabricated, not generic. Grep `incident-history` for each team's involvement and distill the top 3 recurring shapes. If only 1 incident fits a shape, don't inflate it to 3.
+5. **"Typical incident shapes" must cite real incidents.** Not fabricated, not generic. Grep `incident-history` for each team's involvement and distill the top 2–4 recurring shapes. If only 1 incident fits a shape, don't inflate it into more.
 6. **Dashboards tagged `[Person]` are scratch.** Mention them only with the "skip unless debugging that person's draft" caveat; never recommend them as primary.
 7. **The orchestrator writes these, not subagents.** These files require cross-team visibility to write well. Subagents don't see the other teams' files during their narrow per-service tasks.

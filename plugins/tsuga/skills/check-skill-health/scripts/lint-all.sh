@@ -20,7 +20,7 @@ for arg in "$@"; do
     --execute) EXECUTE=1 ;;
     --quiet)   QUIET=1 ;;
     --help|-h)
-      sed -n '2,10p' "$0"
+      sed -n '2,8p' "$0"
       exit 0
       ;;
     --*)
@@ -36,20 +36,21 @@ done
 # Auto-discovery: scan the standard paths for directories that contain a SKILL.md.
 if [ ${#targets[@]} -eq 0 ]; then
   candidates=()
-  [ -d "./skills" ]                  && candidates+=("./skills")
-  [ -d "./plugins/tsuga/skills" ]     && candidates+=("./plugins/tsuga/skills")
-  [ -d "$HOME/.claude/skills" ]      && candidates+=("$HOME/.claude/skills")
-  [ -d "$HOME/.codex/skills" ]       && candidates+=("$HOME/.codex/skills")
-  [ -d "./.agents/skills" ]          && candidates+=("./.agents/skills")
+  [ -d "./skills" ]               && candidates+=("./skills")
+  [ -d "./plugins/tsuga/skills" ] && candidates+=("./plugins/tsuga/skills")
+  [ -d "$HOME/.claude/skills" ]   && candidates+=("$HOME/.claude/skills")
+  [ -d "$HOME/.codex/skills" ]    && candidates+=("$HOME/.codex/skills")
+  [ -d "./.agents/skills" ]       && candidates+=("./.agents/skills")
 
-  for root in "${candidates[@]}"; do
+  # bash 3.2 (macOS) treats "${empty[@]}" as unset under `set -u`.
+  for root in ${candidates[@]+"${candidates[@]}"}; do
     while IFS= read -r skill_md; do
       targets+=("$(dirname "$skill_md")")
     done < <(find "$root" -mindepth 1 -maxdepth 2 -name SKILL.md 2>/dev/null)
   done
 
   if [ ${#targets[@]} -eq 0 ]; then
-    echo "No skill dirs found in ./skills, ~/.claude/skills, ~/.codex/skills, or ./.agents/skills." >&2
+    echo "No skill dirs found in ./skills, ./plugins/tsuga/skills, ~/.claude/skills, ~/.codex/skills, or ./.agents/skills." >&2
     echo "Pass a directory explicitly: $0 path/to/skill" >&2
     exit 2
   fi
@@ -82,7 +83,14 @@ for skill in "${targets[@]}"; do
   this_fail=0
   for c in "${checks[@]}"; do
     script="$SCRIPT_DIR/$c"
-    result=$(bash "$script" "$skill" 2>&1 || true)
+    result=$(bash "$script" "$skill" 2>&1)
+    rc=$?
+    # A checker can die before printing anything; its status must still count.
+    if [ "$rc" -gt 1 ]; then
+      echo "FAIL [$c] $skill — checker exited with status $rc"
+      total_fail=$((total_fail+1))
+      this_fail=1
+    fi
     # Count tokens in the result.
     while IFS= read -r line; do
       [ -z "$line" ] && continue

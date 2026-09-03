@@ -2,7 +2,7 @@
 
 # SUBAGENT_PROMPT — the exact per-service subagent prompt
 
-Copy this verbatim. Substitute `{svc}`, `{team}`, `{team_id}`, `{team_repo}`. Do not edit anything else. The orchestrator's job is to fan out dozens of these in parallel.
+Copy this verbatim. Substitute `{svc}`, `{team}`, `{team_id}`, `{company}`, `{N}`, `{svc-prefix}`. Do not edit anything else. The orchestrator's job is to fan out dozens of these in parallel.
 
 ## Prompt template
 
@@ -38,7 +38,7 @@ tsuga logs search --query "context.env:prod context.service.name:{svc}" --from -
 tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from -24h
 
 # 3. Active metric namespace
-tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}_"))'
+tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'
 
 # 4. Service metadata (team membership, 24h counters)
 tsuga services list | jq '.[] | select(.serviceName == "{svc}")'
@@ -78,6 +78,9 @@ grep -nE '\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|
 
 # Forbidden rtk prefix
 grep -nE '^rtk |[[:space:]]rtk ' "$F"
+
+# Required H1
+grep -qE '^# Service — ' "$F" || echo "MISSING HEADING: # Service — {svc}"
 
 # Canonical sections present
 for h in "## Quick context" "## Ready-to-run" "## Golden signals" "## Log shape" "## Dashboards" "## Upstream / downstream" "## Incident shapes" "## Caveats, footguns, known behaviors" "## Confidence note"; do

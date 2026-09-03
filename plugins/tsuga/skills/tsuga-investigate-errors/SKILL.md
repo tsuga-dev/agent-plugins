@@ -22,7 +22,7 @@ description: "Use when asked about service errors, error spikes, exception patte
 
 ## Workflow
 
-1. `tsuga services list` plus `tsuga teams list/get` — confirm the service exists, resolve ownership, and note query time plus `errorLogsCount24h` / `errorTracesCount24h` as rolling snapshot state. If both are 0 over 24h: state this upfront and ask the user if they want to proceed anyway.
+1. `tsuga services list` plus `tsuga teams list/get` — confirm the service exists, resolve ownership, and note query time plus `traceErrorRate` as rolling snapshot state. The response carries no log-error counter, so do not gate on one: get the 24h picture from step 2's aggregation over a 24h window when the requested window is shorter.
 
 2. `tsuga aggregation scalar -d '<body>'` (or `tsuga --cluster <cluster-id> aggregation scalar -d '<body>'` for multi-cluster tenants) — count errors in window. Use this body:
    ```json
@@ -58,7 +58,7 @@ description: "Use when asked about service errors, error spikes, exception patte
 ## Error Investigation: <service> (<from> → <to>)
 Service snapshot queried at: <timestamp>
 Owner: <team name or not found in Tsuga> | Env: <env or all>
-Service 24h signal (rolling snapshot): errorLogs=<errorLogsCount24h>, errorTraces=<errorTracesCount24h>
+Service snapshot: traceErrorRate=<N>% | lastSeenAt=<timestamp>
 
 ## Error Count
 <N> errors in window

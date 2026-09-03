@@ -47,9 +47,18 @@ if command -v jq >/dev/null 2>&1; then
   bad_metadata=0
   for f in "$INCIDENTS_DIR"/INC-*/metadata.json; do
     [ -f "$f" ] || continue
-    if ! jq -e '.last_iso and (.inc_id // .incident_id)' "$f" >/dev/null 2>&1; then
+    # Non-empty strings: jq treats "" and non-strings as truthy, so `and` alone passes them.
+    # Timestamps must look like ISO-8601, and the id must match the folder: copied metadata would
+    # otherwise attach one incident's identity and timestamps to another's folder.
+    folder=$(basename "$(dirname "$f")")
+    if ! jq -e --arg folder "$folder" '
+      def iso: type == "string" and test("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):?[0-5][0-9])$");
+      def id: (.inc_id // .incident_id);
+      (.last_iso | iso) and (.declared_at | iso)
+        and ((id | type) == "string") and ((id | length) > 0) and (id == $folder)
+    ' "$f" >/dev/null 2>&1; then
       bad_metadata=$((bad_metadata+1))
-      [ $bad_metadata -le 3 ] && echo "  bad metadata: $f (requires .last_iso + one of .inc_id / .incident_id)"
+      [ $bad_metadata -le 3 ] && echo "  bad metadata: $f (needs ISO .last_iso + .declared_at, and an id matching '$folder')"
     fi
   done
   if [ $bad_metadata -gt 0 ]; then
@@ -73,7 +82,7 @@ missing_sections=0
 for f in "$INCIDENTS_DIR"/INC-*/SUMMARY.md; do
   [ -f "$f" ] || continue
   for h in "${required_core[@]}"; do
-    if ! grep -qF "$h" "$f"; then
+    if ! grep -qxF "$h" "$f"; then
       missing_sections=$((missing_sections+1))
       [ $missing_sections -le 3 ] && echo "  missing '$h' in $f"
       break

@@ -17,14 +17,17 @@ done
 # RAW_TELEMETRY_KNOWLEDGE.md must NOT exist (folded into COMPANY_TELEMETRY_KNOWLEDGE.md)
 [ -f "$OUT/RAW_TELEMETRY_KNOWLEDGE.md" ] && echo "UNEXPECTED: RAW_TELEMETRY_KNOWLEDGE.md should not exist"
 
+# Guard the globs: an unmatched pattern would otherwise be reported as a missing file.
+shopt -s nullglob
+
 # Every team dir has TEAM_KNOWLEDGE.md
 for d in "$OUT"/teams/*/; do
   [ -f "$d/TEAM_KNOWLEDGE.md" ] || echo "MISSING: ${d}TEAM_KNOWLEDGE.md"
 done
 
 # Every service dir has SERVICE_KNOWLEDGE.md
-find "$OUT"/teams/*/services/ -mindepth 1 -maxdepth 1 -type d | while read svc_dir; do
-  [ -f "$svc_dir/SERVICE_KNOWLEDGE.md" ] || echo "MISSING: $svc_dir/SERVICE_KNOWLEDGE.md"
+for svc_dir in "$OUT"/teams/*/services/*/; do
+  [ -f "$svc_dir/SERVICE_KNOWLEDGE.md" ] || echo "MISSING: ${svc_dir}SERVICE_KNOWLEDGE.md"
 done
 ```
 

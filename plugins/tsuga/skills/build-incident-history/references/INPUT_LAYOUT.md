@@ -26,7 +26,7 @@ inputs/incidents/
 └── …
 ```
 
-## `metadata.json` — required fields
+## `metadata.json` — fields
 
 ```json
 {

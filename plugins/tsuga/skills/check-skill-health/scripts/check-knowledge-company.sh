@@ -67,6 +67,11 @@ if [ $missing_svc_md -gt 0 ]; then
   fail=1
 fi
 
+if [ "$team_count" -eq 0 ] || [ "$service_count" -eq 0 ]; then
+  echo "FAIL [knowledge-company] $SKILL_DIR — $team_count teams, $service_count services; an empty tree is not a complete skill"
+  fail=1
+fi
+
 # --- SERVICE_KNOWLEDGE.md canonical sections (prefix match; section naming has stylistic variants) ---
 # Each entry is a regex — heading must start with "## <pattern>" (case-sensitive).
 # This tolerates variants like "## Ready-to-run `tsuga` commands",
@@ -110,7 +115,7 @@ missing_team_sections=0
 for f in "$TEAMS"/*/TEAM_KNOWLEDGE.md; do
   [ -f "$f" ] || continue
   for h in "${team_required[@]}"; do
-    grep -qF "$h" "$f" || {
+    grep -qxF "$h" "$f" || {
       missing_team_sections=$((missing_team_sections+1))
       [ $missing_team_sections -le 3 ] && echo "  $f — missing '$h'"
     }
@@ -127,20 +132,29 @@ if [ -f "$skill_md" ]; then
   # Pull paths that look like relative md / csv / json references inside backticks.
   while IFS= read -r ref; do
     [ -z "$ref" ] && continue
-    # Resolve relative to SKILL.md's directory.
-    target="$SKILL_DIR/$ref"
-    if [ ! -e "$target" ] && [ ! -e "$REFS/$ref" ]; then
-      bad_links=$((bad_links+1))
-      [ $bad_links -le 3 ] && echo "  broken reference in SKILL.md: $ref"
+    # Resolve relative to SKILL.md's directory, then to references/.
+    if [ -e "$SKILL_DIR/$ref" ] || [ -e "$REFS/$ref" ]; then
+      continue
     fi
-  done < <(grep -oE '`[a-zA-Z_/.*-]+\.(md|csv|json|yaml|yml|sh|py)`' "$skill_md" 2>/dev/null | tr -d '`' | sort -u)
+    # A bare filename (`TEAM_KNOWLEDGE.md`) names a per-team dossier, not a root-level file.
+    case "$ref" in
+      */*) ;;
+      *) [ -n "$(find "$REFS" -name "$ref" -print -quit 2>/dev/null)" ] && continue ;;
+    esac
+    bad_links=$((bad_links+1))
+    [ $bad_links -le 3 ] && echo "  broken reference in SKILL.md: $ref"
+  done < <(grep -oE '`[a-zA-Z0-9_/.*-]+\.(md|csv|json|yaml|yml|sh|py)`' "$skill_md" 2>/dev/null | tr -d '`' | sort -u)
   if [ $bad_links -gt 0 ]; then
     echo "WARN [knowledge-company] $SKILL_DIR — $bad_links file references from SKILL.md don't resolve (may be templates / placeholders)"
   fi
 fi
 
 if [ $fail -eq 0 ]; then
-  echo "PASS [knowledge-company] $SKILL_DIR — $team_count teams, $service_count services, all canonical sections present"
+  if [ "$missing_team_sections" -gt 0 ] || [ "$missing_section_total" -gt 0 ]; then
+    echo "WARN [knowledge-company] $SKILL_DIR — $team_count teams, $service_count services, $missing_team_sections canonical team sections and $missing_section_total service sections missing"
+  else
+    echo "PASS [knowledge-company] $SKILL_DIR — $team_count teams, $service_count services, all canonical sections present"
+  fi
 fi
 
 exit $fail

@@ -1,6 +1,6 @@
 # SERVICE_KNOWLEDGE_TEMPLATE — per-service dossier
 
-The highest-leverage file in the entire skill. Every section has rules; follow them mechanically. Hallucination-prone sections (Caveats, Typical incident shapes) have extra guards.
+The highest-leverage file in the entire skill. Every section has rules; follow them mechanically. Hallucination-prone sections (Caveats, Incident shapes) have extra guards.
 
 ## Target length: 180–350 lines
 
@@ -57,7 +57,7 @@ Subsections, each a single purpose:
 tsuga logs search --query "context.env:prod context.service.name:{service_name} level:ERROR" --from -1h --to now --max-results 20
 
 # For aggregations, use the heredoc pattern:
-FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)   # macOS
+TO=$(date -u +%s); FROM=$((TO - 3600))
 # or on Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
 cat > /tmp/q.json <<JSON
 {
@@ -202,7 +202,7 @@ This section is load-bearing. It's what tells a future investigator which claims
 ### On content
 
 7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it's in `tsuga metrics list`. If it isn't, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
-8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Typical incident shapes for shared monitors."
+8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
 9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from -7d --max-results 50` before writing Log shape. The patterns must come from real output.
 10. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".
 

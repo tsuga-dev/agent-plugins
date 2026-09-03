@@ -3,7 +3,7 @@
 # check-forbidden-tokens.sh — flag MCP-tool pseudo-syntax, rtk prefix, and wrong CLI shape.
 #
 # Usage: check-forbidden-tokens.sh <skill-dir>
-# Exit:  0 = PASS, 1 = FAIL.
+# Exit:  0 = PASS, 1 = FAIL, 2 = script error.
 
 set -uo pipefail
 
@@ -18,91 +18,74 @@ if [ ! -d "$SKILL_DIR" ]; then
   exit 1
 fi
 
-# Files we deliberately ignore: raw data dumps (Slack exports, incident-tool JSON,
-# bulk CSV inventories) are not docs and naturally contain URL-encoded query params
-# and other shapes that would fire false positives.
-EXCL=(--exclude='messages.json' --exclude='raw.json' --exclude='thread-*.json' --exclude='_inventory.csv' --exclude-dir='.git')
-
-# Build a list of files that opted out via magic marker — teaching docs (LESSONS.md,
-# CLI_TRANSLATION.md, RULES.md, etc.) contain the forbidden patterns as examples of
-# what NOT to write. They declare themselves exempt with:
-#   "skill-lint: allow-forbidden-examples"
-# anywhere in the file. Pass those as additional --exclude args to grep.
+# Files to scan, as paths. Raw data dumps (Slack exports, incident-tool JSON, bulk CSV
+# inventories) are not docs and carry URL-encoded params that would false-positive.
+#
+# Teaching docs opt out with "skill-lint: allow-forbidden-examples" anywhere in the file: they
+# contain the forbidden patterns as examples of what NOT to write. Opt-outs are excluded by path,
+# not by basename — several skills have a LESSONS.md, and excluding the name would silence them all.
+FILES=()
 while IFS= read -r f; do
-  EXCL+=(--exclude="$(basename "$f")")
-done < <(grep -rlE 'skill-lint: *allow-forbidden-examples' "$SKILL_DIR" 2>/dev/null)
+  case "$(basename "$f")" in
+    messages.json | raw.json | thread-*.json | _inventory.csv) continue ;;
+  esac
+  grep -qE 'skill-lint: *allow-forbidden-examples' "$f" 2>/dev/null && continue
+  FILES+=("$f")
+done < <(find "$SKILL_DIR" -type f -not -path '*/.git/*')
+
+if [ ${#FILES[@]} -eq 0 ]; then
+  echo "PASS [forbidden] $SKILL_DIR — no files to check"
+  exit 0
+fi
 
 fail=0
 
+report() {
+  local label="$1" hits="$2" note="${3:-}"
+  local count
+  count=$(printf '%s\n' "$hits" | grep -c . )
+  echo "FAIL [forbidden:$label] $SKILL_DIR — $count hits${note:+ ($note)}"
+  printf '%s\n' "$hits" | head -3 | sed 's/^/    /'
+  fail=1
+}
+
 # 1. MCP-tool verbs at line start (pseudo-CLI that isn't runnable).
-mcp_hits=$(grep -rnE "${EXCL[@]}" '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' "$SKILL_DIR" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$mcp_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:mcp-verbs] $SKILL_DIR — $mcp_hits hits"
-  grep -rnE "${EXCL[@]}" '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' "$SKILL_DIR" 2>/dev/null | head -3 | sed 's/^/    /'
-  fail=1
-fi
+MCP_VERBS='^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|get-route|list-teams|get-team|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b'
+hits=$(grep -nE "$MCP_VERBS" "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report mcp-verbs "$hits"
 
-# 2. MCP-tool arg shape (query=, from=-, to=now, etc.) — excluding JSON keys and URL params.
-# Lines containing a Tsuga UI URL (`app.tsuga.com/`) are skipped because URLs
-# legitimately carry `?query=…&filter=…&groupBy=…` params that would false-positive.
-arg_hits=$(grep -rnE "${EXCL[@]}" '\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' "$SKILL_DIR" 2>/dev/null \
-  | grep -v '"aggregationWindow":' \
-  | grep -v '"dataSource":' \
-  | grep -v '"filter":' \
-  | grep -v 'app.tsuga.com/' \
-  | grep -v 'app\.tsuga\.com/' \
-  | grep -v '/explorer?' \
-  | grep -v '/analytics?' \
-  | wc -l | tr -d ' ')
-if [ "$arg_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:mcp-args] $SKILL_DIR — $arg_hits hits"
-  grep -rnE "${EXCL[@]}" '\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' "$SKILL_DIR" 2>/dev/null \
-    | grep -v '"aggregationWindow":' \
-    | grep -v '"dataSource":' \
-    | grep -v '"filter":' \
-    | grep -v 'app.tsuga.com/' \
-    | grep -v 'app\.tsuga\.com/' \
-    | grep -v '/explorer?' \
-    | grep -v '/analytics?' \
-    | head -3 | sed 's/^/    /'
-  fail=1
-fi
+# 2. MCP-tool arg shape (query=, from=-, to=now, …). URLs and JSON keys legitimately carry these,
+# so strip those spans from each line before matching instead of dropping the whole line: a line
+# holding both a URL and a real violation must still be reported. LC_ALL=C keeps BSD sed from
+# aborting on a bundle's binary assets, which would skip that file's real violations too.
+hits=$(
+  for f in "${FILES[@]}"; do
+    LC_ALL=C sed -E 's#https?://[^ )"`]*##g; s#/(explorer|analytics)\?[^ )"`]*##g; s#"(aggregationWindow|dataSource|filter|query)":##g' "$f" \
+      | grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' \
+      | sed "s#^#$f:#"
+  done
+)
+[ -n "$hits" ] && report mcp-args "$hits"
 
-# 3. rtk prefix on commands (not prose mentioning the tool name).
-rtk_hits=$(grep -rnE "${EXCL[@]}" '^rtk |[[:space:]]rtk [a-z]' "$SKILL_DIR" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$rtk_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:rtk-prefix] $SKILL_DIR — $rtk_hits hits"
-  grep -rnE "${EXCL[@]}" '^rtk |[[:space:]]rtk [a-z]' "$SKILL_DIR" 2>/dev/null | head -3 | sed 's/^/    /'
-  fail=1
-fi
+# 3. rtk used as a command prefix. Prose mentioning the tool is fine, so require a real binary
+# after it rather than any lowercase word.
+hits=$(grep -nE '(^|[[:space:]`])rtk (tsuga|git|gh|yarn|node|npm|jq|grep|find|proxy)\b' "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report rtk-prefix "$hits"
 
-# 4. Singular resource verbs (tsuga monitor get, etc. — CLI wants plural).
-sing_hits=$(grep -rnE "${EXCL[@]}" 'tsuga (monitor|dashboard|route|team|service|notification-rule|notification-silence) (get|list|create|update|delete)' "$SKILL_DIR" 2>/dev/null \
-  | grep -vE 'tsuga (monitors|dashboards|routes|teams|services|notification-rules|notification-silences) (get|list|create|update|delete)' \
-  | wc -l | tr -d ' ')
-if [ "$sing_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:singular-verb] $SKILL_DIR — $sing_hits hits (use plural: tsuga monitors get, not tsuga monitor get)"
-  grep -rnE "${EXCL[@]}" 'tsuga (monitor|dashboard|route|team|service|notification-rule|notification-silence) (get|list|create|update|delete)' "$SKILL_DIR" 2>/dev/null \
-    | grep -vE 'tsuga (monitors|dashboards|routes|teams|services|notification-rules|notification-silences) (get|list|create|update|delete)' \
-    | head -3 | sed 's/^/    /'
-  fail=1
-fi
+# 4. Singular resource verbs. The pattern cannot match a plural (it requires a space straight
+# after the singular noun), so no plural filter is needed — one would discard whole lines that
+# contain both forms and turn a violation into a PASS.
+hits=$(grep -nE 'tsuga (monitor|dashboard|log-route|team|service|notification-rule|notification-silence) (get|list|create|update|delete)' "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report singular-verb "$hits" "use plural: tsuga monitors get"
 
 # 5. `tsuga spans search` → should be `tsuga traces search`.
-spans_hits=$(grep -rn "${EXCL[@]}" 'tsuga spans search' "$SKILL_DIR" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$spans_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:spans-search] $SKILL_DIR — $spans_hits hits (use 'tsuga traces search')"
-  grep -rn "${EXCL[@]}" 'tsuga spans search' "$SKILL_DIR" 2>/dev/null | head -3 | sed 's/^/    /'
-  fail=1
-fi
+hits=$(grep -n 'tsuga spans search' "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report spans-search "$hits" "use 'tsuga traces search'"
 
-# 6. --limit flag (should be --max-results).
-limit_hits=$(grep -rnE "${EXCL[@]}" 'tsuga [a-z]+ [a-z]+ .*--limit\b' "$SKILL_DIR" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$limit_hits" -gt 0 ]; then
-  echo "FAIL [forbidden:limit-flag] $SKILL_DIR — $limit_hits hits (use --max-results)"
-  grep -rnE "${EXCL[@]}" 'tsuga [a-z]+ [a-z]+ .*--limit\b' "$SKILL_DIR" 2>/dev/null | head -3 | sed 's/^/    /'
-  fail=1
-fi
+# 6. --limit on telemetry commands, which take --max-results. Resource commands (monitors,
+# dashboards, …) are genuinely paginated with --limit, so they are not flagged.
+hits=$(grep -nE 'tsuga (logs|traces|metrics|patterns|attributes|aggregation|interesting-fields) [a-z-]+ .*--limit\b' "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report limit-flag "$hits" "use --max-results"
 
 if [ "$fail" -eq 0 ]; then
   echo "PASS [forbidden] $SKILL_DIR — 0 hits across all 6 patterns"

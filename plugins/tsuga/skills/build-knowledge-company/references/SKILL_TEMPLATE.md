@@ -89,7 +89,7 @@ Some services have multiple identities in telemetry (e.g., K8s-scraped vs OTel-s
 
 ## Rules the orchestrator must follow
 
-1. **`{service-name-list}` must be comprehensive.** Include every service that has a SERVICE_KNOWLEDGE.md — comma-separated, backtick-wrapped. This is the trigger vocabulary. Missing a service here means the skill won't fire when that service is in an incident title.
+1. **`{service-name-list}` carries the trigger vocabulary.** List every service that has a SERVICE_KNOWLEDGE.md — comma-separated, backtick-wrapped — up to the 1024-char description cap. Missing a service means the skill won't fire when that service is in an incident title, but blowing the cap drops the whole skill, so for large fleets list the highest-signal names plus the canonical service prefixes instead of the full inventory.
 2. **Do NOT list every service by name in the body.** The description field carries that weight. The body stays short.
 3. **No `RAW_TELEMETRY_KNOWLEDGE.md` reference.** That file was folded into `COMPANY_TELEMETRY_KNOWLEDGE.md` in the distillation pass. Do not resurrect it.
 4. **No `rtk` tool-note section.** The RTK hook is transparent; end-users of the skill don't need to see it.

@@ -8,7 +8,7 @@ Keep the total length under ~400 lines per incident. If you hit 400, trim — mo
 
 ## Template body — copy verbatim, fill in placeholders
 
-```markdown
+````markdown
 # {incident_id} — {title}
 
 | Field | Value |
@@ -65,7 +65,7 @@ Finding: {one sentence about what the output revealed}.
 
 ```bash
 # For aggregations, use the real CLI shape:
-FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)   # macOS
+TO=$(date -u +%s); FROM=$((TO - 3600))
 cat > /tmp/q.json <<JSON
 {
   "timeRange": {"from": $FROM, "to": $TO},
@@ -84,7 +84,7 @@ tsuga aggregation timeseries -f /tmp/q.json
 Finding: {…}.
 
 Rules:
-- Every command must parse as real `tsuga` CLI. See `LESSONS.md §"Commands must be tested"` for the full translation table and the forbidden-token grep.
+- Every command must parse as real `tsuga` CLI. See `LESSONS.md §"Command-shape mistakes"` for the full translation table and the forbidden-token grep.
 - No `rtk` prefix.
 - If the responder ran the same probe three times with different time ranges, consolidate to one probe with a note about iteration.
 - If a probe returned nothing useful, **keep it** — negative probes are the most valuable signal for analogue search ("tried X, didn't help").
@@ -108,10 +108,14 @@ Bullets. Each is one sentence about something the team learned or committed to c
 - `order-ingest` dropped events for N minutes with no alert because the only P1 was on poll latency, not on batch throughput — add a throughput monitor.
 - A customer had a hand-edited ingestion API key that the reconcile code path deleted on a schema migration — add a pre-reconcile diff/confirm step.
 
+## Confidence (optional)
+
+One line: `high` / `medium` / `low` plus the reason. Required when an input was missing or empty — the retrieval layer filters low-confidence entries out of analogue search.
+
 ## Commentary (optional)
 
 Italicized one-paragraph running commentary from the responder's scratch notes, if any. Useful context but not load-bearing.
-```
+````
 
 ---
 
@@ -119,7 +123,7 @@ Italicized one-paragraph running commentary from the responder's scratch notes, 
 
 Here is what a healthy SUMMARY.md looks like in miniature:
 
-```markdown
+````markdown
 # INC-0001 — Metrics on acme-trading are slow
 
 | Field | Value |
@@ -157,7 +161,7 @@ Finding: no errors. Logs + spans were healthy — metrics-only regression.
 
 ### Probe 2 — is the query engine reporting cold-path saturation?
 ```bash
-FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)
+TO=$(date -u +%s); FROM=$((TO - 3600))
 cat > /tmp/q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"metrics","queries":[{"aggregate":{"type":"percentile","percentile":95,"field":"query_below_day_duration_milliseconds"},"filter":"context.env:prod context.cluster_id:acme-trading"}],"formula":"q1","aggregationWindow":"5m"}
 JSON
@@ -181,6 +185,6 @@ Finding: compaction runs were completing but `merged_doc_count` per run was 6x n
 ## Lessons / follow-ups
 - Add a per-cluster compaction-lag monitor — the cluster-wide one did not fire because aggregate was fine.
 - Consider a "cold-path fraction" metric on query-engine so the next one pages faster.
-```
+````
 
 Ship at roughly this density.

@@ -13,9 +13,9 @@ Procedure for bootstrapping the `incident-history` skill from raw incident mater
 
 ```
 skills/incident-history/references/incidents/
-├── _inventory.csv                        ← index: incident-id, title, declared_at, last_iso, service, team, severity
+├── _inventory.csv                        ← index: incident_id, title, declared_at, last_iso, severity, affected_team, affected_services
 ├── INC-0001/
-│   ├── SUMMARY.md                        ← the canonical ~300-line dossier
+│   ├── SUMMARY.md                        ← the canonical dossier (see SUMMARY_TEMPLATE.md for the length target)
 │   └── metadata.json                     ← {incident_id, declared_at, last_iso, title, severity}
 ├── INC-0002/
 │   └── …

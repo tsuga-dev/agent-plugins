@@ -27,8 +27,13 @@ Green run ≠ change in prod. Red run ≠ nothing rolled out. Check per-env depl
 ```bash
 # PRs merged in a window
 gh search prs --repo owner/repo --merged --merged-at "2026-04-20..2026-04-21" --json number,title,mergedAt,url,author
-# PRs touching a path
-gh search prs --repo owner/repo --merged -- "path/to/service"
+# PRs touching a path — issue search does not index changed files, so go through the commits
+# endpoint, which does. `gh pr list` would silently cap at its 30-PR default. Note the window is
+# commit-authored date, not merge date: widen it, then confirm mergedAt per PR below.
+gh api "repos/owner/repo/commits?path=path/to/service&since=2026-04-18T00:00:00Z&until=2026-04-21T00:00:00Z" \
+  --paginate --jq '.[].sha' \
+  | while read -r sha; do gh api "repos/owner/repo/commits/$sha/pulls" --jq '.[] | "\(.number) \(.title)"'; done \
+  | sort -u
 # PR matching a SHA
 gh pr list -R owner/repo --state merged --search "<sha>" --json number,title,mergedAt,url
 # PR details

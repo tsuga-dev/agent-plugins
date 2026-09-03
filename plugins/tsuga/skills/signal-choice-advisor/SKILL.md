@@ -1,40 +1,30 @@
 ---
 name: signal-choice-advisor
-description: 'Use when choosing an OpenTelemetry signal, instrument, or telemetry name: metric vs span vs log, counter vs histogram vs gauge, span event vs child span, resource/span/log/metric attribute naming, semantic convention checks, deployment.environment migration, bounded dimensions, cardinality estimates, high-cardinality risk, or whether an observation belongs in traces, metrics, logs, or resource attributes.'
+description: 'Use whenever there is a question about telemetry modeling: which OTel signal to emit (metric vs span vs structured log vs resource attribute), which instrument to pick (Counter, Histogram, UpDownCounter, Observable Gauge), what to name it against the semantic conventions, where an attribute belongs (resource vs span vs span event vs log record vs metric datapoint), and whether a proposed metric dimension is low-cardinality enough to ship. Trigger proactively when someone describes something they want to observe but has not decided how to instrument it. Advisory only; route the SDK implementation to otel-instrumentation.'
 ---
 
-# Signal Choice Advisor
-
-Use this for telemetry modeling, semantic convention naming, placement, and cardinality. It is advisory by default; do not write code changes from this skill.
-
-## Runtime Docs Lookup
-
-For docs lookup rationale and docs-error behavior, follow `tsuga-cli`; examples omit `--rationale` for brevity.
-
-Fetch docs when naming, modeling, or explaining Tsuga mapping:
-
-| Need                  | Fetch                                                                             |
-| --------------------- | --------------------------------------------------------------------------------- |
-| Resource attributes   | `tsuga docs get data-collection/guides/how-to-add-resource-attributes`            |
-| OTel to Tsuga mapping | `tsuga docs get data-collection/guides/default-mapping-for-opentelemetry-formats` |
-| Signal choice         | `tsuga docs get data-collection/guides/how-to-choose-a-telemetry-signal`          |
-| Common anti-patterns  | `tsuga docs get references/telemetry/signal-choice`                               |
-
-Use Tsuga docs first. If they do not cover the naming decision, check the official OpenTelemetry semantic convention docs before inventing a name:
-
-```text
-https://opentelemetry.io/docs/specs/semconv/
-```
-
-If neither Tsuga docs nor official OTel docs cover the recommendation, label it as `Recommendation (not verified in Tsuga or OTel docs)`.
+Help the user choose between metric / span / structured log / resource attribute, and between Counter / Histogram / UpDownCounter / Gauge. Advisory by default: this skill decides the signal, the name, and the placement, and never writes the code.
 
 ## Inputs
 
-- What the developer is trying to measure or observe. Ask if missing.
-- Service name, if live Tsuga context is needed.
-- Language/runtime, if an implementation sketch is requested.
+- What the developer is trying to measure or observe (required - ask if missing; a vague requirement produces a vague recommendation).
+- Service name (optional - if provided, use `tsuga services list` to see whether the service already emits traces).
+- Language/runtime (optional - enables a concrete implementation sketch).
 
-## Signal Selection
+## Documentation grounding
+
+Use `tsuga docs search`, then `tsuga docs get`, for product and API details. Cite `path`, `title`, and `link` when docs were used. Fetch these when naming, modeling, or explaining the Tsuga mapping:
+
+| Need                  | Page                                                            |
+| --------------------- | --------------------------------------------------------------- |
+| Resource attributes   | `data-collection/guides/how-to-add-resource-attributes`         |
+| OTel to Tsuga mapping | `data-collection/guides/default-mapping-for-opentelemetry-formats` |
+| Signal choice         | `data-collection/guides/how-to-choose-a-telemetry-signal`       |
+| Common anti-patterns  | `references/telemetry/signal-choice`                            |
+
+Tsuga docs first. If they do not settle a naming decision, check the OpenTelemetry semantic conventions at https://opentelemetry.io/docs/specs/semconv/ before inventing a name. If neither covers the recommendation, label it `Recommendation (not verified in Tsuga or OTel docs)`.
+
+## Signal selection
 
 | Signal                            | Use when                                                                                            | Do NOT use when                           |
 | --------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- |
@@ -48,33 +38,31 @@ If neither Tsuga docs nor official OTel docs cover the recommendation, label it 
 
 Key rules:
 
-- Duration of X -> prefer Span if it is already an operation; use Histogram for aggregate-only distributions.
-- Count of X where X is already a span -> prefer span count aggregation over a duplicate Counter.
-- Point-in-time diagnostic event -> prefer structured log with `trace_id`/`span_id`; span events remain valid for exception recording.
-- Child spans are for operations with meaningful duration, not "thing happened" markers.
+- "Duration of X" → prefer a Span when X is already an operation; a Histogram only when the aggregate distribution is what matters. Adding a Histogram on top of existing traces is often redundant.
+- "Count of X where X is already a span" → aggregate the span count; do not add a duplicate Counter.
+- "Count of X where X is a user / order / session" → reject as a metric dimension (unbounded). Use a log field or span attribute.
+- "Did Y happen inside operation Z" → a structured log carrying `trace_id` / `span_id`, NOT a child span. Span events remain the right place for exception recording.
+- Child spans are for operations with meaningful duration, never "thing happened" markers.
 
-## Naming And Cardinality Rules
+## Naming and placement
 
-- Check Tsuga docs first, then official OTel docs, before inventing any span, metric, log, or resource attribute name.
-- Use standard names even when the convention is Development status.
-- Resource attributes describe process/service identity and environment. Set them once, not per span.
-- Use `deployment.environment.name`, not deprecated `deployment.environment`.
-- Metric attributes must be bounded and low-cardinality.
-- Use `http.route`, not raw `url.path`, for HTTP metric dimensions.
-- Never use user IDs, request IDs, order IDs, raw URLs, query strings, or trace IDs as metric dimensions.
-- Do not encode service name, environment, version, or units in metric names.
+- Check Tsuga docs, then the official OTel conventions, before inventing any span, metric, log, or resource attribute name. Use the standard name even when the convention is still Development status.
+- Set resource attributes once for the process, never per span.
+- Use `deployment.environment.name`, not the deprecated `deployment.environment`.
+- Use `http.route`, never raw `url.path`, as an HTTP metric dimension.
+- "Service name in the metric name" is always wrong: set `service.name` as a resource attribute and filter by `context.service.name` in queries. The same goes for environment, version, and units.
 
 | Belongs on       | Use for                                                                                                                  |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Resource         | `service.name`, `service.version`, `service.instance.id`, `deployment.environment.name`, `k8s.pod.uid`, `host.name`      |
 | Span             | Request-specific fields such as `http.request.method`, `http.response.status_code`, `db.operation.name`, `db.query.text` |
 | Span event       | Exceptions: `exception.type`, `exception.message`, `exception.stacktrace`                                                |
-| Log record       | Per-log fields plus `trace_id` and `span_id` correlation fields                                                          |
+| Log record       | Per-log fields plus the `trace_id` and `span_id` correlation fields                                                      |
 | Metric datapoint | Low-cardinality dimensions such as `http.route`, status code, method, or `db.system.name`                                |
 
-## Cardinality Check
+## Cardinality guardrail
 
-Estimate metric series count by multiplying unique values across all dimensions. If any dimension could be unique per request, reject it as a metric dimension. The zones below are heuristics; cite Tsuga CLI evidence when making a verified finding.
+Estimate the series count by multiplying the unique values across every dimension before recommending it. If a dimension can grow with users, orders, sessions, request IDs, raw URLs, query strings, or trace IDs, reject it as a metric dimension and put it on a span or log instead. These zones are heuristics; cite real evidence when making a verified finding, and use `tsuga docs search` / `tsuga docs get` for current Tsuga limits.
 
 | Unique time series | Zone       | Action                                    |
 | ------------------ | ---------- | ----------------------------------------- |
@@ -82,18 +70,23 @@ Estimate metric series count by multiplying unique values across all dimensions.
 | 1,000-10,000       | Ideal      | Healthy                                   |
 | 10,000-50,000      | Acceptable | Monitor growth                            |
 | 50,000-100,000     | Caution    | Investigate before adding more dimensions |
-| 100,000-1,000,000  | Danger     | Likely ingestion/query risk               |
+| 100,000-1,000,000  | Danger     | Likely ingestion or query risk            |
 | > 1,000,000        | Critical   | Do not ship without redesign              |
 
 ## Workflow
 
-1. Ask what specific operation, event, or measurement the user wants to capture if unclear.
-2. If using live Tsuga context, use explicit `--from`/`--to` and cite the exact read-only command and value used. For metric metadata/cardinality checks, start with `tsuga metrics get <name> --from <from> --to <to>`.
-3. Apply signal choice, naming, placement, and cardinality rules.
-4. If code or Tsuga evidence was inspected, share preliminary observations and ask: "Does this match your understanding of how this service instruments itself?"
-5. If language-specific code is requested, route to `otel-instrumentation`; do not generate code from this skill.
+1. Gather the requirement. If it is too vague, ask: "What specific operation, event, or measurement are you trying to capture?"
+2. If a service name was given: `tsuga services list` → check `traceRequestRate` to see whether the service already emits traces. Absent is not the same as 0; absent means the query failed.
+3. For an existing metric's shape or cardinality, read its metadata with `tsuga metrics get` over an explicit window and cite the command and value you used.
+4. Apply signal choice, naming, placement, and cardinality. Explain the reasoning, not just the answer, and name the alternatives you rejected.
+5. If code or live telemetry was inspected, share preliminary observations and ask whether they match the user's understanding of how the service instruments itself.
+6. For the SDK implementation, hand off rather than generating code here.
 
-## Output Template
+## Verification
+
+After implementing, confirm the signal arrives: `tsuga traces search` or `tsuga logs search` for a new span or log, `tsuga metrics get` plus `tsuga aggregation scalar` for a new metric.
+
+## Output
 
 ```markdown
 ## Recommendation
@@ -106,25 +99,28 @@ Estimate metric series count by multiplying unique values across all dimensions.
 
 ## Cardinality
 
-## Understanding Check (omit if no code or Tsuga evidence was inspected)
+## Understanding Check (omit if no code or telemetry evidence was inspected)
 
 ## Verification
 
 ## Limitations
 ```
 
-## Related Skills / Next Steps
+Label every finding `source: code analysis` or `source: tsuga CLI`, and a verified one as
+`Finding (source: tsuga CLI, command: <command>, value: <value>)`.
 
-- `otel-instrumentation` - SDK implementation after the signal and naming decision is made.
-- `otel-collector` - Collector transforms, filters, routing, redaction, and OTTL.
-- `tsuga-audit-telemetry-quality` - audit existing metric design and broader telemetry quality issues.
-- `tsuga-debug-telemetry-ingestion` - verify the signal arrives after implementation.
+## Related skills
 
-## Safety Rules
+- `otel-instrumentation` - SDK implementation, once the signal and naming decision is made
+- `otel-collector` - collector transforms, filters, routing, redaction, and OTTL
+- `tsuga-audit-telemetry-quality` - audit existing metric design and broader telemetry quality
+- `tsuga-debug-telemetry-ingestion` - verify the signal arrives after implementation
 
-- Advisory output only; if proposing source changes, show the proposed change and require explicit user confirmation before any edit.
-- Never read `.env`, `*.secret`, `*credentials*`, or `*token*`.
-- Never reproduce keys, tokens, or endpoint values found in source.
-- Label findings as `source: code analysis` or `source: tsuga CLI`.
-- Label unverified advice as `Recommendation (not verified in Tsuga or OTel docs)`. Label verified findings as `Finding (source: tsuga CLI, command: <command>, value: <value>)`.
-- State assumptions and cardinality risks in `## Limitations`.
+## Safety
+
+- Never recommend a metric dimension carrying per-request unique identifiers (`user_id`, `order_id`, `session_id`, `request_id`).
+- If unsure about cardinality, state it as a risk rather than guessing.
+- If OTel semconv defines a standard name, always prefer it.
+- Advisory output only. If you propose a source change, show it and require explicit confirmation before any edit.
+- Never read `.env`, `*.secret`, `*credentials*`, or `*token*` files, and never reproduce keys, tokens, or endpoint values found in source.
+- State assumptions and cardinality risks in the Limitations section.

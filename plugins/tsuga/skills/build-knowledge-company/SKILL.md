@@ -2,6 +2,7 @@
 name: build-knowledge-company
 description: "One-shot procedure for turning a live Tsuga account + codebase list + ambient docs into the `skills/knowledge-company/` tree: top-level COMPANY_GENERAL_KNOWLEDGE.md + COMPANY_TELEMETRY_KNOWLEDGE.md, per-team TEAM_KNOWLEDGE.md, per-service SERVICE_KNOWLEDGE.md dossiers with ready-to-run `tsuga` CLI queries. Trigger this skill when bootstrapping knowledge-company from scratch for a new customer / company, refreshing it after a major service taxonomy change, or after a CLI rename that invalidates the existing ready-to-run commands. Inputs: Tsuga MCP / CLI access, list of GitHub codebases, optional `inputs/raw-docs/` for architecture notes. Outputs: populated `skills/knowledge-company/` ready for the runtime agent to load."
 ---
+
 <!-- skill-lint: allow-forbidden-examples — SKILL.md mentions the forbidden patterns as teaching context -->
 
 # build-knowledge-company

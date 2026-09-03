@@ -37,7 +37,7 @@ The CLI pattern is always `tsuga <resource-plural> <verb>`:
 
 - `tsuga monitors get` not `tsuga monitor get`
 - `tsuga dashboards list` not `tsuga dashboard list`
-- `tsuga routes list`, `tsuga teams list`, `tsuga services list`, etc.
+- `tsuga log-routes list`, `tsuga teams list`, `tsuga services list`, etc.
 
 ### 5. `rtk` prefix is noise
 
@@ -47,7 +47,7 @@ The RTK hook rewrites commands transparently. Writing `rtk tsuga logs search …
 
 - `timeRange` requires **Unix seconds integers**, not strings. Use the helper:
   ```bash
-  FROM=$(date -u -v-1H +%s); TO=$(date -u +%s)   # macOS
+  TO=$(date -u +%s); FROM=$((TO - 3600))
   # Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
   ```
 - `groupBy` is at **body level**: `"groupBy": [{"fields": ["X"], "limit": N}]`. Not inside query items.
