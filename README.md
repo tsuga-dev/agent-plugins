@@ -58,5 +58,5 @@ The trailing slash is required. OpenCode fetches `index.json` from that URL, dis
 
 Tsuga owns and maintains this plugin — anything generic about operating Tsuga or instrumenting with OpenTelemetry belongs here, and installs with `autoUpdate` receive new versions automatically.
 
-- **Found a gap or an error?** Open an issue or PR. Field-tested corrections (a workflow the skill should cover, a gotcha it gets wrong) are exactly what we want flowing back upstream.
+- **Found a gap or an error?** Open an issue. Field-tested corrections (a workflow the skill should cover, a gotcha it gets wrong) are exactly what we want to hear about. Please don't send a pull request against this repository: the skill files here are published from Tsuga's own repository, so a change made here would be overwritten rather than kept.
 - **Org-specific conventions** (your naming schemes, internal runbooks, metric families, team structure) don't belong in these skills. Keep them in your own plugin layered on top — skills compose, and yours can reference these by name (e.g. `tsuga-cli`).
