@@ -1,6 +1,6 @@
 ---
 name: signal-choice-advisor
-description: 'Use whenever there is a question about telemetry modeling: which OTel signal to emit (metric vs span vs structured log vs resource attribute), which instrument to pick (Counter, Histogram, UpDownCounter, Observable Gauge), what to name it against the semantic conventions, where an attribute belongs (resource vs span vs span event vs log record vs metric datapoint), and whether a proposed metric dimension is low-cardinality enough to ship. Trigger proactively when someone describes something they want to observe but has not decided how to instrument it. Advisory only; route the SDK implementation to otel-instrumentation.'
+description: "Use whenever there is a question about telemetry modeling: which OTel signal to emit (metric vs span vs structured log vs resource attribute), which instrument to pick (Counter, Histogram, UpDownCounter, Observable Gauge), what to name it against the semantic conventions, where an attribute belongs (resource vs span vs span event vs log record vs metric datapoint), and whether a proposed metric dimension is low-cardinality enough to ship. Trigger proactively when someone describes something they want to observe but has not decided how to instrument it. Advisory only; route the SDK implementation to otel-instrumentation."
 ---
 
 Help the user choose between metric / span / structured log / resource attribute, and between Counter / Histogram / UpDownCounter / Gauge. Advisory by default: this skill decides the signal, the name, and the placement, and never writes the code.

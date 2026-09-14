@@ -36,9 +36,9 @@ Translation table the subagent MUST follow:
 
 The forbidden-token grep in `VERIFICATION.md` catches this. If any forbidden token appears, regenerate.
 
-### 2. `--limit` is wrong. Use `--max-results`.
+### 2. `--limit` is wrong on a telemetry search. Use `--max-results`.
 
-Easy to paste from memory and get wrong.
+Telemetry searches take `--max-results`, and it is easy to paste `--limit` from memory. The paginated resource lists are the exception: `tsuga services list --limit 1000`, and the same on monitors, dashboards, teams and log-routes, is correct and is how you read past the 100-row default. Do not rewrite those.
 
 ### 3. `tsuga spans search` does not exist. It's `tsuga traces search`.
 
@@ -61,7 +61,7 @@ The RTK hook rewrites commands transparently at execution time. Writing `rtk tsu
   ```
 - `groupBy` goes at body level, not inside query items: `"groupBy": [{"fields": ["context.cluster_id"], "limit": 10}]`.
 - `functions` (like `rate`, `per-second`) go per-query: `"functions": [{"type": "rate"}]`.
-- `formula` is at body level and references queries by position (`"q1"`, `"q2"`, …).
+- `formula` is at body level and references queries by position (`"q1"`, `"q2"`, …). It defaults to `"q1"`, so omit a bare `"q1"`.
 - `count` aggregate is **not valid** on `metrics` dataSource. Use `sum` instead for metrics. `count` is fine on `logs` / `traces`.
 - `dataSource` is `"logs"`, `"traces"`, or `"metrics"` — not `"spans"`.
 
@@ -148,7 +148,7 @@ Once a SUMMARY.md is committed, pulling it back out is painful. Run a pre-ingest
 
 ```bash
 # Trivial sanity check — does any input contain what looks like an API key or PII?
-grep -rIE "(sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]+\.eyJ|[\w.-]+@[\w.-]+\.\w+)" inputs/ | head
+grep -rIE "(sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]+\.eyJ|[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,})" inputs/ | head
 ```
 
 Not exhaustive, but catches the obvious cases. Add project-specific patterns.

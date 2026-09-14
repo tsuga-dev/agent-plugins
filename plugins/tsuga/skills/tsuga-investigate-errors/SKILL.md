@@ -31,8 +31,7 @@ description: "Use when asked about service errors, error spikes, exception patte
      "dataSource": "logs",
      "queries": [
        {"aggregate": {"type": "count"}, "filter": "context.service.name:\"<name>\" level:ERROR <env filter if provided>"}
-     ],
-     "formula": "q1"
+     ]
    }
    ```
    This is the authoritative error count. Do not claim errors are elevated without this value.

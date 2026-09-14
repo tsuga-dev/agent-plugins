@@ -108,7 +108,7 @@ Pick 5 random SUMMARY.md files and run every `tsuga` command in their Diagnostic
 
 ```bash
 # Pick 5
-files=$(ls "$OUTPUT"/INC-*/SUMMARY.md | shuf -n 5)
+files=$(ls "$OUTPUT"/INC-*/SUMMARY.md | awk 'BEGIN{srand()} {print rand()"\t"$0}' | sort -n | cut -f2- | head -5)
 
 for f in $files; do
   echo "=== $f ==="

@@ -68,9 +68,9 @@ If none of these exist, the skill still builds — Phase 1 infers everything fro
 
 If this doesn't exist yet, build it first. Do not fake it — service dossiers without validated incident shapes are worth much less.
 
-## Live discovery — what Phase 0/1 reads
+## Live discovery — what Phases 0-2 read
 
-Phase 0/1 in `PROCEDURE.md` runs these calls against the live Tsuga account. Not inputs per se, but worth listing so you can pre-cache them if rate limits are tight:
+Phases 0-2 in `PROCEDURE.md` run these calls against the live Tsuga account (`notification-rules list` and `metrics list` belong to Phase 2). Not inputs per se, but worth listing so you can pre-cache them if rate limits are tight:
 
 ```bash
 tsuga teams list                                    # all teams + metadata
@@ -84,7 +84,7 @@ tsuga metrics list                                  # all metric names currently
 # Log-volume by service (fuel for service scoring)
 TO=$(date -u +%s); FROM=$((TO - 7 * 86400))      # 7 days; portable on BSD and GNU
 cat > /tmp/svc-vol.json <<JSON
-{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":200}],"formula":"q1"}
+{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":200}]}
 JSON
 tsuga aggregation scalar -f /tmp/svc-vol.json > inputs/cache/svc-volume-7d.json
 ```

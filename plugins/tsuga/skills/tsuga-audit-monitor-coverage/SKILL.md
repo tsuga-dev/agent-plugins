@@ -26,7 +26,7 @@ description: "Use when asked to check monitor coverage, services without monitor
 
 2. `tsuga monitors list` — monitor definitions. Use `-d '<json-filter>'` when a read-only server-side filter is available; otherwise filter locally. Build coverage using the same shapes the app uses for service-related resources:
    - Aggregation monitors: parse `configuration.queries[].filter` for exact or glob `service:` and `context.service.name:` values, including quoted values.
-   - Log-error-pattern monitors: check `configuration.filter.service`, `env`, and `teamIds` when present.
+   - Log-error-pattern monitors: check `configuration.filter.services`, `env`, and `teamIds` when present.
    - Deployment/cluster-scoped monitors: treat env/namespace/cluster matches as possible coverage and explain the match basis.
 
 3. `tsuga teams list` — all teams; build `{team-id → team-name}` map.
@@ -52,7 +52,7 @@ After deploy, recommend the `tsuga-debug-telemetry-ingestion` skill to verify si
 
 ## Evidence Requirements
 
-- "No monitor coverage" = service name not found in exact `service:` / `context.service.name:` aggregation filters, log-error-pattern service filters, or app-supported service associations. Glob, env, namespace, tag, or cluster matches are listed separately as "possible or indirect coverage."
+- "No monitor coverage" = service name not found in exact `service:` / `context.service.name:` aggregation filters, log-error-pattern service filters (`configuration.filter.services`), or app-supported service associations. Glob, env, namespace, tag, or cluster matches are listed separately as "possible or indirect coverage."
 - "Routing gap" = no active notification rule matches the monitor/team after applying CLI-visible filters; target presence only proves a destination exists.
 - Every finding cites the command and value that produced it.
 - State query timestamp in output.

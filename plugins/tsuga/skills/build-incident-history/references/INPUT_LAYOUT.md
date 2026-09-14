@@ -43,7 +43,7 @@ inputs/incidents/
 ```
 
 - `declared_at` is the incident-start ISO timestamp. An `entrypoint.sh` (or equivalent SNAPSHOT_AT loader) uses this to filter future incidents from the archive (cutoff = `declared_at - 20 min`).
-- `last_iso` is the timestamp of the latest message in the Slack thread / incident log. Used for the same filter.
+- `last_iso` is the incident-resolution timestamp - `SUMMARY_TEMPLATE.md` renders it as "Resolved at" and the Timeline ends there. Take it from the last message only when that message *is* the resolution; if the thread carries post-resolution follow-up, set the resolution time instead. Used for the same filter.
 - `affected_services` must use the telemetry `context.service.name` values, not casual English ("the ingest service"). These feed the cross-reference with `knowledge-company` service dossiers.
 - `severity` is the incident-tracker severity (P1/P2/P3/...). Optional but informative.
 - `resolution_pr` is optional but makes the "after-the-fact cheat check" in a time-bound investigation-runtime constraint easier.

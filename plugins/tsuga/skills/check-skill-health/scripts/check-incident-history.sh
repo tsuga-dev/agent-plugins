@@ -66,7 +66,8 @@ if command -v jq >/dev/null 2>&1; then
     fail=1
   fi
 else
-  echo "WARN [incident-history] $SKILL_DIR — jq not installed; skipped metadata validation"
+  echo "FAIL [incident-history] $SKILL_DIR — jq not installed; metadata cannot be validated"
+  fail=1
 fi
 
 # --- Canonical section headings in every SUMMARY.md ---

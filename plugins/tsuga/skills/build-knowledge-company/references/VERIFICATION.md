@@ -77,7 +77,7 @@ done
 grep -rnE "^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b" "$OUT"
 
 # Pseudo-syntax argument shape (but OK inside JSON bodies and in URLs)
-grep -rnE "\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=" "$OUT" \
+grep -rnE "\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=" "$OUT" \
   | grep -v '"aggregationWindow":' \
   | grep -v '"dataSource":' \
   | grep -v '"filter":' \
@@ -103,7 +103,7 @@ Pick 5 random SERVICE_KNOWLEDGE.md files. Copy every `tsuga` command in their Re
 - It returns a valid response (empty results `{"logs":[]}` / `{"series":[]}` are fine; errors are not).
 
 ```bash
-files=$(find "$OUT"/teams/*/services/*/SERVICE_KNOWLEDGE.md | shuf -n 5)
+files=$(find "$OUT"/teams/*/services/*/SERVICE_KNOWLEDGE.md | awk 'BEGIN{srand()} {print rand()"\t"$0}' | sort -n | cut -f2- | head -5)
 for f in $files; do
   echo "=== $f ==="
   # Extract the Ready-to-run section's bash blocks
@@ -122,7 +122,7 @@ Aggregation heredocs are the highest-risk code blocks (most places to get wrong)
 
 ```bash
 # Find all aggregation bash blocks
-grep -lr "tsuga aggregation" "$OUT"/teams | shuf -n 3 | while read f; do
+grep -lr "tsuga aggregation" "$OUT"/teams | awk 'BEGIN{srand()} {print rand()"\t"$0}' | sort -n | cut -f2- | head -3 | while read f; do
   echo "=== $f ==="
   awk '/<<JSON$/,/^JSON$/' "$f" | head -50
 done
@@ -131,7 +131,7 @@ done
 For each:
 - `"timeRange"` is present and uses `$FROM` / `$TO` (Unix seconds), not relative strings.
 - `"dataSource"` is `"logs"`, `"traces"`, or `"metrics"` (never `"spans"`).
-- `"formula"` is at body level (references `"q1"`, `"q2"`, etc.).
+- `"formula"` is at body level when present and references queries by position (`"q1"`, `"q2"`, …). A lone `"q1"` is the default and is redundant, not an error.
 - `"groupBy"` is at body level when used.
 - `"aggregationWindow"` is at body level when used (timeseries only).
 - `count` aggregate is not used on `"dataSource": "metrics"`.
@@ -171,7 +171,7 @@ No automated check for this. If anything feels off, regenerate the affected batc
 
 ```bash
 # Services with fewer than 120 lines OR more than 450 lines deserve a second look
-find "$OUT"/teams/*/services/*/SERVICE_KNOWLEDGE.md -exec wc -l {} + | awk '$1<120 || $1>450 {print}'
+find "$OUT"/teams/*/services/*/SERVICE_KNOWLEDGE.md -exec wc -l {} + | awk '$2 != "total" && ($1<120 || $1>450)'
 ```
 
 **Informational.** Under 120 lines → the service probably didn't merit a dossier (fold into TEAM_KNOWLEDGE.md?). Over 450 → trim. These aren't hard fails but deserve review.

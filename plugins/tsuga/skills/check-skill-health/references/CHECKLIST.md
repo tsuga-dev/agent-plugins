@@ -71,7 +71,7 @@ The `scripts/` in this skill catch every mechanical violation. Before shipping a
 
 - [ ] Does this skill link its boundary with sibling skills (`$knowledge-technology`, `$incident-history`, etc.)?
 - [ ] Does it duplicate content from sibling skills? Replace with pointer.
-- [ ] Are the paths in cross-references correct? (The scripts catch broken file refs; this is about *semantic* appropriateness of the pointer.)
+- [ ] Are the paths in cross-references correct? Only knowledge-company skills get their refs script-checked, so for anything else this is the one place a broken path is caught - alongside the *semantic* appropriateness of the pointer.
 
 ## After a red pass
 

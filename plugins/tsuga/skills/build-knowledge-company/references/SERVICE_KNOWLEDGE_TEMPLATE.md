@@ -67,7 +67,6 @@ cat > /tmp/q.json <<JSON
     {"aggregate": {"type": "percentile", "percentile": 95, "field": "{key_metric}"}, "filter": "context.env:prod"}
   ],
   "groupBy": [{"fields": ["context.cluster_id"], "limit": 10}],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 JSON

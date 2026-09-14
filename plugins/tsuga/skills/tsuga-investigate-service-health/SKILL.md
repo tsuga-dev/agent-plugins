@@ -53,8 +53,7 @@ Run these four in parallel; they are independent.
   "dataSource": "logs",
   "queries": [
     {"aggregate": {"type": "count"}, "filter": "context.service.name:\"<name>\" level:ERROR <env filter if provided>"}
-  ],
-  "formula": "q1"
+  ]
 }
 ```
 
@@ -67,7 +66,6 @@ Run these four in parallel; they are independent.
   "queries": [
     {"aggregate": {"type": "count"}, "filter": "context.service.name:\"<name>\" <env filter if provided>"}
   ],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 ```
@@ -85,7 +83,6 @@ Run these four in parallel; they are independent.
     }
   ],
   "groupBy": [{"fields": ["span.name"], "limit": 5}],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 ```

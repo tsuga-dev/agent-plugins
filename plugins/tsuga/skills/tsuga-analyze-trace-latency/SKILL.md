@@ -37,7 +37,6 @@ description: "Use when asked about slow requests, high latency, latency spikes, 
        {"aggregate": {"type": "percentile", "percentile": <95_or_99>, "field": "duration"}, "filter": "context.service.name:\"<name>\" context.env:\"<env>\" context.team:\"<team>\""}
      ],
      "groupBy": [{"fields": ["span.name"], "limit": 10}],
-     "formula": "q1",
      "aggregationWindow": "5m"
    }
    ```
@@ -55,8 +54,7 @@ description: "Use when asked about slow requests, high latency, latency spikes, 
      "queries": [
        {"aggregate": {"type": "count"}, "filter": "context.service.name:\"<name>\" context.env:\"<env>\" context.team:\"<team>\""}
      ],
-     "groupBy": [{"fields": ["span.name"], "limit": 10}],
-     "formula": "q1"
+     "groupBy": [{"fields": ["span.name"], "limit": 10}]
    }
    ```
 
