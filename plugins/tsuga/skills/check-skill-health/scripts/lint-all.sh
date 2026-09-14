@@ -38,8 +38,8 @@ if [ ${#targets[@]} -eq 0 ]; then
   candidates=()
   [ -d "./skills" ]               && candidates+=("./skills")
   [ -d "./plugins/tsuga/skills" ] && candidates+=("./plugins/tsuga/skills")
-  [ -d "$HOME/.claude/skills" ]   && candidates+=("$HOME/.claude/skills")
-  [ -d "$HOME/.codex/skills" ]    && candidates+=("$HOME/.codex/skills")
+  [ -d "${HOME:-}/.claude/skills" ] && candidates+=("${HOME:-}/.claude/skills")
+  [ -d "${HOME:-}/.codex/skills" ]  && candidates+=("${HOME:-}/.codex/skills")
   [ -d "./.agents/skills" ]       && candidates+=("./.agents/skills")
 
   # bash 3.2 (macOS) treats "${empty[@]}" as unset under `set -u`.

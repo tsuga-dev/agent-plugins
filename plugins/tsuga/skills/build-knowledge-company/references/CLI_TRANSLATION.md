@@ -63,8 +63,7 @@ cat > /tmp/q.json <<JSON
   "dataSource": "logs",
   "queries": [
     {"aggregate": {"type": "count"}, "filter": "context.service.name:X level:ERROR"}
-  ],
-  "formula": "q1"
+  ]
 }
 JSON
 tsuga aggregation scalar -f /tmp/q.json
@@ -81,7 +80,6 @@ cat > /tmp/q.json <<JSON
     {"aggregate": {"type": "percentile", "percentile": 95, "field": "my_metric"}, "filter": "context.env:prod"}
   ],
   "groupBy": [{"fields": ["context.cluster_id"], "limit": 10}],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 JSON
@@ -96,7 +94,7 @@ These are easy to get wrong. A subagent that hasn't read this section will write
 - `"dataSource"` is `"logs"`, `"traces"`, or `"metrics"`. Not `"spans"`.
 - `"groupBy"` is at **body level**, not inside query items: `"groupBy": [{"fields": ["error.type"], "limit": 10}]`.
 - `"functions"` (e.g., `rate`, `per-second`, `increase`) are **per-query**: `"functions": [{"type": "rate"}]`.
-- `"formula"` is at body level and references queries by position: `"q1"` = first query, `"q2"` = second, etc.
+- `"formula"` is at body level and references queries by position: `"q1"` = first query, `"q2"` = second, etc. It defaults to `"q1"`, so omit a bare `"q1"`.
 - `"aggregationWindow"` is at body level, only for timeseries (e.g., `"5m"`, `"30m"`).
 - Each query in `"queries"` has `"aggregate"` (object with `"type"`, and `"field"` for anything other than `count`) and `"filter"` (string). No `"id"` field.
 - `count` is valid on `logs` / `traces` but **not on `metrics`** — use `sum` instead.
@@ -140,7 +138,7 @@ After writing any SERVICE_KNOWLEDGE.md, this must return zero hits:
 ```bash
 grep -nE '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' <file>
 
-grep -nE '\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' <file> \
+grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' <file> \
   | grep -v '"aggregationWindow":' \
   | grep -v '"dataSource":' \
   | grep -v '"filter":' \

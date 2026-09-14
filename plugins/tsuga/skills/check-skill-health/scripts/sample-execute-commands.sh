@@ -60,17 +60,24 @@ is_read_only_tsuga_command() {
   local cluster_id=""
   local rest=""
 
-  # Shell metacharacters. `>` and `<` are only rejected next to whitespace: TQL comparisons such
-  # as `duration:>10000` are ordinary argument text, not redirections.
+  # Shell metacharacters, in two passes because quoting protects some and not others.
+  #
+  # A command substitution runs inside double quotes, and a pipe or a semicolon has no business in
+  # a documented command however it is quoted, so these are judged on the command as written.
   case "$cmd" in
-    *"|"*|*";"*|*"&"*|*"\`"*|*'$('*)
+    *"|"*|*";"*|*"&"*|*"\`"*|*'$('*|*'${'*)
       return 1
       ;;
-    *" >"*|*">"|*" <"*|*"<"|*"> "*|*"< "*)
-      return 1
-      ;;
-    # Descriptor redirections (`2>file`, `1>>file`) carry no whitespace before the `>`.
-    *[0-9]">"*)
+  esac
+
+  # An angle bracket is the ambiguous one: a TQL comparison (`--query "duration:>10000"`) and a
+  # placeholder (`--query "name:<svc>"`) are argument text, and both are always quoted because the
+  # query has to survive the shell. So drop quoted spans and reject whatever bracket is left -
+  # spaced (`> out`), glued (`list<foo>`), a descriptor (`2>file`), or a substitution (`list<(cmd)`).
+  local unquoted
+  unquoted=$(printf '%s' "$cmd" | LC_ALL=C sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
+  case "$unquoted" in
+    *"<"*|*">"*)
       return 1
       ;;
   esac

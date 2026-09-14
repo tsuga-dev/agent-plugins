@@ -1,6 +1,6 @@
 ---
 name: tsuga-build-dashboard
-description: 'Use when asked to create, update, validate, delete, or review a Tsuga dashboard; add or fix widgets; correct layout; build a monitoring view for a service, team, system, SLO, capacity, latency, throughput, or error-rate question; verify dashboard payloads, widget queries, graph schemas, normalizers, formulas, table grouping, time presets, or layout rules.'
+description: "Use when asked to create, update, validate, delete, or review a Tsuga dashboard; add or fix widgets; correct layout; build a monitoring view for a service, team, system, SLO, capacity, latency, throughput, or error-rate question; verify dashboard payloads, widget queries, graph schemas, normalizers, formulas, table grouping, time presets, or layout rules."
 ---
 
 # Dashboard design and construction
@@ -115,13 +115,13 @@ Never average a counter, never apply a rate function to a gauge, and never pick 
 the metric name alone. If values look absurd (huge, or monotonically increasing), the combination is
 wrong.
 
-Compose the body with a body-level `timeRange` in unix seconds, `dataSource`, `groupBy`, and
-`formula`, plus a per-query `aggregate`, `filter`, and optional `functions`. Verify it and confirm
-it returns data **before** embedding: `tsuga aggregation timeseries` for time-bucketed widgets,
-`tsuga aggregation scalar` for scalar and grouped ones. On a multi-cluster org scope the verification call
-with the `--cluster <cluster-id>` flag, not a body field; the dashboard payload itself carries no
-cluster. Never embed an unverified body; if a query returns nothing, fix it at the metric or filter
-level first.
+Compose the body with a body-level `timeRange` in unix seconds, `dataSource`, and `groupBy`, plus a
+per-query `aggregate`, `filter`, and optional `functions`. `formula` defaults to `q1`, so omit a
+bare `q1`. Verify it and confirm it returns data **before** embedding: `tsuga aggregation timeseries` for
+time-bucketed widgets, `tsuga aggregation scalar` for scalar and grouped ones. On a multi-cluster org scope
+the verification call with the `--cluster <cluster-id>` flag, not a body field; the dashboard
+payload itself carries no cluster. Never embed an unverified body; if a query returns nothing, fix
+it at the metric or filter level first.
 
 ### Step 4 - Assemble the dashboard payload
 
@@ -247,7 +247,6 @@ Each snippet below is the `visualization` object of one graph (`{id, visualizati
   "type": "query-value",
   "source": "logs",
   "queries": [{"aggregate": {"type": "count"}, "filter": "level:ERROR"}],
-  "formula": "q1",
   "backgroundMode": "background",
   "normalizer": {"type": "custom", "unit": "errors"},
   "conditions": [{"operator": "greater_than", "value": 100, "color": "alert"}]
@@ -270,7 +269,6 @@ Operators: `greater_than`, `less_than`, `equal`, `not_equal`, `greater_than_or_e
       "filter": "context.service.name:my-service"
     }
   ],
-  "formula": "q1",
   "max": 100,
   "colorThresholds": [
     {"from": 0, "color": "green"},
@@ -291,7 +289,6 @@ only - no groupBy.
   "type": "timeseries",
   "source": "logs",
   "queries": [{"aggregate": {"type": "count"}, "filter": "context.service.name:my-service"}],
-  "formula": "q1",
   "groupBy": [{"fields": ["context.service.name"], "limit": 10}],
   "normalizer": {"type": "custom", "unit": "req"},
   "thresholds": [{"value": 100, "level": "alert"}]

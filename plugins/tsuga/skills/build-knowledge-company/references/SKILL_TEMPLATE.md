@@ -8,7 +8,7 @@ The description field in the frontmatter is the most load-bearing part — it de
 
 ## Template — copy verbatim, substitute `{company}` + `{service-name-list}`
 
-```markdown
+````markdown
 ---
 name: knowledge-company
 description: "{company}-specific domain knowledge: what the company does, how its own telemetry is routed, and per-team / per-service operational playbooks. Trigger at the start of any {company}-internal incident (a cluster service slow, a pipeline lagging, a monitor fired) or whenever a service name like {service-name-list} appears. References live at `${CLAUDE_PLUGIN_ROOT}/skills/knowledge-company/references/`: COMPANY_GENERAL / COMPANY_TELEMETRY knowledge files, plus per-team `TEAM_KNOWLEDGE.md` and per-service `SERVICE_KNOWLEDGE.md` dossiers that lead with ready-to-run `tsuga` CLI commands."
@@ -20,7 +20,7 @@ Curated reference bundles for {company}'s own engineering + operations. Start he
 
 ## Layout
 
-\`\`\`
+```
 references/
 ├── COMPANY_GENERAL_KNOWLEDGE.md       ← what {company} is (architecture, codebases, teams)
 ├── COMPANY_TELEMETRY_KNOWLEDGE.md     ← how telemetry is shaped + monitor/dashboard catalog + symptom-routing
@@ -32,7 +32,7 @@ references/
     │       └── …
     ├── <team-b>/
     └── …
-\`\`\`
+```
 
 Service folder names match the literal `context.service.name` value in telemetry — so `grep -l -r <service-name> references/teams/` lands you in the right dossier even without knowing the team.
 
@@ -48,7 +48,7 @@ Service folder names match the literal `context.service.name` value in telemetry
 
 ## Shell commands
 
-\`\`\`bash
+```bash
 # references/ sits next to this SKILL.md; ${CLAUDE_PLUGIN_ROOT} resolves to the plugin root on Claude Code
 CK=${CLAUDE_PLUGIN_ROOT}/skills/knowledge-company/references
 
@@ -72,7 +72,7 @@ grep -l -r -i "queue lag" "$CK/teams"
 
 # Canonical query for a symptom category
 grep -B2 -A8 -i "queue lag" "$CK/COMPANY_TELEMETRY_KNOWLEDGE.md"
-\`\`\`
+```
 
 ## Service-naming gotcha (if applicable to {company})
 
@@ -85,7 +85,7 @@ Some services have multiple identities in telemetry (e.g., K8s-scraped vs OTel-s
 - **`$tsuga-cli`** — *CLI driver: TQL syntax, aggregation body shape, flags.*
 - **`$incident-investigation`** — *how to reason: mode classification, branch planning, evidence gates.*
 - **`$incident-history`** — *prior verified incidents; useful for analogue search.*
-```
+````
 
 ## Rules the orchestrator must follow
 

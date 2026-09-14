@@ -69,7 +69,9 @@ fi
 
 # --- bundle size ---
 # du -s returns 512-byte blocks on macOS BSD; use -k for KB.
-du_out=$(du -sk "$SKILL_DIR" 2>/dev/null) || du_out=""
+# Sum file bytes rather than allocated blocks: `du` rounds every file up to a block, which on a
+# bundle of many small references overstates the size by several times.
+du_out=$(find "$SKILL_DIR" -type f -exec wc -c {} + 2>/dev/null | awk '$2 != "total" {b+=$1} END {printf "%d", (b+1023)/1024}') || du_out=""
 size_kb=$(printf '%s\n' "$du_out" | awk '{print $1}')
 case "${size_kb:-}" in
   '' | *[!0-9]*)

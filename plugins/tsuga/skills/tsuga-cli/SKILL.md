@@ -1,6 +1,6 @@
 ---
 name: tsuga-cli
-description: 'Use when a task involves Tsuga CLI commands, TQL log or trace search, aggregation bodies, metric temporality math, resource lookup or CRUD planning, service ownership, reliability posture, quality reports, monitor or dashboard context, notification rules, retention/tag policies, ingestion keys, docs lookup, command help, skeleton payloads, or Tsuga app deep links.'
+description: "Use when a task involves Tsuga CLI commands, TQL log or trace search, aggregation bodies, metric temporality math, resource lookup or CRUD planning, service ownership, reliability posture, quality reports, monitor or dashboard context, notification rules, retention/tag policies, ingestion keys, docs lookup, command help, skeleton payloads, or Tsuga app deep links."
 ---
 
 # Tsuga CLI
@@ -88,7 +88,7 @@ Fetch `api/aggregateScalar` or `api/aggregateTimeseries` before composing JSON b
 - `timeRange.from` and `timeRange.to` are Unix seconds, not `-1h`.
 - For multi-cluster tenants, use `tsuga --cluster <cluster-id> aggregation ...` or a configured `TSUGA_CLUSTER_ID` / default cluster. Public API `clusterId` is a query parameter, not a body field.
 - `dataSource`, `formula`, `groupBy`, and `aggregationWindow` are body-level fields.
-- Query formulas reference positions: `q1`, `q2`, etc.
+- Query formulas reference positions: `q1`, `q2`, etc. `formula` defaults to `q1`, so omit a bare `q1`; keep it when it does arithmetic, like `q1 * 100`.
 - `count` is the only aggregate without `field`, and it is not valid on metrics dataSource.
 
 Minimal shape:
@@ -104,7 +104,6 @@ Minimal shape:
     }
   ],
   "groupBy": [{"fields": ["span.name"], "limit": 10}],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 ```

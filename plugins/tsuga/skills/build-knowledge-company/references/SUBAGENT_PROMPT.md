@@ -70,7 +70,7 @@ F="skills/knowledge-company/references/teams/{team}/services/{svc}/SERVICE_KNOWL
 grep -nE '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' "$F"
 
 # Forbidden MCP-tool arg shapes (but OK inside JSON bodies)
-grep -nE '\bquery=|\bfrom=-|\b to=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' "$F" \
+grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' "$F" \
   | grep -v '"aggregationWindow":' \
   | grep -v '"dataSource":' \
   | grep -v '"filter":' \
@@ -109,4 +109,4 @@ All four must return zero hits. If any fail, fix and re-check before declaring d
 - **`{N}`:** substitute with the actual count from `/tmp/services-to-dossier.txt` — subagents reading "one of ~30" calibrate differently than "one of ~100".
 - **`{svc-prefix}`:** the prefix you expect the service's metrics to use (`intake_`, `web_backend_`, `bridge_`). If the service has no metric namespace, omit that probe from the prompt.
 - **Failure handling:** if a subagent returns claiming "fixed, 0 matches" but a sampled `tsuga` command doesn't run, the template has a fleet-wide bug. Do NOT hand-patch the output. Fix the template (likely `SERVICE_KNOWLEDGE_TEMPLATE.md` or `LESSONS.md`) and regenerate the affected batch.
-- **Progress tracking:** the first-pass build used one TodoWrite entry per wave of 8 subagents. Mark each wave complete only after its VERIFICATION.md sampled-execution gate passes for 2 random members.
+- **Progress tracking:** the first-pass build used one TodoWrite entry per wave of 8 subagents. Mark each wave complete only after its VERIFICATION.md sampled-execution gate passes for 5 random members.

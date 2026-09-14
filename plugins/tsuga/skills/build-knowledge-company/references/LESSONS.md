@@ -23,9 +23,9 @@ tsuga logs search --query "context.service.name:report-generator" --from -24h --
 
 Full translation contract in `CLI_TRANSLATION.md`. The forbidden-token grep in `VERIFICATION.md` catches this. Zero tolerance — any hit means the subagent ignored the contract; regenerate.
 
-### 2. `--limit` is wrong. Use `--max-results`
+### 2. `--limit` is wrong on a telemetry search. Use `--max-results`
 
-Easy to paste from memory and get wrong.
+Telemetry searches take `--max-results`, and it is easy to paste `--limit` from memory. The paginated resource lists are the exception: `tsuga services list --limit 1000`, and the same on monitors, dashboards, teams and log-routes, is correct and is how you read past the 100-row default. Do not rewrite those.
 
 ### 3. `tsuga spans search` does not exist — it's `tsuga traces search`
 
@@ -52,7 +52,7 @@ The RTK hook rewrites commands transparently. Writing `rtk tsuga logs search …
   ```
 - `groupBy` is at **body level**: `"groupBy": [{"fields": ["X"], "limit": N}]`. Not inside query items.
 - `functions` (`rate`, `per-second`, `increase`) are **per-query**: `"functions": [{"type": "rate"}]`.
-- `formula` is at body level, references queries by position (`"q1"`, `"q2"`).
+- `formula` is at body level, references queries by position (`"q1"`, `"q2"`), and defaults to `"q1"`, so omit a bare `"q1"`.
 - `aggregationWindow` is at body level, only for timeseries.
 - `count` aggregate is **not valid on `metrics`** dataSource. Use `sum` instead.
 - Percentile is `{"type": "percentile", "percentile": 95, "field": "duration"}` — the `percentile` number sits on the aggregate object, not at body level.

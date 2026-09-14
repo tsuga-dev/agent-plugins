@@ -1,6 +1,6 @@
 ---
 name: incident-investigation
-description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1\u2013P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches \u2014 telemetry sweep (`tsuga` CLI), change correlation (git / gh), analogue search, codebase-grep, challenger review \u2014 tracking hypotheses behind evidence gates, and produces an operator-ready verdict with cited evidence plus two durable deliverables by default: a Tsuga investigation record and a proofs dashboard."
+description: "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage. Use when a monitor fires, a customer reports slow / errored / missing telemetry, an incident is declared (P1–P5), or someone asks 'what's wrong with X right now?'. Coordinates parallel evidence branches — telemetry sweep (`tsuga` CLI), change correlation (git / gh), analogue search, codebase-grep, challenger review — tracking hypotheses behind evidence gates, and produces an operator-ready verdict with cited evidence plus two durable deliverables by default: a Tsuga investigation record and a proofs dashboard."
 ---
 
 # Incident Investigation

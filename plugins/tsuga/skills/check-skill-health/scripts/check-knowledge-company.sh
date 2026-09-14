@@ -14,9 +14,15 @@ fi
 
 REFS="$SKILL_DIR/references"
 TEAMS="$REFS/teams"
-if [ ! -d "$TEAMS" ]; then
+# Identify the skill by name, not by the tree it is supposed to have produced: a missing
+# references/teams is the failure this check exists to report, not a reason to skip it.
+if ! grep -qE '^name: *("knowledge-company"|'"'"'knowledge-company'"'"'|knowledge-company) *$' "$SKILL_DIR/SKILL.md" 2>/dev/null; then
   # Not a knowledge-company skill; skip silently.
   exit 0
+fi
+if [ ! -d "$TEAMS" ]; then
+  echo "FAIL [knowledge-company] $SKILL_DIR — references/teams is missing; the tree was never generated"
+  exit 1
 fi
 
 fail=0

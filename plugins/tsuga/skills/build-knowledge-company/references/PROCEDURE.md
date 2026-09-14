@@ -20,7 +20,7 @@ gh auth status                                   # authenticated
 # Aggregation body path — exercise once to confirm heredoc shape works
 TO=$(date -u +%s); FROM=$((TO - 300))            # 5 minutes; portable on BSD and GNU
 cat > /tmp/q.json <<JSON
-{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"*"}],"formula":"q1"}
+{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"*"}]}
 JSON
 tsuga aggregation scalar -f /tmp/q.json          # returns {"results":[{"id":"q1","group":{},"value":N}]}
 ```
@@ -69,7 +69,7 @@ tsuga metrics list             > /tmp/metrics.json
 # Service-to-log-volume table (fuel for service scoring)
 TO=$(date -u +%s); FROM=$((TO - 604800))
 cat > /tmp/svc-vol-q.json <<JSON
-{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":500}],"formula":"q1"}
+{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":500}]}
 JSON
 tsuga aggregation scalar -f /tmp/svc-vol-q.json > /tmp/svc-volume-7d.json
 
@@ -92,10 +92,16 @@ Compute the ranking:
 # Top by volume
 jq -r '.results[] | [.group."context.service.name", .value] | @tsv' /tmp/svc-volume-7d.json | sort -k2,2nr | head -60 > /tmp/top-by-vol.tsv
 
-# Services targeted by a monitor's name
+# Services targeted by a monitor's name. Monitor titles are prose ("Production web-backend P95"),
+# so split them into words and keep only the ones that are real service names - matching a bare
+# lowercase run against the title would pull out mid-word fragments and ordinary English words,
+# and every one of those spawns a subagent for a service that does not exist.
+tsuga services list --limit 1000 | jq -r '.[] | .serviceName' | sort -u > /tmp/all-services.txt
 tsuga monitors list | jq -r '.[] | .name' \
-  | awk 'match($0, /([a-z][a-z0-9-]*-)+[a-z][a-z0-9-]*/) { print substr($0, RSTART, RLENGTH) }' \
-  | sort -u > /tmp/monitor-named-services.txt
+  | tr -cs 'a-zA-Z0-9-' '\n' \
+  | sed -E 's/-[A-Z][A-Za-z0-9]*$//' \
+  | sort -u \
+  | grep -Fxf /tmp/all-services.txt > /tmp/monitor-named-services.txt
 
 # Services with incident mentions (≥5)
 grep -rh "context.service.name:\([a-z0-9-]*\)" skills/incident-history/references/incidents/*/SUMMARY.md \

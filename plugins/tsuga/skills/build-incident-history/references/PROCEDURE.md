@@ -55,7 +55,7 @@ for inc in "$INPUTS"/INC-*/; do
   mkdir -p "/tmp/incident-extracts/$inc_id"
 
   # Flatten Slack thread to one line per message, most important first
-  jq -r '.messages | sort_by(.ts) | .[] | "\(.ts) [\(.user_profile.real_name // .username // .user)] \(.text)"' \
+  jq -sr 'map(.messages) | add | sort_by(.ts) | .[] | "\(.ts) [\(.user_profile.real_name // .username // .user)] \(.text)"' \
     "$inc"/slack/thread-*.json > "/tmp/incident-extracts/$inc_id/slack-flat.txt" 2>/dev/null
 
   # Flatten PRs to title/author/merge-date/url. `mergedAt` is only present if the capture

@@ -74,7 +74,6 @@ cat > /tmp/q.json <<JSON
     {"aggregate": {"type": "percentile", "percentile": 95, "field": "my_metric"}, "filter": "context.env:prod"}
   ],
   "groupBy": [{"fields": ["context.cluster_id"], "limit": 10}],
-  "formula": "q1",
   "aggregationWindow": "5m"
 }
 JSON
@@ -163,7 +162,7 @@ Finding: no errors. Logs + spans were healthy — metrics-only regression.
 ```bash
 TO=$(date -u +%s); FROM=$((TO - 3600))
 cat > /tmp/q.json <<JSON
-{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"metrics","queries":[{"aggregate":{"type":"percentile","percentile":95,"field":"query_below_day_duration_milliseconds"},"filter":"context.env:prod context.cluster_id:acme-trading"}],"formula":"q1","aggregationWindow":"5m"}
+{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"metrics","queries":[{"aggregate":{"type":"percentile","percentile":95,"field":"query_below_day_duration_milliseconds"},"filter":"context.env:prod context.cluster_id:acme-trading"}],"aggregationWindow":"5m"}
 JSON
 tsuga aggregation timeseries -f /tmp/q.json
 ```

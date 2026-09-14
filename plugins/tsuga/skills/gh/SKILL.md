@@ -1,6 +1,6 @@
 ---
 name: gh
-description: GitHub CLI for inspecting workflow runs, PRs, commits, releases, and deployments. Use to correlate an incident window with what changed, find which PRs touched a service path, verify whether a merged PR actually deployed, inspect a specific commit or its diff, list recent releases and tags, check workflow run status or a failed job's logs, and establish what shipped before a regression started. Pair with local git for exact file diffs. Read-only by default; any mutation needs explicit confirmation.
+description: "GitHub CLI for inspecting workflow runs, PRs, commits, releases, and deployments. Use to correlate an incident window with what changed, find which PRs touched a service path, verify whether a merged PR actually deployed, inspect a specific commit or its diff, list recent releases and tags, check workflow run status or a failed job's logs, and establish what shipped before a regression started. Pair with local git for exact file diffs. Read-only by default; any mutation needs explicit confirmation."
 ---
 
 # GitHub CLI (gh)

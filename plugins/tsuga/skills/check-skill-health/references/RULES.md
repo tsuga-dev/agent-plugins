@@ -43,7 +43,7 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 3. **`rtk` prefix** — the RTK hook is transparent; writing `rtk tsuga …` in docs is noise.
 4. **Singular resource verbs** (`tsuga monitor get` instead of `tsuga monitors get`). The CLI follows `tsuga <resources-plural> <verb>`.
 5. **`tsuga spans search`** — no such command. It's `tsuga traces search`.
-6. **`--limit`** — not a flag. It's `--max-results`.
+6. **`--limit`** — not a flag on telemetry commands, which take `--max-results`. It is valid on the paginated resource lists (`tsuga monitors list --limit`, dashboards, teams, services, log-routes), so flag it only on the telemetry commands the checker covers: `logs`, `traces`, `metrics`, `patterns`, `attributes`, `aggregation`, and `interesting-fields`.
 
 **Why:** the single most expensive bug class in the first build. Subagents emit plausible-looking pseudo-CLI, the document looks right on review, and it breaks when a real user tries to copy-paste.
 

@@ -44,7 +44,7 @@ if [ -z "$fm" ]; then
 fi
 
 # Pull `name:` value.
-name=$(echo "$fm" | awk '/^name:/ { sub(/^name: */, ""); sub(/^"/, ""); sub(/"$/, ""); print; exit }')
+name=$(echo "$fm" | awk '/^name:/ { sub(/^name: */, ""); gsub(/^["'"'"']|["'"'"']$/, ""); print; exit }')
 if [ -z "$name" ]; then
   echo "FAIL [frontmatter] $SKILL_DIR — name: field missing or empty"
   exit 1
