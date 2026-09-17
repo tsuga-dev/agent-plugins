@@ -35,6 +35,8 @@ Do not delay active triage for docs. For product or API details, use `tsuga docs
 
 `tsuga services list` plus `tsuga teams list` / `tsuga teams get` - confirm the service, resolve the owning team, and extract `teams[]`, `traceRequestRate`, `traceErrorRate`, `env`, and the query time. These are current rates over the registry lookback, not 24h totals. If the error rate is 0, lead with "No errors in the service registry window" before continuing. A rate that is absent rather than 0 means the registry query failed: report the volume as unknown instead of concluding the service is quiet. This applies to both rates.
 
+If a version in `versions[]` carries `faulty` or `faultyLatency`, treat that flag as historical, not current: it stays `true` for a version even after the version stops running. Before citing a faulty flag as an active problem, check whether that exact `(context.service.name, context.env, context.service.version)` has any request/span volume in the last hour - a version with none is retired, and the flag is stale. If that check itself fails, fall back to trusting the flag as-is rather than silently suppressing it.
+
 If the service emits `context.service.version`, surface the active versions with a capped scoped sample - `tsuga logs search` for `context.service.name:"<name>" context.service.version:*` over the window, returning the `context.service.version` field only. When several versions are live, add `context.service.version:<version>` to the step 3 filters and compare per version. Symptoms coinciding with a version change are a correlation only, never proof of causality (see Safety).
 
 ### 2 - Monitor inventory
