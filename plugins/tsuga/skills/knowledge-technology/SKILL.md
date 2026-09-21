@@ -23,7 +23,7 @@ Compare the **bad window** (incident) against a **good control window** (same we
 
 ## Covered technologies
 
-**Databases / stores:** `postgres` · `mysql` · `cassandra` · `redis`
+**Databases / stores:** `postgres` · `mysql` · `cassandra` · `redis` · `elasticsearch`
 
 **Message brokers:** `kafka` · `rabbitmq` · `aws-sqs` · `gcp-pubsub` · `aws-eventbridge` · `aws-firehose`
 

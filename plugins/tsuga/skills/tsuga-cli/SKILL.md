@@ -34,6 +34,7 @@ If docs are unavailable, report the CLI error and use `--help` / `--generate-ske
 
 - During skill execution, use `tsuga` commands only. Do not curl APIs directly and do not add shell pipelines or command substitution to examples.
 - Always state `--from`/`--to`, or explicitly say the CLI default is being used.
+- Limit result count with the CLI's own flag, never `| head`: `--max-results` on `logs search` and `traces search`, `--limit` on the paginated resource lists. The raw-log cap under Safety still applies.
 - Start narrow: service + team + env when known. Expand only when scoped queries return nothing, and state why.
 - Every finding cites the command and value that produced it.
 - A single signal is consistent with a hypothesis, not proof. Root cause needs at least two corroborating signals.
