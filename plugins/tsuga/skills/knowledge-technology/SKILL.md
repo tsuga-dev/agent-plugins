@@ -13,6 +13,8 @@ references/technologies/<tech>/metrics    ← CSV; column `tsuga_metric_name` = 
 references/technologies/<tech>/queries    ← incident shapes, derived signals, log patterns, gotchas
 ```
 
+A log-first technology has no `metrics` page. `airflow` is one: its `overview` says so, and a fetch of the missing path fails rather than returning an empty catalog.
+
 Fetch with `tsuga docs get <path>`, which prints `{path, title, content}` JSON. Pipe through `jq -r .content` to get the raw page. These pages are path-addressed only and never appear in `tsuga docs search`, so use the covered-technologies list below to pick a path.
 
 **Always use `tsuga_metric_name` from the `metrics` page in actual `tsuga` queries.** Source-system names (e.g. CloudWatch `CPUUtilization`) do NOT work - Tsuga registers AWS metrics as `aws_rds_cpu_utilization`, etc.
@@ -23,7 +25,7 @@ Compare the **bad window** (incident) against a **good control window** (same we
 
 ## Covered technologies
 
-**Databases / stores:** `postgres` · `mysql` · `cassandra` · `redis`
+**Databases / stores:** `postgres` · `mysql` · `cassandra` · `redis` · `elasticsearch`
 
 **Message brokers:** `kafka` · `rabbitmq` · `aws-sqs` · `gcp-pubsub` · `aws-eventbridge` · `aws-firehose`
 
@@ -31,7 +33,7 @@ Compare the **bad window** (incident) against a **good control window** (same we
 
 **Cloud infra:** `kubernetes` · `aws-ecs` · `aws-lambda` · `aws-rds` · `aws-docdb` · `aws-dynamodb` · `aws-elasticache` · `aws-efs` · `aws-api-gateway` · `aws-elb` · `aws-nat-gateway` · `aws-privatelink` · `gcp-storage`
 
-**Runtime / platform:** `jvm` · `nvidia-gpu` · `openai` · `otel-collector` · `quickwit`
+**Runtime / platform:** `airflow` · `jvm` · `nvidia-gpu` · `openai` · `otel-collector` · `quickwit`
 
 Not listed? Fall back to a generic sweep via `$incident-investigation`.
 
