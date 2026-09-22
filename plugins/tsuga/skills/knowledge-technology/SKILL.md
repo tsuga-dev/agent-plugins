@@ -13,7 +13,7 @@ references/technologies/<tech>/metrics    ← CSV; column `tsuga_metric_name` = 
 references/technologies/<tech>/queries    ← incident shapes, derived signals, log patterns, gotchas
 ```
 
-A log-first technology has no `metrics` page. `airflow` is one: its `overview` says so, and a fetch of the missing path fails rather than returning an empty catalog.
+A log-first technology has no `metrics` page. `airflow`, `aws-vpc-flow-logs`, and `gcp-vpc-flow-logs` are examples: each `overview` says so, and a fetch of the missing path fails rather than returning an empty catalog.
 
 Fetch with `tsuga docs get <path>`, which prints `{path, title, content}` JSON. Pipe through `jq -r .content` to get the raw page. These pages are path-addressed only and never appear in `tsuga docs search`, so use the covered-technologies list below to pick a path.
 
@@ -31,7 +31,7 @@ Compare the **bad window** (incident) against a **good control window** (same we
 
 **Web servers / proxies / mesh:** `nginx` · `apache` · `caddy` · `litespeed` · `haproxy` · `envoy` · `istio`
 
-**Cloud infra:** `kubernetes` · `aws-ecs` · `aws-lambda` · `aws-rds` · `aws-docdb` · `aws-dynamodb` · `aws-elasticache` · `aws-efs` · `aws-api-gateway` · `aws-elb` · `aws-nat-gateway` · `aws-privatelink` · `gcp-storage`
+**Cloud infra:** `kubernetes` · `aws-ecs` · `aws-lambda` · `aws-rds` · `aws-docdb` · `aws-dynamodb` · `aws-elasticache` · `aws-efs` · `aws-api-gateway` · `aws-elb` · `aws-nat-gateway` · `aws-privatelink` · `aws-vpc-flow-logs` · `gcp-storage` · `gcp-vpc-flow-logs`
 
 **Runtime / platform:** `airflow` · `jvm` · `nvidia-gpu` · `openai` · `otel-collector` · `quickwit`
 
