@@ -126,6 +126,13 @@
       ]
     },
     {
+      "name": "tsuga-contrast-sets",
+      "description": "Use when asked what distinguishes one group of spans from another: why these requests fail, what the slow ones have in common, or what changed between two deployed versions.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "tsuga-debug-telemetry-ingestion",
       "description": "Use when telemetry is missing, sparse, delayed, or not visible in Tsuga.",
       "files": [

@@ -99,6 +99,14 @@ Group the window's errors by message structure, filtering on `context.service.na
 
 `tsuga logs patterns --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to>`.
 
+### 4b - What separates the failing requests
+
+Only when step 3a found errors and you need the cause rather than the volume. This step reads spans, not logs: it compares the service's erroring spans against its healthy ones over the same window and returns the attribute values over-represented in the failing group. Keep the two filters identical apart from the status condition, otherwise the findings describe the difference between the filters. `timeRange` is in unix seconds and is not resolved from relative strings.
+
+`tsuga traces contrast-sets -f groups.json`, with `targetGroup` = `context.service.name:"<name>" status_code:error` and `baselineGroup` = `context.service.name:"<name>" NOT status_code:error`, both over the step-1 window.
+
+Cite a finding as its `targetSupport` against its `baselineSupport` with the `pValue`. `otherValues` is context, not a finding. An empty `contrastSets` next to a high `failedAttributeCount` means the sample was too thin to test, not that the two groups are alike.
+
 ### 5 - Synthesize signals
 
 - Both error spike AND latency spike in overlapping windows → "multi-signal degradation detected".

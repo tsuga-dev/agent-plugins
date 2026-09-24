@@ -1,6 +1,6 @@
 ---
 name: tsuga-investigate-errors
-description: "Use when asked about service errors, error spikes, exception patterns, what is failing, new error patterns, anomalous error volume, dominant log error structures, service-specific error counts, error samples, error pattern increases, failed requests, exception clusters, error windows, affected files, targets, or whether log evidence is consistent with an error hypothesis."
+description: "Use when asked about service errors, error spikes, exception patterns, what is failing, new error patterns, anomalous error volume, dominant log error structures, service-specific error counts, error samples, error pattern increases, failed requests, exception clusters, error windows, affected files, targets, what failing requests have in common, which attribute distinguishes failing from healthy requests, or whether log evidence is consistent with an error hypothesis."
 ---
 
 # Investigate Errors
@@ -44,11 +44,21 @@ description: "Use when asked about service errors, error spikes, exception patte
 
 6. `tsuga logs search --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to> --max-results 10 --fields message,filename,target,context.sensitive` — extract structure fields. Do NOT reproduce full raw log lines.
 
+7. `tsuga traces contrast-sets -f groups.json` — explains what the failing requests have in common. This is the only step that reads spans rather than logs, so run it when step 2 confirmed errors and you need the *why*, not the *how many*. Write the body first:
+   ```json
+   {
+     "targetGroup":   {"filter": "context.service.name:\"<name>\" status_code:error <env filter if provided>", "timeRange": {"from": <from>, "to": <to>}},
+     "baselineGroup": {"filter": "context.service.name:\"<name>\" NOT status_code:error <env filter if provided>", "timeRange": {"from": <from>, "to": <to>}}
+   }
+   ```
+   `timeRange` is in Unix seconds and is not resolved from relative strings, unlike `--from` / `--to`. Keep the two filters identical apart from the status condition: any other difference shows up as a finding about the filters rather than about the errors.
+
 ## Evidence Requirements
 
 - "Errors are elevated" = scalar count > 0, confirmed by step 2 (aggregation scalar). Not assumed from log presence alone.
 - State exact count + window in all findings.
 - "Error pattern X is dominant" = `size` value from `logs patterns`, cited explicitly.
+- "Attribute X explains the errors" = a `values` entry from `traces contrast-sets`, citing its `targetSupport`, `baselineSupport` and `pValue`. `otherValues` is context for reading the findings, never a finding itself.
 - "Root cause" requires at least two corroborating signals; log-only evidence is a finding or hypothesis, not root cause.
 
 ## Output Template
@@ -80,6 +90,12 @@ Source: aggregation scalar, filter: context.service.name:"<name>" level:ERROR <e
 | <pattern> | <team> | <env or all> | <firstSeen> | <lastSeen> |
 [If none returned: "No new error patterns detected in window."]
 
+## What Separates the Failing Spans (from traces contrast-sets)
+| Attribute | Value | Target % | Baseline % | p-value |
+|---|---|---|---|---|
+| <attr> | <value> | <targetSupport> | <baselineSupport> | <pValue> |
+[If contrastSets is empty: "No attribute separated failing from healthy spans." Add the failedAttributeCount caveat below if it is high.]
+
 ## Error Structure (samples — structure only, not raw content)
 - message: "<template>" | file: <filename> | target: <target>
 
@@ -91,6 +107,8 @@ Source: aggregation scalar, filter: context.service.name:"<name>" level:ERROR <e
 - `new-error-patterns` requires team/service scope; omitting env queries across environments
 - Aggregation scalar counts logs in window; if service emits errors at very high rate, --max-results 10 sample may not represent all patterns
 - `error-pattern-increases` detects anomalous volume changes, not absolute counts — a pattern can have a high count (from `logs patterns`) but no increase if the volume is stable
+- `traces contrast-sets` compares spans, not logs: a service that logs errors without marking spans `status_code:error` yields an empty target group and no findings
+- empty `contrastSets` next to a high `failedAttributeCount` means the sample was too thin to test, not that failing and healthy spans are alike — widen the window before concluding there is no difference
 - `services list` counters are snapshot state; cite query time and do not treat them as live alert state
 ```
 
