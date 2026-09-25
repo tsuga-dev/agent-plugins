@@ -56,7 +56,7 @@ Format:
 ### Probe 1 — {question the probe answered}
 
 ```bash
-tsuga logs search --query "context.env:prod context.service.name:{svc} level:ERROR" --from -30m --to now --max-results 50
+tsuga logs search --query "context.env:prod context.service.name:{svc} level:ERROR" --from=-30m --to now --max-results 50
 ```
 
 Finding: {one sentence about what the output revealed}.
@@ -154,7 +154,7 @@ acme-trading's metric queries and the UI metric-dropdown exploration were both s
 
 ### Probe 1 — is the customer's complaint isolated to metrics?
 ```bash
-tsuga logs search --query "context.env:prod context.cluster_id:acme-trading level:ERROR" --from -1h --to now
+tsuga logs search --query "context.env:prod context.cluster_id:acme-trading level:ERROR" --from=-1h --to now
 ```
 Finding: no errors. Logs + spans were healthy — metrics-only regression.
 
@@ -170,7 +170,7 @@ Finding: p95 climbed from ~180ms to 2800ms starting 09:44 sharp.
 
 ### Probe 3 — is compaction falling behind on this cluster?
 ```bash
-tsuga logs search --query "context.service.name:segment-compaction context.cluster_id:acme-trading level:INFO" --from -2h --to now --max-results 200
+tsuga logs search --query "context.service.name:segment-compaction context.cluster_id:acme-trading level:INFO" --from=-2h --to now --max-results 200
 ```
 Finding: compaction runs were completing but `merged_doc_count` per run was 6x normal → compaction was running but not keeping up with inflow for this cluster specifically.
 

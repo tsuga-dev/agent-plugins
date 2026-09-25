@@ -54,7 +54,7 @@ Subsections, each a single purpose:
 # Three to five terse probes: baseline error count, request rate, saturation indicator.
 # Every command must be real `tsuga` CLI. See `CLI_TRANSLATION.md`.
 
-tsuga logs search --query "context.env:prod context.service.name:{service_name} level:ERROR" --from -1h --to now --max-results 20
+tsuga logs search --query "context.env:prod context.service.name:{service_name} level:ERROR" --from=-1h --to now --max-results 20
 
 # For aggregations, use the heredoc pattern:
 TO=$(date -u +%s); FROM=$((TO - 3600))
@@ -80,7 +80,7 @@ For each monitor that targets this service (from `monitors.json`), reproduce the
 ```bash
 # {monitor_id}, P{priority}, {one-line name}
 tsuga monitors get {monitor_id}
-tsuga logs search --query "{filter from monitor config}" --from -5m --to now
+tsuga logs search --query "{filter from monitor config}" --from=-5m --to now
 # threshold: {threshold} over {window}, groupBy: {groups}
 ```
 
@@ -202,7 +202,7 @@ This section is load-bearing. It's what tells a future investigator which claims
 
 7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it's in `tsuga metrics list`. If it isn't, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
 8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
-9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from -7d --max-results 50` before writing Log shape. The patterns must come from real output.
+9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-7d --max-results 50` before writing Log shape. The patterns must come from real output.
 10. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".
 
 ### On framing

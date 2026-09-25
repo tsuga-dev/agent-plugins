@@ -32,7 +32,7 @@ Write a SUMMARY.md for {company} incident `{inc_id}`. This is one of many per-in
 
 | MCP-tool shape | Real `tsuga` CLI |
 |---|---|
-| `search-logs query="X" from=-1h to=now limit=20` | `tsuga logs search --query "X" --from -1h --to now --max-results 20` |
+| `search-logs query="X" from=-1h to=now limit=20` | `tsuga logs search --query "X" --from=-1h --to now --max-results 20` |
 | `search-spans …` | `tsuga traces search --query "…" …` (note: traces, not spans) |
 | `list-metrics` / `get-metric X` | `tsuga metrics list` / `tsuga metrics get X` |
 | `list-monitors` / `get-monitor X` | `tsuga monitors list` / `tsuga monitors get X` (plural!) |

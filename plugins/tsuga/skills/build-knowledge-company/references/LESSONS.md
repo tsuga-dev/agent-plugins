@@ -18,7 +18,7 @@ aggregate-timeseries dataSource=metrics aggregationWindow=5m aggregate=sum field
 **These are not runnable.** Real `tsuga` CLI is:
 
 ```bash
-tsuga logs search --query "context.service.name:report-generator" --from -24h --to now --max-results 50
+tsuga logs search --query "context.service.name:report-generator" --from=-24h --to now --max-results 50
 ```
 
 Full translation contract in `CLI_TRANSLATION.md`. The forbidden-token grep in `VERIFICATION.md` catches this. Zero tolerance — any hit means the subagent ignored the contract; regenerate.

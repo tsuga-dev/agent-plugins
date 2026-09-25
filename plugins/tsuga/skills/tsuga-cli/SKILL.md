@@ -71,15 +71,15 @@ Always filter logs. A bare `tsuga logs search` returns noisy all-service results
 Minimum shape:
 
 ```bash
-tsuga logs search --query "context.service.name:<service> level:ERROR" --from -1h --to now --max-results 10
+tsuga logs search --query "context.service.name:<service> level:ERROR" --from=-1h --to now --max-results 10
 ```
 
 Use `tsuga logs patterns` for large result sets and anomaly endpoints when they fit the question:
 
 ```bash
-tsuga logs patterns --query "context.team:<team> level:ERROR" --from -1h --to now
-tsuga logs new-error-patterns --team <team> --env <env> --from -24h --to now
-tsuga logs error-pattern-increases --team <team> --env <env> --from -24h --to now
+tsuga logs patterns --query "context.team:<team> level:ERROR" --from=-1h --to now
+tsuga logs new-error-patterns --team <team> --env <env> --from=-24h --to now
+tsuga logs error-pattern-increases --team <team> --env <env> --from=-24h --to now
 ```
 
 ## Aggregations

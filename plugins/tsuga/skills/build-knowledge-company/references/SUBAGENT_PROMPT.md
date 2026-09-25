@@ -32,10 +32,10 @@ Write a SERVICE_KNOWLEDGE.md dossier for the {company} service `{svc}` (owning t
 
 ```bash
 # 1. Log shape + volume in the last 7 days
-tsuga logs search --query "context.env:prod context.service.name:{svc}" --from -7d --max-results 50
+tsuga logs search --query "context.env:prod context.service.name:{svc}" --from=-7d --max-results 50
 
 # 2. Top error patterns in the last 24h
-tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from -24h
+tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from=-24h
 
 # 3. Active metric namespace
 tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'

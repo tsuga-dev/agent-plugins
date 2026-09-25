@@ -14,16 +14,16 @@ The single most expensive bug in the first `knowledge-company` build was subagen
 
 | MCP-tool shape | Real `tsuga` CLI |
 |---|---|
-| `search-logs query="X" from=-1h to=now limit=20` | `tsuga logs search --query "X" --from -1h --to now --max-results 20` |
-| `search-logs query='X' from=-1h` (no to/limit) | `tsuga logs search --query 'X' --from -1h` (`--to now` is default; default `--max-results` is 100) |
+| `search-logs query="X" from=-1h to=now limit=20` | `tsuga logs search --query "X" --from=-1h --to now --max-results 20` |
+| `search-logs query='X' from=-1h` (no to/limit) | `tsuga logs search --query 'X' --from=-1h` (`--to now` is default; default `--max-results` is 100) |
 | `search-logs` (no args) | `tsuga logs search` |
 | `search-spans query=…` | `tsuga traces search --query "…" --from … --to … --max-results …` (note: **traces**, not spans) |
 | `list-metrics` | `tsuga metrics list` |
 | `list-metrics` (intended to filter by prefix) | `tsuga metrics list \| jq '.[] \| select(.name \| startswith("prefix_"))'` |
 | `get-metric name=X` | `tsuga metrics get X` |
-| `list-log-patterns query="X" from=-1h` | `tsuga logs patterns --query "X" --from -1h` |
-| `list-new-error-patterns --service X --from -24h` | `tsuga logs new-error-patterns --service X --from -24h` |
-| `list-error-pattern-increases --team infra --from -24h` | `tsuga logs error-pattern-increases --team infra --from -24h` |
+| `list-log-patterns query="X" from=-1h` | `tsuga logs patterns --query "X" --from=-1h` |
+| `list-new-error-patterns --service X --from=-24h` | `tsuga logs new-error-patterns --service X --from=-24h` |
+| `list-error-pattern-increases --team infra --from=-24h` | `tsuga logs error-pattern-increases --team infra --from=-24h` |
 
 ### Resource list / get
 

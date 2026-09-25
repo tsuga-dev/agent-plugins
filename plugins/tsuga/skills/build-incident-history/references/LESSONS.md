@@ -17,14 +17,14 @@ search-logs query='context.service.name:report-generator' from=-24h to=now limit
 **This is not runnable.** The real CLI is:
 
 ```bash
-tsuga logs search --query "context.service.name:report-generator" --from -24h --to now --max-results 50
+tsuga logs search --query "context.service.name:report-generator" --from=-24h --to now --max-results 50
 ```
 
 Translation table the subagent MUST follow:
 
 | MCP-tool shape | Real `tsuga` CLI |
 |---|---|
-| `search-logs query=X from=-1h to=now limit=N` | `tsuga logs search --query "X" --from -1h --to now --max-results N` |
+| `search-logs query=X from=-1h to=now limit=N` | `tsuga logs search --query "X" --from=-1h --to now --max-results N` |
 | `search-spans …` | `tsuga traces search --query "…" --from … --max-results …` |
 | `list-metrics` | `tsuga metrics list` |
 | `get-metric name=X` | `tsuga metrics get X` |
@@ -107,7 +107,7 @@ A service can have two names in telemetry:
 When writing a Diagnostic path probe, use the OR-match idiom:
 
 ```bash
-tsuga logs search --query "(context.service.name:app-order-ingest OR context.service.name:ingest) level:ERROR" --from -1h
+tsuga logs search --query "(context.service.name:app-order-ingest OR context.service.name:ingest) level:ERROR" --from=-1h
 ```
 
 If the responder's original probe used only one form and that caused them to miss a subset, note this in that probe's `Finding:` line — it's the most common source of "we couldn't see half the problem" confusion.
