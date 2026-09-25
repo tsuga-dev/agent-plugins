@@ -75,7 +75,7 @@ F="skills/incident-history/references/incidents/{inc_id}/SUMMARY.md"
 grep -nE "^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|list-notification-rules|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b" "$F"
 
 # Pseudo-syntax arg shape
-grep -nE "\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=" "$F" \
+grep -nE "(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)" "$F" \
   | grep -v '"aggregationWindow":' \
   | grep -v '"dataSource":' \
   | grep -v '"filter":' \

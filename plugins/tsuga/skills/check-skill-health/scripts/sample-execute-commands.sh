@@ -98,8 +98,10 @@ is_read_only_tsuga_command() {
   esac
 
   has_arg() {
+    # Both spellings count: the CLI requires `--from=-1h` for dash-prefixed values.
     case " $cmd " in
-      *" $1 "*) return 0 ;;
+      *" $1 "[![:space:]-]*) return 0 ;;
+      *" $1="[![:space:]]*) return 0 ;;
       *) return 1 ;;
     esac
   }

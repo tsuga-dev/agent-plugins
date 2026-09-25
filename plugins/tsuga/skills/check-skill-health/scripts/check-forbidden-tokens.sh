@@ -54,14 +54,17 @@ MCP_VERBS='^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-
 hits=$(grep -nE "$MCP_VERBS" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report mcp-verbs "$hits"
 
-# 2. MCP-tool arg shape (query=, from=-, to=now, …). URLs and JSON keys legitimately carry these,
+# 2. MCP-tool arg shape (query=, from=-, to=now, …) written as bare tokens. The leading
+# (^|[^-[:alnum:]_]) keeps the word-boundary intent while excluding a `--` prefix: the CLI itself
+# requires `--from=-1h`, because a bare `-1h` lexes into the short options `-1` and `-h`.
+# URLs and JSON keys legitimately carry these,
 # so strip those spans from each line before matching instead of dropping the whole line: a line
 # holding both a URL and a real violation must still be reported. LC_ALL=C keeps BSD sed from
 # aborting on a bundle's binary assets, which would skip that file's real violations too.
 hits=$(
   for f in "${FILES[@]}"; do
     LC_ALL=C sed -E 's#https?://[^ )"`]*##g; s#/(explorer|analytics)\?[^ )"`]*##g; s#"(aggregationWindow|dataSource|filter|query)":##g' "$f" \
-      | grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' \
+      | grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' \
       | sed "s#^#$f:#"
   done
 )

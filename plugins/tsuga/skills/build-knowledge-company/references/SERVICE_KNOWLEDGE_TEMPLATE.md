@@ -90,7 +90,7 @@ For each recurring incident shape (from `incident-files.txt`), the query that cr
 
 ```bash
 # drill-{shape-name} (anchor: INC-xxxx, INC-yyyy)
-tsuga logs search --query "..." --from -Nh --to now
+tsuga logs search --query "..." --from=-Nh --to now
 # Finding signature: {what this query surfaces}
 ```
 

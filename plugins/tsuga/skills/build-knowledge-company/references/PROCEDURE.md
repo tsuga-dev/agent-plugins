@@ -204,7 +204,7 @@ Prompt template: `SUBAGENT_PROMPT.md` — copy verbatim, substitute `{svc}` + `{
 
 Run `VERIFICATION.md`'s full gate set. The three gates you cannot skip:
 
-- **Gate 4 — forbidden tokens.** Every SERVICE_KNOWLEDGE.md must be free of MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, etc.) and `rtk` prefixes.
+- **Gate 4 — forbidden tokens.** Every SERVICE_KNOWLEDGE.md must be free of MCP-tool pseudo-syntax as bare tokens (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, etc.; the flag form `--from=-1h` is required) and `rtk` prefixes.
 - **Gate 5 — sampled execution.** Pick 5 random SERVICE_KNOWLEDGE.md files, copy every `tsuga` command in their Ready-to-run section into a shell, confirm it executes. If any fail, it is a fleet-wide template bug — fix the template and regenerate the affected batch.
 - **Gate 6 — aggregation body sanity.** Aggregation heredocs have the most places to get wrong; Phase 2 writes them, so spot-check 3 at random.
 

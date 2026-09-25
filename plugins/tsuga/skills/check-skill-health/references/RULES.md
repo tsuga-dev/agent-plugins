@@ -39,7 +39,7 @@ One entry per script. If a check fails, read the corresponding entry and fix the
 **Checks:** 6 patterns that have bitten us before.
 
 1. **MCP-tool verb prefixes** (`search-logs`, `aggregate-timeseries`, etc.) — these are not runnable `tsuga` CLI commands. Subagents with access to MCP tools write them naturally.
-2. **MCP-tool argument shape** (`query=`, `from=-`, `to=now`, `limit=`, …) — same problem. The real CLI uses `--query`, `--from`, `--to`, `--max-results`.
+2. **MCP-tool argument shape** written as bare tokens (`query=`, `from=-`, `to=now`, `limit=`, …) — same problem. The real CLI uses `--query`, `--from`, `--to`, `--max-results`. Only the bare form is forbidden: the flag form `--from=-1h` is required, because a bare `-1h` lexes into the short options `-1` and `-h`.
 3. **`rtk` prefix** — the RTK hook is transparent; writing `rtk tsuga …` in docs is noise.
 4. **Singular resource verbs** (`tsuga monitor get` instead of `tsuga monitors get`). The CLI follows `tsuga <resources-plural> <verb>`.
 5. **`tsuga spans search`** — no such command. It's `tsuga traces search`.

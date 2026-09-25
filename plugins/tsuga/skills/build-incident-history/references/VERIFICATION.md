@@ -92,7 +92,7 @@ grep -rnE "^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-
 # violation that happens to share a line with a legitimate URL or key.
 grep -rl . "$OUTPUT" | while IFS= read -r f; do
   sed -E 's#/explorer\?query=[^ )"`]*##g; s#"(aggregationWindow|dataSource|filter)":##g' "$f" \
-    | grep -nE '\bquery=|\bfrom=-|\bto=now\b|\blimit=|\bfilter=|\baggregationWindow=|\bdataSource=' \
+    | grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' \
     | sed "s#^#$f:#"
 done
 

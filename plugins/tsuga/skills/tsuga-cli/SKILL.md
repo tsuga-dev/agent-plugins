@@ -39,6 +39,12 @@ If docs are unavailable, report the CLI error and use `--help` / `--generate-ske
 - Every finding cites the command and value that produced it.
 - A single signal is consistent with a hypothesis, not proof. Root cause needs at least two corroborating signals.
 
+## CLI Version
+
+- A completed npm registry check is cached for a day; a failed one is not, so a later invocation can retry it. When an update exists the CLI prints `Update available: <current> → <latest>` followed by `Run \`tsuga self-update\` to update`. Both lines go to stderr, so they never corrupt `-o json` output on stdout. Keep parsing stdout unchanged.
+- On that notice, report both versions and offer `tsuga self-update`. Do not run it yourself: Safety lists it as requiring explicit confirmation, because it rewrites the local install.
+- If a command fails on an unknown flag or subcommand, suspect an outdated CLI. Check `tsuga --version`, then confirm the current shape with `--help` or `tsuga docs get account-and-settings/ai-access/tsuga-cli`. Do not invent a different command shape to work around it.
+
 ## Safety
 
 - Before running a query, remove field names that look like secrets: `password`, `token`, `api_key`, `secret`, credentials.
