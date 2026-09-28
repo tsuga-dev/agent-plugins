@@ -49,7 +49,7 @@ Use `otel-instrumentation` for confirmed-language implementation patterns after 
    - Metrics: naming issue, unit issue, instrument/temporality mismatch, cardinality risk, or signal-choice issue.
    - Traces: span class, direction, likely source, correctness status, and scope of impact.
    - Logs: correlation gap, structure gap, severity gap, noise pattern, or safety/privacy risk.
-6. Use `tsuga quality-reports list` when useful. If it returns no rows, say no quality report rows were available. Otherwise derive report timestamp as `min(rows.createdAt)` and flag stale reports older than 48 hours.
+6. Use `tsuga quality-reports list` when useful. If it returns no rows, say no quality report rows were available. Otherwise derive report timestamp as `min(rows.createdAt)` and flag stale reports older than 48 hours. A row ships only a preview of its examples; when `exampleCount` exceeds what the row returned, read the rest with `tsuga quality-reports examples <ROW_ID> --limit 1000 -o csv`, raising `--offset` by the page size until `exampleCount` examples are covered, instead of treating one page as the full population.
 7. If code is inspected or conclusions depend on code, share preliminary observations and ask: "Does this match your understanding of how this service instruments itself?" Adjust findings before final output.
 8. Route broken parent/child linkage or missing arrival to `tsuga-debug-telemetry-ingestion`; do not treat every noisy span or bad name as propagation failure.
 
