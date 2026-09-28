@@ -88,6 +88,18 @@ tsuga logs new-error-patterns --team <team> --env <env> --from=-24h --to now
 tsuga logs error-pattern-increases --team <team> --env <env> --from=-24h --to now
 ```
 
+## RUM
+
+`tsuga rum search` queries raw RUM events (web vitals, navigations, exceptions), not aggregates. `tsuga rum attributes` lists the queryable attribute dot-paths (fixed storage schema, no time range, no query). Both need an operation API key with the **RUM events** (`rum`) read permission.
+
+- `rum search` query fields must be stream-prefixed: `measurements.`, `events.`, or `exceptions.`. An unprefixed field (including a bare `*`) searches the `events` stream. A query filters on a **single stream** - do not mix fields from two streams in one query.
+- `rum search` supports `--max-results` like `logs search` / `traces search`.
+
+```bash
+tsuga rum search --query "events.view.name:/checkout" --from=-1h --to now --max-results 10
+tsuga rum attributes
+```
+
 ## Aggregations
 
 Fetch `api/aggregateScalar` or `api/aggregateTimeseries` before composing JSON bodies. Keep these invariants:
