@@ -55,7 +55,7 @@ Fetch shared docs as needed:
 
 State the scope explicitly before proposing changes, for example `Signal scope: traces yes, logs yes, metrics no`.
 
-A broad request (`add OTel`, `instrument this service`, `set up observability`) means all three signals. A service exporting its logs over OTLP already gets `trace_id` and `span_id` on the records, so there is no separate correlation step. Injection is the stdout-and-file path, where the collector promotes the fields on records the service already writes to stdout: a request for trace IDs in logs is usually only the second, and the two paths can both be active and double-export the same record.
+A broad request (`add OTel`, `instrument this service`, `set up observability`) means all three signals. `how-to-correlate-logs-and-traces` above splits OTLP log export, which carries `trace_id` and `span_id` on the records, from the stdout-and-file path, where the collector promotes them. Scope accordingly: a request for trace IDs in logs is usually only the second path. Both can be active at once and double-export the same record.
 
 ## Preflight
 
@@ -90,7 +90,7 @@ tsuga traces search --query "context.service.name:<service>" --from <deploy-time
 tsuga aggregation scalar -d '{"dataSource":"metrics","timeRange":{"from":<deploy-time-unix-seconds>,"to":<now-unix-seconds>},"queries":[{"aggregate":{"type":"count","field":"<metric.name>"},"filter":"*"}]}'
 ```
 
-Metrics need at least one full export interval inside the window before absence means anything, and the count is the only arrival evidence: `tsuga metrics list` and `tsuga metrics get` read a name catalog that ignores `--from`/`--to` and holds names for weeks after a metric stops reporting. An empty result proves nothing about the cause: hand off to `tsuga-debug-telemetry-ingestion`, which owns classification and the debugging path. For the UI walkthrough and the per-signal correlation checks, use `tsuga docs get data-collection/guides/how-to-validate-telemetry-arrival-in-tsuga`.
+Metrics need at least one full export interval inside the window before absence means anything. `tsuga metrics list` and `tsuga metrics get` read a name catalog, not the window, so the count is the only arrival evidence (`tsuga docs get explore/guides/how-to-troubleshoot-an-empty-query-result`). An empty result proves nothing about the cause: hand off to `tsuga-debug-telemetry-ingestion`, which owns classification and the debugging path. For the indexing delay, the name catalog, the UI walkthrough and the per-signal correlation checks, use `tsuga docs get data-collection/guides/how-to-validate-telemetry-arrival-in-tsuga`.
 
 ## Output Template
 

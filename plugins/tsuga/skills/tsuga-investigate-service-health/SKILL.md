@@ -25,9 +25,9 @@ First-response triage for one service: sweep every signal at once, then turn the
 
 Every aggregation below is one JSON body. How you pass its time range and scope it to a cluster:
 
-`--from` / `--to` accept the same forms, but write `--from=-30m`: a space-separated `-30m` parses as a flag. Inside a JSON body passed with `-d '<json>'` or `-f <file>`, `timeRange.from` / `to` are unix seconds only. Pass the cluster as a flag, `tsuga --cluster <cluster-id> ...`, never as a body field. Never curl the API directly.
+`account-and-settings/ai-access/tsuga-cli` ("Telemetry commands") has the formats `--from` / `--to` accept, and the negative-offset trap. Inside a JSON body passed with `-d '<json>'` or `-f <file>`, `timeRange.from` / `to` are unix seconds only. Pass the cluster as a flag, `tsuga --cluster <cluster-id> ...`, never as a body field. Never curl the API directly.
 
-In an organization with several clusters, the telemetry calls in this workflow - the aggregations, `tsuga logs error-pattern-increases`, `tsuga logs search`, `tsuga traces search` - refuse to run without a cluster. `tsuga services list` does not: it answers silently from the organization's first cluster. Resolve the cluster once with `tsuga clusters list` and pass it to every call, or the registry will describe the wrong cluster's service, or report a live service as missing.
+In an organization with several clusters, the telemetry calls in this workflow - the aggregations, `tsuga logs error-pattern-increases`, `tsuga logs search`, `tsuga traces search` - fail loudly without a cluster. `tsuga services list` does not: it answers silently from the organization's first cluster. Resolve the cluster once with `tsuga clusters list` and pass it to every call, or the registry will describe the wrong cluster's service, or report a live service as missing.
 
 ## Documentation grounding
 
@@ -41,8 +41,8 @@ Do not delay active triage for docs. For product or API details, use `tsuga docs
 
 Read the row's rates carefully:
 
-- `traceRequestRate` (requests/second) and `traceErrorRate` (percent) are computed live over a 1-hour lookback ending now. They describe neither the investigation window nor a 24h total, so never quote them as the window's numbers.
-- An **absent** rate is not `0`. Absent means the trace query failed; report the volume as unknown. `0` means the service is quiet. This applies to both rates, and mistaking one for the other turns a broken query into a false "service is idle" verdict.
+- `references/incident-response/branch-telemetry-sweep` (step 2) has the window `traceRequestRate` and `traceErrorRate` cover, and why **absent** is not `0`.
+- Report an absent rate as unknown volume. Mistaking it for `0` turns a broken query into a false "service is idle" verdict.
 - The row carries no log-error counter and no signal inventory - it cannot tell you whether the service emits logs or metrics at all. Only step 3 can.
 
 `versions[]` gives each observed version its `firstSeenAt`, `lastSeenAt`, and, once faulty-deployment detection has run on it, `faulty` / `faultyLatency`. A flag is never cleared and its version row outlives the version itself by about two weeks, so the flag is historical, not current. Treat it as an active problem only when that version's `lastSeenAt` is within the last hour; otherwise the version is retired and the flag is stale. When several versions are live, add `context.service.version:<version>` to the step 3 filters and compare per version.
@@ -80,7 +80,7 @@ These four are independent, so issue them together rather than in sequence. Each
 }
 ```
 
-**c. p95 latency by operation** - `tsuga aggregation timeseries`, over the investigation window. Run it regardless of `traceRequestRate`: that rate describes a 1-hour lookback ending now, so it says nothing about whether the window you are investigating had traffic. Default notable threshold is 1000ms:
+**c. p95 latency by operation** - `tsuga aggregation timeseries`, over the investigation window. Run it regardless of `traceRequestRate` — that rate says nothing about whether the window you are investigating had traffic. Default notable threshold is 1000ms:
 
 ```json
 {
@@ -186,5 +186,4 @@ Requests: <traceRequestRate>/s, <traceErrorRate>% errors
 ## Limitations
 
 - Multi-service root cause requires running this workflow per downstream service.
-- Duration values are milliseconds.
 - Trace-log correlation is attempted only when both signals exist and the logs expose `trace_id`.

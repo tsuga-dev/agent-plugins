@@ -40,7 +40,7 @@ For product or API details, use `tsuga docs search`, then `tsuga docs get`. Cite
 
 Run it with `tsuga traces contrast-sets -f groups.json`.
 
-This reads **spans, not logs**. A service that logs errors without marking spans `status_code:error` produces an empty target group and no findings.
+This reads **spans, not logs**, so a service that logs errors without marking spans `status_code:error` produces an empty target group and no findings - `categorize/services/service-page` has that consequence in the UI. `explore/traces` under **Explain a selection** has the same comparison behind a UI. How it picks which attributes to test is in `api/findContrastSets`, on `candidateAttrs`: with none given, discovery takes the most frequent attributes in the target group, minus the ones either group filter references. The payload-level behaviour neither covers is under Limitations below.
 
 ### Explain latency — slow against normal, same window
 
@@ -64,9 +64,9 @@ Use it for a config change or a traffic shift. For a deployment, prefer the vers
 
 ## Investigating a faulty deployment
 
-Tsuga flags a service version as faulty from its telemetry. The product panel tells you **which metric** regressed (error rate, p90 latency, throughput) against the previous version. It does not tell you **what** is different about the failing traffic. Contrast sets answers that second question. For how the flag and its comparison version are chosen, see `categorize/services/faulty-deployments`.
+`categorize/services/faulty-deployments` covers how the flag and its comparison version are chosen, and why contrast sets answer a different question than the panel does. The steps below are how to run one.
 
-1. Resolve the versions. `tsuga services get` returns `versions[]`, each with `version`, `firstSeenAt`, `lastSeenAt`, `faulty` and `faultyLatency`. The target is the version with `faulty: true`; the baseline is the most recent earlier version **without** `faulty: true`.
+1. Resolve the versions. `tsuga services get` returns `versions[]`, each with `version`, `firstSeenAt`, `lastSeenAt`, `faulty` and `faultyLatency`. Pick the target and baseline versions by that page's rule.
 
 Both timestamps are ISO strings, while each group's `timeRange` in the JSON body takes Unix seconds. Convert them.
 
@@ -81,7 +81,7 @@ baselineGroup: context.service.name:"<name>" context.service.version:"<previous>
 
 Add `status_code:error` to both when the flag was an error-rate regression, or a `duration` bound to both when it was latency. Adding it to only one side contrasts the wrong thing.
 
-Use one window covering both versions when `firstSeenAt` / `lastSeenAt` show they overlapped, which keeps the window out of the contrast. A clean cutover leaves no overlap, so each group takes its own version's window — the one shape where the two groups differ in **both** filter and window. A finding there may reflect the deployment or whatever else changed between those windows, so check any strong finding against the previous version inside its own window before calling it a consequence of the deploy.
+Use one window covering both versions when `firstSeenAt` / `lastSeenAt` show they overlapped, which keeps the window out of the contrast. For a clean cutover, `categorize/services/faulty-deployments` covers giving each group its own version's window and what that costs a finding. Re-run any strong finding against the previous version inside its own window before calling it a consequence of the deploy.
 
 Findings here read as "the new version's failures concentrate on this route / pod / host", which is what turns a rollback decision into a fix.
 
@@ -89,11 +89,7 @@ Findings here read as "the new version's failures concentrate on this route / po
 
 The doc page `api/findContrastSets` carries the full body shape: every knob, its range, and what it gates. The defaults are `topK: 10`, `minLift: 1.5`, `minSupport: 0.5`. Reach for them only when the default result is unreadable, and change one at a time.
 
-What the body shape does not tell you:
-
-- `candidateAttrs` names span attributes in the `span_attributes.*` namespace, not the `spanAttributes.*` spelling that appears in span search responses.
-- Attributes referenced by either filter are dropped from the candidate set, along with the attributes encoding the same dimension another way — contrasting on a group-defining attribute is tautological. Naming one in `candidateAttrs` does not bring it back.
-- `topK` caps the findings, not the attributes: attribute/value pairs are ranked and truncated, then grouped, so a result holds at most `topK` `values` rows spread over that many or fewer `contrastSets` entries.
+`candidateAttrs` names span attributes in the `span_attributes.*` namespace, not the `spanAttributes.*` spelling that appears in span search responses.
 
 ## Reading the result
 
@@ -130,10 +126,9 @@ Spans: <targetGroupCount> target, <baselineGroupCount> baseline
 
 ## Limitations
 
-- Compares **spans only**. Logs and metrics are out of scope for this endpoint.
 - An empty `contrastSets` next to a high `failedAttributeCount` means most candidates errored out rather than that the two groups are alike. Retry, or name the candidates explicitly with `candidateAttrs`, before reporting "no difference".
-- Findings are correlations, and attribute discovery ranks candidate keys by how often they appear, not by cardinality. A near-unique attribute such as pod name or full URL is therefore tested by default: one that only existed during the incident window surfaces as the strongest finding for a reason unrelated to the failure.
-- With `candidateAttrs` omitted, the attributes tested are discovered from the **target** group alone, so an attribute common in the baseline but rare in the target may never be tested. Discovery falls back to a fixed default attribute list, which does leave the near-unique attributes out, when it runs long or returns nothing; the response does not say which set was used.
+- Discovery ranks candidates by frequency, not by cardinality, so a near-unique attribute such as pod name or full URL is tested by default. One that existed only inside the incident window comes back as a top finding for a reason unrelated to the failure.
+- With `candidateAttrs` omitted, discovery falls back to a fixed default attribute list, which leaves those near-unique attributes out, when it runs long or returns nothing. The response does not say which set was used.
 - Each attribute is compared on its most frequent values per group, so a value in an attribute's long tail cannot become a finding however concentrated it is in the target.
 - The baseline must be genuinely comparable. Contrasting against a window with different traffic shape produces findings about the traffic, not the failure.
 

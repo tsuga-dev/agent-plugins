@@ -13,11 +13,11 @@ reach nobody. Both are snapshots of config. Nothing here shows whether an alert 
 - **Scope** — defaults to every service, and can narrow to one team, service or env. `services list`
   takes no filter flags, so a narrower scope is a local filter over the same rows.
 
-Pull each list at `--limit 1000` first. Nothing in the JSON on stdout carries a total: a truncated
-page prints one plain line on **stderr** (`Showing 2 of 91 (offset 0). Use --limit … --offset 2 …`)
-and a complete page prints nothing there. So the returned row count is the total unless that line
-appeared, in which case take the total from it and page with `--offset`. Confirm the scope with the
-user before auditing more than 100 services.
+Pull each list at the largest page the CLI allows. The paging flags are in
+`account-and-settings/ai-access/tsuga-cli`. Nothing in the JSON on stdout carries a total, so the
+returned row count **is** the total unless the truncation line appeared. When it did, take the total
+from it: `Showing 2 of 91 (offset 0). Use --limit … --offset 2 …`. Confirm the scope with the user
+before auditing more than 100 services.
 
 A `services list` row is one (service, env) pair, so a service running in three environments is
 three rows. State which denominator the percentages use.
@@ -41,9 +41,9 @@ of them. A log-error-pattern monitor scoped by team alone has no `services` key:
 every service those teams own, not zero coverage.
 
 A metric monitor may filter on a metric label instead of `context.service.name` — a Prometheus
-`service_name`, a cloud provider's own dimension. Metric label keys are lowercased on ingest, so the
-filter spells a camelCase source key in lowercase. Count such a filter as naming the service, and
-say which key matched.
+`service_name`, or a cloud provider's own dimension. The key in the filter may not be spelled the way
+the sender emitted it. `data-collection/guides/default-mapping-for-opentelemetry-formats` has the
+rule. Count such a filter as naming the service, and say which key matched.
 
 SLOs cover services the same way and alert through the same rules. Fetch
 `tsuga docs get references/slos/overview` when the audit includes them, and count an SLO as coverage
@@ -75,15 +75,14 @@ monitor, never to build the set a coverage count is computed from.
 
 `tsuga docs get alert/notifications/rules` states how a rule matches a transition — team, priority,
 status, cluster, additional filters, and the rule that an empty filter matches every value on that
-dimension. Fetch it instead of re-deriving it. Three things it leaves out decide an audit:
+dimension. Fetch it instead of re-deriving it. Three things decide an audit:
 
 - Every rule has at least one destination — `targets` carries `minItems: 1`, so the API rejects a
   rule without one and the app blocks it earlier. Read `targets` to say *where* an alert goes; do not
   audit for an empty one, and do not report its absence as a routing gap.
-- `notification-rules list` returns standard rules only. Adaptive rules, which page the root-cause
-  service's own destination rather than a fixed list, are absent from that output and have no CLI
-  command. A monitor covered only by an adaptive rule reads as a gap, so report it as "no standard
-  rule matches" rather than asserting nobody is paged.
+- Adaptive rules are a separate resource with no public endpoint, so every surface that reads rules
+  programmatically returns standard rules only and drops adaptive ones without saying so. Never
+  assert nobody is paged: report the finding as "no standard rule matches".
 - `teamsFilter` is a union on `type`. `teams[]` exists only when `type` is `specific-teams`;
   `all-teams` and `all-public-teams` carry no array and cover their whole scope. Reading
   `teamsFilter.teams` unconditionally invents a gap on every rule of the other two types.
@@ -96,14 +95,16 @@ anything on a monitor or rule.
 
 Cross-check rather than replace: `tsuga quality-reports list --team <team-name>` carries one
 `monitor-has-notification` row per team, computed server-side with the real matcher. It shares the
-adaptive-rule blind spot, and it is a stored report — check its age before leaning on it.
+adaptive-rule blind spot.
 
 ## Silences
 
+`tsuga docs get alert/notifications/silences` ("Schedules and statuses") separates enabled from
+expired and says which schedule type carries what. Fetch it instead of guessing.
 `notification-silences list` returns every silence, expired ones included, and takes no pagination
-flags. A silence suppresses only when `isActive` is true **and** its schedule has not expired; check
-both before calling one active. For `schedule.type: one-time` report `schedule.endTime`; for
-`recurring` report the weekly windows and `schedule.timeZone`, which is UTC when absent.
+flags, so filter to the active ones yourself. Report `schedule.endTime` for a one-time silence, and
+the weekly windows plus `schedule.timeZone` for a recurring one. `schedule.timeZone` is UTC when
+absent.
 
 ## Evidence Rules
 

@@ -22,7 +22,7 @@ description: "Quantifies and explains a service's errors: confirms the count wit
 
 ## Workflow
 
-1. `tsuga services list` plus `tsuga teams list/get` — confirm the service exists, resolve ownership, and note query time plus `traceErrorRate` as rolling snapshot state. The response carries no log-error counter, so do not gate on one: get the 24h picture from step 2's aggregation over a 24h window when the requested window is shorter.
+1. `tsuga services list` plus `tsuga teams list/get` — confirm the service exists, resolve ownership, and note the query time and the rates. `references/incident-response/branch-telemetry-sweep` (step 2) has how to read `traceRequestRate` / `traceErrorRate`. The response carries no log-error counter, so do not gate on one: when the requested window is shorter than 24h, get the 24h picture from step 2's aggregation over a 24h window.
 
 2. `tsuga aggregation scalar -d '<body>'` (or `tsuga --cluster <cluster-id> aggregation scalar -d '<body>'` for multi-cluster tenants) — count errors in window. Use this body:
    ```json
@@ -36,7 +36,7 @@ description: "Quantifies and explains a service's errors: confirms the count wit
    ```
    This is the authoritative error count. Do not claim errors are elevated without this value.
 
-3. `tsuga logs patterns --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to>` — cluster errors by structure. Read `size` per pattern against the response's `sampleSize`: patterns are computed over a sample, so `size` is not the window's total. `groups` holds the attribute key/value pairs constant across every log in the pattern, typically `level` and `context.team`. Under `-o tsv|csv` the same numbers come back as `count` and `ratio`, and `context.team` is flattened to a `team` column.
+3. `tsuga logs patterns --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to>` — cluster errors by structure. `tsuga docs get explore/logs` ("Log patterns") says what the numbers mean, including why a count is not exact and the 100-pattern cap per level and team; `size` is that page's Count. What it leaves out: `sampleSize` is the sum of the returned patterns' sizes, not a count of logs sampled, so `size / sampleSize` is a share of this call's own result and only step 2 gives the window total. `groups` holds the attribute key/value pairs constant across every log in the pattern, typically `level` and `context.team`. Under `-o tsv|csv` the same numbers come back as `count` and `ratio` (`size / sampleSize`); the app's Patterns view divides by the window total instead, so the ratio a user reads there is smaller. `context.team` is flattened to a `team` column.
 
 4. `tsuga logs new-error-patterns --team <team> --service <name> --from <from> --to <to>` (add `--env <env>` if known) — detects error patterns first seen in the window. Every filter is optional; omitting one widens the scan, so state the scope you actually queried. Rows carry no pattern string — the only structure is an optional `exampleLog`.
 
@@ -48,13 +48,13 @@ description: "Quantifies and explains a service's errors: confirms the count wit
    - target: `context.service.name:"<name>" status_code:error <env filter if provided>`
    - baseline: `context.service.name:"<name>" NOT status_code:error <env filter if provided>`
 
-   This reads spans, not logs: a service that logs errors without setting `status_code:error` on its spans yields an empty target group and no findings. `timeRange` here is Unix seconds and is not resolved from relative strings, unlike `--from` / `--to`. For the body shape, the tuning flags and how to read the response, follow `tsuga-contrast-sets`.
+   `timeRange` here is Unix seconds and is not resolved from relative strings, unlike `--from` / `--to`. For the body shape, the tuning flags, how to read the response and what an empty target group means, follow `tsuga-contrast-sets`.
 
 ## Evidence Requirements
 
 - "Errors are elevated" = scalar count > 0, confirmed by step 2 (aggregation scalar). Not assumed from log presence alone.
 - State exact count + window in all findings.
-- "Error pattern X is dominant" = `size` value from `logs patterns`, cited explicitly.
+- "Error pattern X is dominant" = `size` value from `logs patterns`, cited explicitly and noted as excluding the tail the cap cut.
 - "Attribute X explains the errors" = a `values` entry from `traces contrast-sets`, cited per `tsuga-contrast-sets`.
 - "Root cause" requires at least two corroborating signals; log-only evidence is a finding or hypothesis, not root cause.
 
@@ -102,7 +102,7 @@ Source: aggregation scalar, filter: context.service.name:"<name>" level:ERROR <e
 ## Limitations
 - logs patterns clusters by structure, not semantics — similar errors may appear in separate pattern entries
 - `new-error-patterns` takes optional team/env/service filters; omitting one widens the scan across that dimension
-- `logs patterns` clusters a sample (`sampleSize`), so pattern counts are proportions of that sample, not window totals — only the aggregation scalar is the total
+- `logs patterns` counts leave out the top-N tail — each level/team group returns only its 100 largest patterns — and are extrapolated only where signature sampling is below 100%; only the aggregation scalar is the window total
 - `error-pattern-increases` detects anomalous volume changes, not absolute counts — a pattern can have a high count (from `logs patterns`) but no increase if the volume is stable
 - `traces contrast-sets` compares spans, not logs: a service that logs errors without marking spans `status_code:error` yields an empty target group and no findings
 - `services list` counters are snapshot state; cite query time and do not treat them as live alert state

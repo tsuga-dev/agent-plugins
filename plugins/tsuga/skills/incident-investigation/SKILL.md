@@ -91,7 +91,7 @@ Do not let `failing subsystem` silently replace `root cause`.
 
 For an active incident with ongoing impact, mitigation is the first question, not the last. Identify the fastest action that restores service — rollback, failover, scale, flag flip — and surface it early, in parallel with the RCA; never gate stopping the bleeding on a completed root cause. Mitigation actions postdate `declared_at`; that does not violate Time discipline — they document the response and never feed the causal chain.
 
-Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first: `tsuga config` for the active key, and pass `--cluster <id>` explicitly on every call (`tsuga clusters list` to confirm the id) — `tsuga config` does not report the cluster.
+Then open a Tsuga investigation record (beta) so progress is visible while you work. This is a default deliverable — create it without asking, unless the user opted out. Check the environment first: `tsuga config` for the active key, and pass `--cluster <id>` explicitly on every call (`tsuga clusters list` to confirm the id) — `tsuga config` reports a saved default cluster, but not one arriving from `--cluster` or `TSUGA_CLUSTER_ID`.
 
 ```bash
 tsuga investigations create -d '{
@@ -103,9 +103,9 @@ tsuga investigations create -d '{
 }'
 ```
 
-`name`, `slug` and `owner` are required on create — `tsuga investigations create --generate-skeleton` cannot show you that, so build the body from the fields above. (If the skeleton call errors out instead of printing JSON, that is the CLI defect, not a bad payload.) `slug` is immutable, kebab-case and org-unique; emit the same value in your own telemetry so the record links back to this run.
+`name`, `slug` and `owner` are required on create — `tsuga investigations create --generate-skeleton` cannot show you that, so build the body from the fields above. The `slug` must be kebab-case and unique in the org, and no later update can change it. (If the skeleton call errors out instead of printing JSON, that is the CLI defect, not a bad payload.)
 
-Keep the returned `id`: you update this record at checkpoints and finish it at step 10. Field-by-field rules, the `contentMd` template and the environment-hygiene checks live in `references/incident-response/investigation-record`. A 403 means the key lacks `investigation` write, or write on the owning team you passed — skip the record, run the investigation as normal, never retry or block on it, and name the skip in the verdict's `Deliverables:` line.
+Keep the returned `id`: you update this record at checkpoints and finish it at step 10. Field-by-field rules, the `contentMd` template and the environment-hygiene checks live in `references/incident-response/investigation-record`. A 403 means the key lacks `investigation` write, or write on the owning team you passed; that reference's skip rules then apply.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -148,7 +148,7 @@ Merge results as they land; don't wait on all.
 - `logs new-error-patterns` / `logs error-pattern-increases` (cheap — pre-computed) before `logs search`
 - `logs patterns` (bounded cluster) before `logs search --query '*'` (unbounded scan)
 - `aggregation scalar` before `aggregation timeseries` at broad group-by limits
-- `services get` for the trace request rate (req/s) and error rate (%) over the last hour, plus team / env / versions, before drilling into per-log detail — it returns no counts and no log volume; use `aggregation scalar` for those
+- `services get` for the trace request and error rates, plus team / env / versions, before drilling into per-log detail — it returns no counts and no log volume; use `aggregation scalar` for those
 - `grep -rn` across codebases (cheap, parallel) before elaborate change-correlation hypotheses
 
 A broad `logs search` with no service / team scope is the most expensive move — save it for when you have a specific error string to chase.

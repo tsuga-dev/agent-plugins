@@ -21,7 +21,7 @@ description: "Investigates where latency comes from: finds the peak window, rank
 
 ## Workflow
 
-1. `tsuga services list`, plus `tsuga teams list` / `teams get <team-id>` when ownership matters. `traceRequestRate` and `traceErrorRate` are a rolling snapshot taken at query time, not over the requested window: `0` means the service was quiet, **absent** means the trace query failed and the snapshot says nothing either way. Neither is a reason to stop before querying the requested window.
+1. `tsuga services list`, plus `tsuga teams list` / `teams get <team-id>` when ownership matters. How to read `traceRequestRate` / `traceErrorRate` is step 2 of `references/incident-response/branch-telemetry-sweep`. Neither value is a reason to stop before querying the requested window.
 
 2. Selected percentile per operation per 5-minute window, in one call:
 
@@ -55,7 +55,7 @@ Zero results is a valid outcome — not every service emits both signals.
 
 ## Drilling into one trace
 
-The steps above find _which operation_ is slow across many traces. `tsuga traces latency-summary` and `tsuga traces summarize` explain _one_ trace. Both are read-only, both take `--trace-id` and a `--from`/`--to` that covers the trace (`--help` has the flags), and both read at most 10,000 spans.
+The steps above find _which operation_ is slow across many traces. `tsuga traces latency-summary` and `tsuga traces summarize` explain _one_ trace. Both are read-only and both take `--trace-id` and a `--from`/`--to` that covers the trace (`--help` has the flags). `explore/traces` ("Search traces outside the app") has the span cap, which command reports truncation, and each field's unit. Reading the two payloads:
 
 **One trace is one sample.** Use it to pick what to look at next, never to make a service-wide claim without steps 2–4.
 
@@ -70,16 +70,15 @@ It attributes the trace's real elapsed time to the services that took part, inst
 - **`share` is approximate** and sums to at most 1, usually a few parts in 10,000 under. A trace built from many very short adjacent ranges can come in well under, because each merge truncates to the microsecond grid — so check the sum before treating the shares as a full accounting. Report to the whole percent, and do not build an argument on a few points between two services.
 - **`ranges[]`** is the slice-by-slice timeline: `fromNs`/`toNs`/`durationNs`, a `contributions[]` of `serviceKey` + `weight` + `durationNs`, and the `spanIds[]` that produced the slice. Ranges are the only part `--min-range-duration-ms` and `--no-ranges` affect — `serviceTotals` is computed before collapsing and does not move.
 - **`services[]`** maps each `key` — the value `serviceKey` references elsewhere in the response — to the observed `name` and `env`, plus a catalog `id` and `namespace` when exactly one catalog entry matches. Spans carrying no `context.service.name` collect into a synthetic service named `unknown`.
-- **`truncated: true`** means the trace holds more than 10,000 spans and the attribution covers a subset. Say so in the finding rather than presenting the totals as the whole trace.
-- **Durations here are nanoseconds, transmitted as strings** (`durationNs`, `totalDurationNs`, `startTimeNs`, `endTimeNs`) — convert to ms before reporting. `summarize` also reports nanoseconds; see its own section.
+- **`truncated: true`** — say so in the finding rather than presenting the totals as the whole trace. Convert every nanosecond field to ms before reporting.
 
 ### Reading `traces summarize`
 
 It replaces groups of similar spans with synthetic **summary spans**, so a trace with thousands of repetitive spans (fan-out loops, per-row DB calls) becomes readable. A group forms at five or more similar leaf spans, at any depth.
 
-A summary span carries `spanAttributes.aggregation` holding `is_summary: true`, `span_count`, `duration_min_ns` / `duration_max_ns` / `duration_avg_ns` / `duration_total_ns` (nanoseconds as strings), `merged_span_ids`, and a `histogram_bucket_bounds_s` / `histogram_bucket_counts` pair. The span's own `duration` stays in milliseconds but spans the whole collapsed group, so it is not the per-call cost — `duration_avg_ns` is.
+A summary span carries `spanAttributes.aggregation` holding `is_summary: true`, `span_count`, `duration_min_ns` / `duration_max_ns` / `duration_avg_ns` / `duration_total_ns` (nanoseconds as strings), `merged_span_ids`, and a `histogram_bucket_bounds_s` / `histogram_bucket_counts` pair. The span's own `duration` spans the whole collapsed group, so it is not the per-call cost — `duration_avg_ns` is.
 
-Use it to spot one repeated operation dominating a trace. It does **not** attribute wall-clock time per service; `latency-summary` does. It also reports no truncation flag, so a trace over 10,000 spans is summarized from a subset silently.
+Use it to spot one repeated operation dominating a trace. It does **not** attribute wall-clock time per service; `latency-summary` does. Run `latency-summary` on the same trace when completeness matters.
 
 ## Evidence Requirements
 

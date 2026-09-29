@@ -37,8 +37,10 @@ their contents from memory, and do not guess a field name that neither page list
   folders, and `timePreset` values.
 
 For product behaviour behind a field, use `tsuga docs search` then `tsuga docs get`, and cite `path`,
-`title`, and `link`. `visualize/analytics/display-options`, `visualize/analytics/queries` and
-`visualize/dashboards/index` are the pages the reference pages defer to.
+`title`, and `link`. The reference pages above defer to
+`visualize/analytics/graph-types-and-widget-options` (which type to reach for, and the per-type
+sub-options), `visualize/analytics/display-options`, `visualize/analytics/queries` and
+`visualize/dashboards/index`.
 
 ## Design principles
 
@@ -52,8 +54,7 @@ For product behaviour behind a field, use `tsuga docs search` then `tsuga docs g
    without leaving the dashboard.
 4. **Color carries meaning, not decoration.** Put `conditions` on a `query-value` only where a real
    SLO or alert threshold exists. A tile that is always green teaches a viewer to ignore color.
-5. **Every number needs a unit.** Set a `normalizer` on every numeric widget, and set it to the unit
-   the raw value is already in.
+5. **Every number needs a unit.** Set a `normalizer` on every numeric widget.
 6. **Group by meaningful dimensions.** `context.service.name` for multi-service views, `span.name`
    for operation breakdowns, `level` for severity splits. Avoid high-cardinality fields (user IDs,
    raw URLs).
@@ -81,14 +82,12 @@ Latency:    1× timeseries (p50/p95/p99), 1× top-list (slowest operations)
 
 ### Step 2 — Discover the signal
 
-A widget reads one `source`: `logs`, `metrics` or `traces`. Pick it from the question before
-discovering anything — "how many errors" is usually a log or span count, "how much memory" is a
-metric. The `list` and `list-log-patterns` widgets are logs-only and `list-spans` is spans-only;
-none of them takes a `source`.
+Pick the widget's `source` from the question before discovering anything — "how many errors" is
+usually a log or span count, "how much memory" is a metric.
 
-For **metrics**: `tsuga metrics list` and `tsuga metrics get`. Both read a catalog that ignores the time range,
-so a name appearing there means it was seen at some point, never that it reported in your window —
-confirm with an aggregation count before building on it. **Never invent metric names.** Read the
+For **metrics**: `tsuga metrics list` and `tsuga metrics get`. Both read a name catalog, so confirm with an
+aggregation count over the window before building on a name — see
+`explore/guides/how-to-troubleshoot-an-empty-query-result`. **Never invent metric names.** Read the
 returned names yourself rather than piping them through non-`tsuga` shell commands. For each
 candidate record its `type` and `temporality` (they decide the aggregation in Step 3), its
 `attributes` (filter and groupBy candidates), and its `unit` (the normalizer).
@@ -166,7 +165,8 @@ one-widget change goes through the whole-dashboard update above.
 - KPI tiles without trend context.
 - Raw counts without normalization.
 - Inconsistent filters or dimensions across widgets.
-- Duplicate chart names, or a window baked into a name (`Errors (1h)`).
+- Duplicate chart names, or a name that breaks `references/dashboards/layout-rules` ("Widget
+  Naming").
 
 ## Ship checklist
 

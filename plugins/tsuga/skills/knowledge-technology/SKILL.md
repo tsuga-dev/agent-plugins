@@ -17,7 +17,7 @@ Only `overview` is guaranteed. A fetch of a path a technology does not have retu
 
 Fetch with `tsuga docs get <path> | jq -r .content`. These pages are path-addressed only — `tsuga docs search` cannot see them and there is no index page — so pick a path from the list below.
 
-**Always use `tsuga_metric_name` from the `metrics` page in actual `tsuga` queries.** The `name` column holds the source-system name, `tsuga_metric_name` holds what Tsuga actually registered. For anything that arrives through a translation layer — CloudWatch, JMX — the two differ and the source name returns nothing: RDS `CPUUtilization` is `aws_rds_cpu_utilization`. For natively exported metrics the two are identical (`istio_requests_total`). You cannot tell which case you are in without reading the row, so read the row.
+**Always use `tsuga_metric_name` from the `metrics` page in actual `tsuga` queries.** The `name` column holds the source-system name, `tsuga_metric_name` holds what Tsuga actually registered. For anything that arrives through a translation layer — CloudWatch, JMX — the two differ and the source name returns nothing. The transformation is not reversible by hand: CloudWatch snake-casing splits acronyms unpredictably (`ConsumedLCUs` -> `aws_networkelb_consumed_lc_us`) and the prefix is the lowercased CloudWatch namespace, not a literal `aws_` (`ECS/ContainerInsights` -> `ecs_containerinsights_`). For natively exported metrics the two are identical (`istio_requests_total`). You cannot tell which case you are in without reading the row, so read the row.
 
 ## Covered technologies
 

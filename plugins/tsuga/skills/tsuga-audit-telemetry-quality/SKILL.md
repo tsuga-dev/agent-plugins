@@ -32,27 +32,22 @@ Two reading rules decide the rest of the audit:
 
 ## 2. Division of Labour
 
-The `ruleId` values in the returned rows are the authoritative list of what the report measures. By area, it covers:
+`how-to-audit-telemetry-quality` names the rule families the report covers and the areas left to you, and `account-and-settings/quality-reports` lists the remaining families. The `ruleId` values in the returned rows are the authoritative list of what the report measures. The report also flags:
 
-| Area                       | Flagged by the report                                                                                                                     |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Resource identity          | `service.name` and `host.name` presence, Kubernetes resource attributes, a `team` resource attribute disagreeing with the resolved `context.team` |
-| Log severity               | error/exception fields carried on INFO logs, DEBUG logs in production                                                                       |
-| Log structure              | ungrouped multiline stack traces, attribute naming variants, attributes that always carry identical values, attributes that should be remapped to standard ones |
-| Log timestamps             | logs dated ahead of their intake time                                                                                                       |
-| Trace shape                | spans whose `parent_span_id` resolves to no span in the trace                                                                               |
-| Metric units               | one metric name reporting more than one unit                                                                                                |
-| Metric and dashboard usage | metrics no dashboard, monitor or recent query references; dashboard and monitor references to log fields absent from recent logs             |
-| Collection coverage        | missing Kubernetes, database-server, cloud-inventory and Collector self-metrics                                                             |
+| Area                | Also flagged by the report                                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Log structure       | ungrouped multiline stack traces, attribute naming variants, attributes that always carry identical values, attributes that should be remapped to standard ones |
+| Log timestamps      | logs dated ahead of their intake time                                                                                                                          |
+| Log severity        | DEBUG logs in production                                                                                                                                       |
+| Trace shape         | an orphan span is one whose `parent_span_id` resolves to no span in the trace                                                                                  |
+| Collection coverage | missing Collector self-metrics                                                                                                                                 |
 
-Quote the failing row and its recommendation for any of those. The audit is what is left:
+Quote the failing row and its recommendation for any of those. The CLI mechanics for the areas left to you:
 
-- **Metric naming, instrument type, and temporality fit.** `tsuga metrics list` returns the cluster's metric-name catalog with each name's type and temporality. It ignores `--from`/`--to` and keeps a name for weeks after the metric stops reporting, so read temporality off the list and take attributes from `tsuga metrics get <METRIC_NAME>`. That call reads the same catalog and carries no last-seen field, so whether a metric is live comes from an aggregation count over the window and nothing else.
-- **Cardinality.** The CLI metric response carries no cardinality figure. Use a `tsuga aggregation scalar` group-by count as a proxy and say it is one, or send the user to the metric's detail page in the app for the stored estimate.
+- **Metric naming, instrument type, and temporality fit.** `tsuga metrics list` returns the cluster's metric-name catalog with each name's type and temporality, so read temporality off the list and take attributes from `tsuga metrics get <METRIC_NAME>`. Both ignore `--from`/`--to`, and a name outlives the metric, so whether one is live comes from an aggregation count over the window and nothing else. That rule is on `explore/guides/how-to-troubleshoot-an-empty-query-result`.
+- **Cardinality.** Count it with a `tsuga aggregation scalar` `unique-count` on `<METRIC_NAME>` for the metric's series count, then on `<METRIC_NAME>.<ATTRIBUTE>` for each suspect dimension. Spell the attribute exactly as `tsuga metrics get <METRIC_NAME>` lists it, `context.` prefix included: a path naming no stored attribute is not rejected and returns `0`, which reads like an absent dimension, so confirm the spelling before trusting a zero. The body, and the same count for an attribute that lives on spans or logs, are in `references/telemetry/signal-choice`.
 - **Span naming, kind, status discipline, links, and noise.** Aggregate on `span.name` and `span.kind` before sampling with `tsuga traces search --max-results 10`, and reconstruct the multi-service flow before calling a span duplicated.
 - **Application-log trace correlation.** The report checks `trace_id` on database logs only.
-- **Sensitive values and risky field names.** Treat names such as `authorization`, `password`, `token`, `cookie`, `url.full`, `request.body`, and `response.body` as findings until code or a redaction policy proves otherwise.
-- **Whether the value belongs in this signal at all.** Route to `signal-choice-advisor`.
 
 ## 3. Classify Before Recommending
 
@@ -78,7 +73,7 @@ Route missing telemetry or broken parent/child linkage to `tsuga-debug-telemetry
 ## Evidence Rules
 
 - Every finding cites the command and value that produced it, or the quality-report row it came from.
-- Cardinality group-by results are proxies, not measurements. State the query limit.
+- Cardinality findings quote the count and the window it came from, and say it is an estimate. `references/telemetry/signal-choice` has how far off the sketch can be.
 - Source-code findings cite file path and line. If not confirmed in Tsuga, label as `Recommendation (not verified in Tsuga)`.
 
 ## Safety

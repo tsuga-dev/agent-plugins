@@ -31,17 +31,16 @@ If Tsuga docs do not settle a name, use the OpenTelemetry semantic conventions a
 
 ## Judgment the docs do not carry
 
-- "Duration of X" where X is already a span: the span answers it. Add a Histogram only when the aggregate distribution is the question and the trace sample rate cannot answer it.
-- "Count of X" where X is already a span: aggregate the span count. A parallel Counter drifts from it and has to be reconciled forever.
+- `how-to-choose-a-telemetry-signal` rules against duplicating a span's count or duration as a metric unless the measurement is product-specific and traces cannot derive it. It does not say how to judge that: add a Histogram only when the aggregate distribution is the question and the trace sample rate cannot answer it. Never add a parallel Counter: it drifts from the span count and has to be reconciled forever.
 - "Did Y happen inside operation Z": a structured log carrying `trace_id` and `span_id` - not a child span, and not a span event.
 - RUM events and continuous profiles are separate ingestion paths, not a fifth instrument to choose between. Reach for them when the question is frontend timing, a crash, or CPU attribution, and say so explicitly rather than modelling it as a metric. Both have their own views. RUM has no widget source at all; profiles arrive as `profile.samples.<service>` metrics, so a widget can chart sample counts but not the call stack. A recommendation that has to land on a dashboard as anything richer has to be `logs`, `metrics` or `traces`.
-- Reject outright any metric dimension that grows with users, orders, sessions, request IDs, raw URLs, query strings or trace IDs. Measure every other candidate rather than guessing, and never quote a series-count zone or threshold - Tsuga publishes none.
+- Reject the metric attributes on that page's deny list outright rather than measuring them, and treat query strings and trace IDs the same way. Measure every other candidate rather than guessing. Never quote a series-count zone or threshold - Tsuga publishes none.
 
 ## Workflow
 
 1. Gather the requirement. If it is too vague to name an operation, ask: "What specific operation, event, or measurement are you trying to capture?"
 2. If a service name was given: `tsuga services list`, then read `traceRequestRate`. A value means the service already emits traces, so check whether the proposal duplicates a span aggregation. An absent field means the query failed, not zero.
-3. If the metric already exists: `tsuga metrics get` for its type, unit, temporality and attribute names. Where it returns `attributeCardinalities`, read them as periodically refreshed estimates; where it returns attribute names only, measure cardinality with the aggregation in `references/telemetry/signal-choice`.
+3. If the metric already exists: `tsuga metrics get` for its type, unit, temporality and attribute names. Where it returns `attributeCardinalities`, read them, and take what those figures measure from `references/telemetry/signal-choice`. Where it returns attribute names only, measure cardinality with the aggregation on that same page.
 4. Recommend the signal, the name, the placement and the dimensions. Name the alternatives you rejected and why.
 5. If you read source or live telemetry, share what you saw and ask whether it matches how the service instruments itself.
 6. Hand the SDK implementation off - this skill never writes instrumentation code. Where an `otel-instrumentation` skill is available, it owns that step.
