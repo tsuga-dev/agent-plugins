@@ -1,54 +1,36 @@
-<!-- skill-lint: allow-forbidden-examples — this file documents the forbidden patterns as verification examples -->
-
 # VERIFICATION — acceptance gates before shipping the archive
 
 Run all of these before the commit that ships the archive. Each has a concrete pass/fail.
 
-## Gate 1 — Structural completeness
+## Contents
 
-Every incident folder must have exactly the expected shape:
+1. [The mechanical lint](#gate-1--the-mechanical-lint) — `lint-all.sh`
+2. [Canonical section list, in order](#gate-2--canonical-section-list-in-order)
+3. [Sampled execution](#gate-3--sampled-execution) — the payload gate
+4. [Inventory column completeness](#gate-4--inventory-column-completeness)
+5. [Post-incident PR leakage](#gate-5--post-incident-pr-leakage)
+6. [Human eyeball](#gate-6--human-eyeball)
+7. [If a gate fails](#if-a-gate-fails)
 
-```bash
-OUTPUT=./skills/incident-history/references/incidents
+`OUTPUT=./skills/incident-history/references/incidents` throughout.
 
-# Every INC-* folder has SUMMARY.md and metadata.json
-missing=0
-for d in "$OUTPUT"/INC-*/; do
-  [ -f "$d/SUMMARY.md" ]    || { echo "MISSING SUMMARY.md: $d"; missing=$((missing+1)); }
-  [ -f "$d/metadata.json" ] || { echo "MISSING metadata.json: $d"; missing=$((missing+1)); }
-done
-echo "missing: $missing"
-```
-
-**Pass:** `missing: 0`.
-
-## Gate 2 — Metadata parses + carries required fields
+## Gate 1 — the mechanical lint
 
 ```bash
-for f in "$OUTPUT"/INC-*/metadata.json; do
-  jq -e '.incident_id and .declared_at and .last_iso' "$f" >/dev/null \
-    || echo "BAD METADATA: $f"
-done
+${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh ./skills/incident-history/
 ```
 
-**Pass:** no output (every file has all three fields).
+**Pass:** exit code 0, no `FAIL` lines.
 
-## Gate 3 — Canonical section list
+This covers, and is stricter than, a hand-rolled check of: every `INC-*` folder carrying both `SUMMARY.md` and `metadata.json`; `metadata.json` parsing with ISO-8601 `declared_at` and `last_iso` and an id that matches its folder name; `## Root cause` and `## Diagnostic path` present in every `SUMMARY.md`; `_inventory.csv` row count equal to folder count; and the MCP-pseudo-syntax / `rtk` / singular-resource / `--limit` forbidden-token sweep.
 
-Every SUMMARY.md must contain these headings, in order:
+A folder whose `last_iso` does not parse is the one failure that matters most: `entrypoint.sh`'s `SNAPSHOT_AT` filter drops those incidents silently rather than erroring.
 
-```
-# {incident_id} — {title}
-## Incident at a glance
-## Timeline
-## Paging surface during incident
-## Diagnostic path
-## Root cause
-## Remediation
-## Lessons / follow-ups
-```
+The gates below are the ones no script covers.
 
-Quick check:
+## Gate 2 — canonical section list, in order
+
+The lint requires only the two load-bearing headings. A build run must produce the whole list from `SUMMARY_TEMPLATE.md`, in template order.
 
 ```bash
 required=(
@@ -79,115 +61,58 @@ done
 
 **Pass:** no output.
 
-## Gate 4 — Forbidden tokens
+## Gate 3 — sampled execution
 
-The Diagnostic path sections must not contain MCP-tool pseudo-syntax or `rtk` prefix. Grep for:
-
-```bash
-# Pseudo-syntax verbs
-grep -rnE "^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|list-notification-rules|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b" "$OUTPUT"
-
-# Pseudo-syntax argument shape
-# Strip URL params and JSON keys from each line first: dropping whole lines would mask a real
-# violation that happens to share a line with a legitimate URL or key.
-grep -rl . "$OUTPUT" | while IFS= read -r f; do
-  sed -E 's#/explorer\?query=[^ )"`]*##g; s#"(aggregationWindow|dataSource|filter)":##g' "$f" \
-    | grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' \
-    | sed "s#^#$f:#"
-done
-
-# rtk prefix
-grep -rnE "^rtk |[[:space:]]rtk " "$OUTPUT" | head -20
-```
-
-**Pass:** all three return zero hits (ignoring the known-safe URL / JSON-body cases).
-
-## Gate 5 — Sampled execution
-
-Pick 5 random SUMMARY.md files and run every `tsuga` command in their Diagnostic path section:
+The payload gate. Pick 5 random `SUMMARY.md` files and run every `tsuga` command in their Diagnostic path:
 
 ```bash
-# Pick 5
 files=$(ls "$OUTPUT"/INC-*/SUMMARY.md | awk 'BEGIN{srand()} {print rand()"\t"$0}' | sort -n | cut -f2- | head -5)
 
 for f in $files; do
   echo "=== $f ==="
-  # Extract the Diagnostic path section's bash blocks
   awk '/^## Diagnostic path/,/^## Root cause/' "$f" \
     | awk '/^```bash$/{flag=1;next}/^```$/{flag=0}flag'
 done
 ```
 
-Copy each command block into a shell and confirm:
-- It parses (no "unknown option" or shell syntax error).
-- It returns a valid response (empty results `{"logs":[]}` are fine; errors are not).
+Paste each block into a shell and confirm it parses and returns a response. Empty results (`{"logs":[]}`) pass; an error does not. A mistyped `tsuga` command prints **empty stdout**, so treat no output at all as a failure, not a pass.
 
 **Pass:** every sampled command executes cleanly.
 
-If even one fails, the bug is in the subagent template, not the individual file. Fix the template (probably in `LESSONS.md` or `SUMMARY_TEMPLATE.md`), regenerate the affected batch, and re-run this gate.
+## Gate 4 — inventory column completeness
 
-## Gate 6 — Inventory consistency
+The lint compares row count to folder count but not cell contents.
 
 ```bash
-# Row count matches folder count
-folder_count=$(ls -d "$OUTPUT"/INC-*/ | wc -l)
-inventory_count=$(tail -n +2 "$OUTPUT/_inventory.csv" | wc -l)
-[ "$folder_count" = "$inventory_count" ] \
-  && echo "OK: $folder_count incidents" \
-  || echo "MISMATCH: $folder_count folders vs $inventory_count inventory rows"
-
-# Inventory has no empty cells in the required columns
 awk -F, 'NR>1 && ($1=="" || $2=="" || $3=="" || $4=="") {print NR": "$0}' "$OUTPUT/_inventory.csv"
 ```
 
-**Pass:** `OK:` line + no output from awk.
+**Pass:** no output.
 
-## Gate 7 — Snapshot-filter dry-run
+## Gate 5 — post-incident PR leakage
 
-`entrypoint.sh` filters the archive by `SNAPSHOT_AT` at container start. Simulate that filter to confirm `metadata.json` dates are actually usable:
-
-```bash
-# Every incident, not just one. Parse with python so the check works on BSD and GNU alike, and
-# so an empty last_iso fails instead of being skipped.
-bad=0
-for f in "$OUTPUT"/INC-*/metadata.json; do
-  iso=$(jq -r '.last_iso // empty' "$f")
-  if [ -z "$iso" ] || ! python3 -c 'import sys,datetime; datetime.datetime.fromisoformat(sys.argv[1].replace("Z","+00:00"))' "$iso" 2>/dev/null; then
-    echo "FAIL: $(dirname "$f") last_iso does not parse: '${iso:-<missing>}'"
-    bad=$((bad+1))
-  fi
-done
-[ "$bad" -eq 0 ] && echo "OK: every last_iso parses as an ISO-8601 timestamp"
-```
-
-**Pass:** every `metadata.json`'s `last_iso` parses to Unix seconds. If any don't, `entrypoint.sh` will silently drop those incidents on filter.
-
-## Gate 8 — Human eyeball
-
-Open 5 random SUMMARY.md files and read them cover-to-cover. Check:
-
-- Does the narrative flow from symptom → investigation → cause → fix?
-- Are there any paragraphs that feel generic / boilerplate / invented?
-- Does the Diagnostic path section tell a coherent story of what the responder actually did, or does it read like a checklist of unrelated probes?
-- Is the Incident-at-a-glance paragraph something you'd want to read at 3am?
-
-No automated check for this. If anything feels off, regenerate the affected batch with a tightened subagent prompt (e.g., "do not add sections beyond those in the template", "cite specific times and numbers from the input").
-
-## Gate 9 — Post-incident PR leakage
-
-A smell-test for answer-key leakage. If any SUMMARY.md contains the full text of a post-incident PR's description, that's a benchmarking poison.
+A smell test for answer-key leakage: a SUMMARY.md carrying a resolution PR's full text is benchmarking poison.
 
 ```bash
-# PR-like snippets (long diffs pasted in)
 grep -rnE "^(diff --git|\+\+\+ |--- )" "$OUTPUT" | head
-# Long quoted PR titles
 grep -rnE 'PR #[0-9]+ merged at' "$OUTPUT" | head
 ```
 
-**Pass:** no output or very short output (referencing PR numbers is fine; pasting diffs is not).
+**Pass:** no output. Referencing a PR number is fine; pasting a diff is not.
+
+## Gate 6 — human eyeball
+
+Open 5 random `SUMMARY.md` files and read them cover to cover:
+
+- Does the narrative flow from symptom → investigation → cause → fix?
+- Any paragraph that reads generic, boilerplate or invented?
+- Does the Diagnostic path tell a coherent story of what the responder did, or is it a checklist of unrelated probes?
+- Is "Incident at a glance" something you would want to read at 3am?
+
+Thin inputs make subagents produce valid-looking hallucination that every automated gate passes. This is the only gate that catches it.
 
 ## If a gate fails
 
-Do NOT hand-edit individual files. Go back to the subagent prompt / template, fix the root cause, and regenerate the affected batch. This keeps the archive reproducible.
+Do not hand-edit individual files — a failure in one sampled file is a template-wide bug. Fix the root cause in `SUMMARY_TEMPLATE.md`, `SUBAGENT_PROMPT.md` or `LESSONS.md`, regenerate the affected batch, re-run the gate. This keeps the archive reproducible.
 
-The one exception is `_inventory.csv` — regenerating it is cheap (one script), so fix that directly.
+The one exception is `_inventory.csv`: regenerating it is one script (`PROCEDURE.md` Phase 4), so fix it directly.

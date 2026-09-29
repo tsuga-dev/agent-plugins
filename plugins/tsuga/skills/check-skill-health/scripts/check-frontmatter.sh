@@ -10,6 +10,7 @@
 #   - name: field present, non-empty
 #   - name value matches enclosing folder name (warn only)
 #   - description: field present, non-empty
+#   - description <= 1024 characters — the loader's hard limit
 #   - description word count in [30, 200], with warn outside [50, 120]
 
 set -uo pipefail
@@ -51,20 +52,27 @@ if [ -z "$name" ]; then
 fi
 
 # Pull `description:` — single-line, optionally quoted.
-desc=$(echo "$fm" | awk '/^description:/ { sub(/^description: */, ""); sub(/^"/, ""); sub(/"$/, ""); print; exit }')
+desc_raw=$(echo "$fm" | awk '/^description:/ { sub(/^description:[[:space:]]*/, ""); print; exit }')
+desc="${desc_raw#\"}"
+desc="${desc%\"}"
 if [ -z "$desc" ]; then
   echo "FAIL [frontmatter] $SKILL_DIR — description: field missing or empty"
   exit 1
 fi
 
-# Word count of description.
+# Character count is measured on the line as written, quotes included: that is the span the loader
+# sees, and a skill over the limit is dropped with no error anywhere.
+char_count=${#desc_raw}
 word_count=$(echo "$desc" | wc -w | tr -d ' ')
 
 status="PASS"
 msg=""
 
 # Hard bounds.
-if [ "$word_count" -lt 30 ]; then
+if [ "$char_count" -gt 1024 ]; then
+  status="FAIL"
+  msg="description too long ($char_count chars; the loader drops a skill over 1024 and warns nowhere)"
+elif [ "$word_count" -lt 30 ]; then
   status="FAIL"
   msg="description too short ($word_count words; min 30)"
 elif [ "$word_count" -gt 200 ]; then
@@ -88,7 +96,7 @@ if [ "$name" != "$folder_name" ]; then
   [ "$status" = "PASS" ] && status="WARN"
 fi
 
-echo "$status [frontmatter] $SKILL_DIR — name: $name, description: $word_count words${msg:+ — $msg}${name_match_note}"
+echo "$status [frontmatter] $SKILL_DIR — name: $name, description: $word_count words / $char_count chars${msg:+ — $msg}${name_match_note}"
 
 case "$status" in
   PASS|WARN) exit 0 ;;

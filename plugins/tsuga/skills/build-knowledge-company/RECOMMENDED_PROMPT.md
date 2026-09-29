@@ -17,7 +17,7 @@ Repo root: <absolute path to your investigation-agent checkout, e.g. /Users/me/p
 Codebase checkouts: <absolute dir holding the company's main code repos locally, e.g. /Users/me/projects/my-investigation-agent/repos or /Users/me/dev/acme-co>
   Expected children: one subdir per backing repo, e.g. typescript/, rust/, python/, infra-as-code/
 Optional raw docs: <absolute path to architecture / team charters / runbooks, e.g. /Users/me/projects/my-investigation-agent/inputs/raw-docs>
-Tsuga CLI: must be authenticated (run `tsuga config` to confirm).
+Tsuga CLI: must be authenticated (run `tsuga auth whoami` to confirm — it calls the API; `tsuga auth status` and `tsuga config` only read local state).
 Tsuga MCP tools: must be available to your subagents for live discovery + live probes.
 
 Preconditions — verify before touching anything:
@@ -36,8 +36,8 @@ Use the `$build-knowledge-company` skill. Specifically:
 Phase 2 — health check:
 Use the `$check-skill-health` skill. Specifically:
 1. Run `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh skills/knowledge-company/` (structural checks, offline).
-2. Then run the sampling audit: `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute skills/knowledge-company/` (samples random SERVICE_KNOWLEDGE.md files and audits whether the first `tsuga` command in each is read-only and well-shaped — it never executes them).
-3. If any FAIL: do NOT hand-edit the affected file. Fix the root cause in the template / subagent prompt / lessons doc, regenerate the affected services via subagent, re-run both lint passes. Iterate until `lint-all.sh --execute` returns exit code 0.
+2. Then run the sampling audit: `${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --audit-commands skills/knowledge-company/` (samples random SERVICE_KNOWLEDGE.md files and audits whether the first `tsuga` command in each is read-only and well-shaped — it never executes them).
+3. If any FAIL: do NOT hand-edit the affected file. Fix the root cause in the template / subagent prompt / lessons doc, regenerate the affected services via subagent, re-run both lint passes. Iterate until `lint-all.sh --audit-commands` returns exit code 0.
 4. WARNs are informational — read them, decide whether to fix or annotate.
 
 Phase 3 — report:
@@ -74,5 +74,5 @@ If none of 2–3 exist, the skill still builds — Phase 5 synthesizes the top-l
 
 - **First bootstrap** with ~30 services in parallel takes 60–90 minutes. The long pole is individual subagent latency, not aggregate compute.
 - **Refresh** — if only a few services changed, pass a filtered `/tmp/services-to-dossier.txt` (e.g., `grep '^web-' /tmp/services-to-dossier.txt > /tmp/to-rebuild.txt`) to regenerate only those.
-- **CLI version bump** — if the `tsuga` CLI changes syntax, re-run with `--execute` will catch the drift. Fix `CLI_TRANSLATION.md`, regenerate all services.
+- **After a CLI rename** — the `--audit-commands` pass flags the drift in dossier command shape, but it never runs a command, so back it with `VERIFICATION.md §"Gate A"`. Fix `CLI_TRANSLATION.md` first, then regenerate every service.
 - **Rate limits** — subagent batches of 8–12 is the sweet spot for the MCP tier. Narrower wastes wall-clock; wider risks 429s.

@@ -68,7 +68,15 @@ If all you have is `metadata.json` + a Slack thread + a few `tsuga` commands the
 
 - Raw customer data (PII, credentials, API keys). Scrub before ingesting — once it lands in the archive it's hard to pull back.
 - Post-incident PRs whose merge date is ≥ `declared_at` with rich context. The incident-history archive is consumed by agents under a time-bound constraint; leaking the "answer key" into the SUMMARY poisons future benchmarking runs. Reference the PR number for context, but do not paste the PR diff into the SUMMARY's narrative.
-- Multi-incident Slack threads. Split them manually — one folder per incident.
+- Multi-incident Slack threads. A subagent handed a merged thread produces a SUMMARY.md that conflates two root causes. Split them manually — one folder per incident.
+
+### Pre-ingest scrub
+
+Not exhaustive, but it catches the obvious cases. Add project-specific patterns.
+
+```bash
+grep -rIE "(sk-[A-Za-z0-9-]{20,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]+\.eyJ|[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,})" inputs/ | head
+```
 
 ## Bulk-loading from an incident tracker
 

@@ -1,226 +1,167 @@
 <!-- skill-lint: allow-forbidden-examples — this file documents the forbidden patterns as teaching examples -->
 
-# LESSONS — hard-won mistakes from the first `knowledge-company` build
+# LESSONS — the failure modes this procedure has to design around
 
-Read all of these before running the procedure. Every one of them cost us time on a first pass.
+Read before starting, re-read before each subagent batch. Command shape lives in
+`CLI_TRANSLATION.md` and is not repeated here.
 
-## Command-shape mistakes
+- [Subagent output](#subagent-output) — §1–5: self-reports, empty inputs, headings, brief vs live data
+- [Taxonomy and discovery](#taxonomy-and-discovery) — §6–10: service list, three ownership axes, dual service names
+- [Content](#content) — §11–15: pointers, Caveats padding, Confidence tiers, stale monitor filters, metric sweeps
+- [Process](#process) — §16–20: fan-out, gates, regenerate over patch, commit shape
+- [Data hygiene](#data-hygiene) — §21–22: redaction, post-incident PR leakage
 
-### 1. MCP-tool pseudo-syntax is not `tsuga` CLI
+## Subagent output
 
-The #1 bug by volume on first pass. Subagents with access to `mcp__tsuga__*` MCP tools will write output like:
+### 1. A "fixed, 0 matches" self-report is not evidence
 
-```
-search-logs query='context.service.name:report-generator' from=-24h to=now limit=50
-aggregate-timeseries dataSource=metrics aggregationWindow=5m aggregate=sum field=foo
-```
+It means the subagent believes its own grep returned zero. Sample 5–10 output files by eye and
+check independently:
 
-**These are not runnable.** Real `tsuga` CLI is:
+- Do the Golden signals cite metric names that appear in `tsuga metrics list`?
+- Do the Monitor reproductions use IDs that resolve via `tsuga monitors get <id>`?
+- Does at least one Ready-to-run command execute cleanly when pasted into a shell?
 
-```bash
-tsuga logs search --query "context.service.name:report-generator" --from=-24h --to now --max-results 50
-```
+A failing sample is a template or prompt bug, not a file bug. Regenerate the batch.
 
-Full translation contract in `CLI_TRANSLATION.md`. The forbidden-token grep in `VERIFICATION.md` catches this. Zero tolerance — any hit means the subagent ignored the contract; regenerate.
+### 2. Empty inputs get an honest note, not filler
 
-### 2. `--limit` is wrong on a telemetry search. Use `--max-results`
+When a subagent's helper files come back empty (`monitors.json: []`, `dashboards.json: []`,
+`incident-files.txt: ""`), it must not invent plausible content. Instead: record the gap in the
+Confidence note ("`monitors.json` and `dashboards.json` were empty at collect time; monitor and
+dashboard references are inferred from TEAM_KNOWLEDGE.md, not probed"), keep the sections short,
+and lean harder on live probes to ground what is there. A visible low-confidence note beats
+plausible-looking fabrication.
 
-Telemetry searches take `--max-results`, and it is easy to paste `--limit` from memory. The paginated resource lists are the exception: `tsuga services list --limit 1000`, and the same on monitors, dashboards, teams and log-routes, is correct and is how you read past the 100-row default. Do not rewrite those.
+### 3. Canonical headings only
 
-### 3. `tsuga spans search` does not exist — it's `tsuga traces search`
+Subagents given latitude coin sections — "Ad-hoc scans", "Post-mortem debrief", "Hot-take",
+"rtk scans (ready-to-kick investigations)". Reject all of them. The section list in
+`SERVICE_KNOWLEDGE_TEMPLATE.md` is fixed, and downstream retrieval depends on stable names.
 
-The TQL data source is `spans`; the CLI verb is `traces`. This mismatch is a common stumble.
+### 4. Live data overrides the task brief
 
-### 4. Singular vs plural resource names
+The orchestrator's framing of what a service does can be wrong: a brief calling `config-store`
+"the object-storage write-path for processed data" against live logs showing an asset/policy
+reconciler is the shape to expect. Trust the live evidence, reframe, and document the
+contradiction in Quick context and the Confidence note.
 
-The CLI pattern is always `tsuga <resource-plural> <verb>`:
+### 5. A low incident count does not mean a short dossier
 
-- `tsuga monitors get` not `tsuga monitor get`
-- `tsuga dashboards list` not `tsuga dashboard list`
-- `tsuga log-routes list`, `tsuga teams list`, `tsuga services list`, etc.
+Live probes — Log shape, Golden signals, Ready-to-run — are the meat; incident shapes are bonus.
+A service with no incidents can still carry a rich dossier built entirely from live data.
 
-### 5. `rtk` prefix is noise
+## Taxonomy and discovery
 
-The RTK hook rewrites commands transparently. Writing `rtk tsuga logs search …` in a dossier confuses human readers who don't have the hook. Always emit plain `tsuga …`.
+### 6. Derive the service list, never prescribe it
 
-### 6. Aggregation body gotchas
+A hand-picked list of "the services I think matter" misses renamed services, critical services
+with low log volume, and anything added since the last refresh. Use the three-source union in
+`PROCEDURE.md §"Phase 3"`: top-by-volume, monitor-named, incident-referenced.
 
-- `timeRange` requires **Unix seconds integers**, not strings. Use the helper:
-  ```bash
-  TO=$(date -u +%s); FROM=$((TO - 3600))
-  # Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
-  ```
-- `groupBy` is at **body level**: `"groupBy": [{"fields": ["X"], "limit": N}]`. Not inside query items.
-- `functions` (`rate`, `per-second`, `increase`) are **per-query**: `"functions": [{"type": "rate"}]`.
-- `formula` is at body level, references queries by position (`"q1"`, `"q2"`), and defaults to `"q1"`, so omit a bare `"q1"`.
-- `aggregationWindow` is at body level, only for timeseries.
-- `count` aggregate is **not valid on `metrics`** dataSource. Use `sum` instead.
-- Percentile is `{"type": "percentile", "percentile": 95, "field": "duration"}` — the `percentile` number sits on the aggregate object, not at body level.
+### 7. Code ownership, monitor ownership and team tag diverge
 
-### 7. Duration units
+Three axes, three answers. A `health-aggregator` service can be platform-team code in the
+TypeScript repo while its P1 monitors are infra-team owned (they report infra SLIs) and a
+neighbouring monitor is solution-team owned. The dossier lives under the team that owns the code
+repo; monitor ownership comes from `tsuga monitors get <id>` → `.owner`, never from the service's
+team.
 
-Trace span `duration` is in **milliseconds**. `duration:>10s` is wrong; it's `duration:>10000`.
+### 8. Engine roles are not first-party services
 
-### 8. Counter-math mistakes produce meaningless values
+`indexer`, `searcher`, `metastore` and similar names come from an embedded search/storage engine.
+They surface as `context.service.name:<role>` with a `tech` tag naming the engine, often scraped
+by a sidecar from the engine's pods. When scoring surfaces them, state the role/service
+distinction up front — readers conflate them otherwise.
 
-Before aggregating a metric, check its type + temporality (`tsuga metrics get <name>`).
+### 9. One service, two telemetry names
 
-- Gauge: `max` or `average`, no function.
-- Delta counter: `sum` + `per-second` function.
-- Cumulative counter: `sum` + `rate` (or `increase`).
-- Histogram: `percentile`, no function.
-
-See `CLI_TRANSLATION.md §"Counter-math cheat sheet"`.
-
-## Subagent-output mistakes
-
-### 9. Don't trust "fixed, 0 matches" self-reports
-
-A subagent returning "fixed, 0 matches" means it believes its verification grep returned zero. **Sample 5–10 output files by eye** and verify independently. Specifically:
-
-- Do the Golden signals cite metric names that actually exist in `tsuga metrics list`?
-- Do the Monitor reproductions use monitor IDs that resolve via `tsuga monitors get`?
-- Does at least one of the Ready-to-run commands execute cleanly when copied to a shell?
-
-If any sample fails, the bug is in the template or subagent prompt, not the individual file. Regenerate the batch.
-
-### 10. Don't fabricate when inputs are empty
-
-When a subagent's helper JSON files are empty (`monitors.json: []`, `dashboards.json: []`, `incident-files.txt: ""`), it must NOT invent plausible content. Instead:
-
-- Note the empty inputs in the Confidence section: "Source material quality: `monitors.json` and `dashboards.json` were empty at collect time. Monitor/dashboard references are inferred from TEAM_KNOWLEDGE.md, not direct probe."
-- Keep the sections short + factual.
-- Lean harder on live probes (`tsuga logs search` + `tsuga logs patterns`) to ground what's there.
-
-The first pass had at least three files with fabricated content flagged this way in their Confidence notes. That's the correct outcome — visible low-confidence beats plausible-looking fabrication.
-
-### 11. Don't invent headings or acronyms
-
-Subagents coined:
-- "rtk scans (ready-to-kick investigations)" — a made-up acronym embedded in a real section
-- "Ad-hoc scans" — non-canonical section name
-- "Post-mortem debrief" — non-canonical section name
-- "Hot-take" — non-canonical section name
-
-Reject these. Use only the canonical sections from `SERVICE_KNOWLEDGE_TEMPLATE.md`.
-
-### 12. Live data overrides the task brief
-
-The orchestrator's assumptions about what a service does can be wrong. For example, one subagent was told "`config-store` is the object-storage write-path for processed data" — but live logs showed it was actually the asset/policy reconciler (monitors, dashboards, routes, api-keys to S3/GCS/Azure Blob). The subagent correctly flipped the framing and documented the discrepancy in the Confidence note.
-
-**Rule:** when live evidence contradicts the task brief, trust live evidence and document the contradiction clearly.
-
-### 13. Low-incident-count services still need full dossiers
-
-Just because a service has only 1–2 incidents in `incident-files.txt` doesn't mean the dossier is short. The live probes (Log shape, Golden signals, Ready-to-run) are the meat — incident shapes are bonus. A service with no incidents can still have a rich dossier built entirely from live data.
-
-## Taxonomy / discovery mistakes
-
-### 14. Don't prescribe the service list — derive it
-
-First-pass `knowledge-company` used a prescribed list of 32 services ("the ones I think are important"). That misses:
-- Services that used to be important but got renamed (e.g., embedded-engine roles vs first-party services).
-- Services that are CRITICAL but have low log volume (e.g., small-traffic canaries).
-- Services that got added since the last refresh.
-
-Use the scoring in `PROCEDURE.md §"Phase 3"`: top-by-volume + monitor-named + incident-referenced. Union the three sources.
-
-### 15. Team ownership vs monitor ownership vs service code repo
-
-These three can all diverge. Worked example:
-
-- `health-aggregator` is a **platform-team** service (Node.js in `acme-co/typescript`).
-- But its P1 monitors (`wha7-mnq64-vpd6`, etc.) are **infra-team** owned — because they report SLIs of infra-owned services.
-- And some related monitors (`cqqx-8vpd0-wwjr`) are **solution-team** owned.
-
-Always cross-check the three axes. The service dossier lives under the team that owns the code repo. The monitor IDs should be looked up via `tsuga monitors get <id>` → `.owner` field, not assumed to match the service's team.
-
-### 16. Engine roles are not first-party services
-
-`indexer`, `searcher`, `metastore`, and similar role names come from an embedded search/storage engine, not first-party services. They appear as `context.service.name:<role>` with a `tech` tag set to the engine name, and may be scraped by a sidecar from the engine's pods. When the taxonomy scoring surfaces these, document them with a role/service distinction up front — readers will conflate otherwise.
-
-### 17. Service-name collisions
-
-A service can have two names in telemetry:
-
-- K8s-scraped (Deployment/StatefulSet name): `app-order-ingest`
-- OTel-self-reported (`OTEL_SERVICE_NAME`): `ingest`
-
-A bare `context.service.name:ingest` misses the half emitted under the K8s name. The OR-match idiom must be in every probe:
+K8s-scraped (Deployment/StatefulSet name) and OTel-self-reported (`OTEL_SERVICE_NAME`) can
+differ: `app-order-ingest` versus `ingest`. A bare `context.service.name:ingest` silently drops
+half the events. Every probe for such a service uses the OR idiom:
 
 ```
 (context.service.name:app-order-ingest OR context.service.name:ingest)
 ```
 
-### 18. `context.app:python` is a cross-service namespace
+### 10. `context.app:python` spans services
 
-Several Python services all emit `context.app:python`. A query with only that filter will match all of them at once. When documenting a Python service's log filter, always include `context.service.name` to narrow.
+Several Python services share it. A filter carrying only `context.app` matches all of them; always
+narrow with `context.service.name`.
 
-## Content mistakes
+## Content
 
-### 19. Don't duplicate from top-level docs
+### 11. Point at the top-level docs, do not copy them
 
-The cluster ↔ customer table, the notification-rule fanout, the canonical query patterns — all live in `COMPANY_TELEMETRY_KNOWLEDGE.md`. Per-service dossiers should reference them, not paste copies. A dossier under 300 lines is a strong hint that you're correctly pointing instead of duplicating.
+The cluster ↔ customer table, the notification-rule fanout and the canonical query patterns live
+in `COMPANY_TELEMETRY_KNOWLEDGE.md`. A dossier under 300 lines is a good sign you are pointing
+rather than pasting.
 
-### 20. Don't pad the Caveats section
+### 12. Caveats attract filler
 
-Subagents fill space when they run out of real content. Caveats specifically attracts filler ("Always check logs first", "Use the dashboard"). **Service-specific only.** 5–10 bullets is the sweet spot.
+It is the section subagents pad when they run out of real content ("always check logs first",
+"use the dashboard"). Service-specific footguns only, 5–10 bullets.
 
-### 21. Confidence notes are load-bearing
+### 13. Confidence notes are tiered or they are useless
 
-The first pass shipped several dossiers with vague Confidence notes. The best dossiers had tiered notes:
+High (cross-validated against multiple authoritative sources), medium (one source, not re-probed),
+low/inferred (guesses, flagged for re-verification), plus what to refresh and which commands do
+it. A single generic paragraph tells the next reader nothing.
 
-- **High:** explicit list of what was cross-validated against multiple authoritative sources.
-- **Medium:** pulled from one source or docs but not re-probed.
-- **Low / inferred:** guesses, flagged so the reader re-verifies.
-- **What to refresh:** commands the next agent should run to update stale claims.
+### 14. A monitor's filter can point at a code path that has moved
 
-Insist on this structure.
+`event-relay`'s P1 monitor filtering on `filename:src/api/v1/log.rs` while live ERRORs emit from
+`src/api/v2/log.rs` is the shape: the monitor is green and silent on the real failure path. Run
+each monitor's filter live while writing the Monitor reproduction section; if it has been empty
+for days, that belongs in Caveats.
 
-### 22. Stale monitor filters
+### 15. `tsuga metrics list` is a catalog, not a window
 
-A monitor's query filter can point at code that no longer exists. Worked example: `event-relay`'s P1 monitor filters on `filename:src/api/v1/log.rs`, but live ERRORs now emit from `src/api/v2/log.rs`. The monitor is silent on the real failure path.
+It lists the cluster's metric-name catalog and ignores `--from` / `--to` — the same invocation
+returns the same rows at `-5m` and at `-30d` — and it keeps a name for weeks after the metric
+stops reporting. So a name being in the list says nothing about whether that metric arrived in
+the window you care about; only an `aggregation scalar` count over the window does. A Golden
+signal citing a name the list does not carry is the one to challenge.
 
-When writing Monitor reproduction sections, **run the monitor's filter live** and check it returns non-empty. If it's been silent for N days, flag it in Caveats.
+## Process
 
-## Process mistakes
+### 16. Fan out; do not run subagents serially
 
-### 23. Don't run subagents sequentially
+Thirty-odd dossiers in a single thread takes a working day. In parallel batches of 8–12 it takes
+under an hour.
 
-32 service dossiers in a single thread takes a full working day. In parallel batches of 8–12 it takes under an hour. Fan out.
+### 17. The sampled-execution gate is the only one that catches hallucination
 
-### 24. Don't skip the sampled-execution gate
+`VERIFICATION.md §"Gate A"` — copy commands out of 5 random dossiers and run them. A
+forbidden-token grep passes happily on a dossier whose every metric name is invented; execution
+does not. Regenerating a batch is cheaper than hand-patching it.
 
-`VERIFICATION.md §Gate 5` is sampled execution — copy 5 random commands from 5 random dossiers into a shell, confirm they run. This is the only gate that catches subagent hallucination of metric names and monitor IDs.
+### 18. The commit is not the end state
 
-First-pass error: claimed success on all 32 dossiers based on the forbidden-token grep, then discovered on use that half the aggregation queries referenced metric names that didn't exist. Regenerate would have been faster than the hand-patching that ensued.
+Before pushing, a human reads 5 random dossiers cover-to-cover and confirms they cohere. Subagent
+output is "valid-looking but vacuous" when inputs are thin, and no automated gate detects that.
 
-### 25. Don't claim "done" before pushing
+### 19. Fix the template, never the output
 
-The commit is not the end state. Push requires a human to have read 5 random dossiers cover-to-cover and confirmed coherence. Subagent output can be "valid-looking but vacuous" when inputs are thin; the human eye is the only reliable filter for this.
+The whole tree is regenerable. When a CLI change invalidates the ready-to-run commands, you re-run
+this procedure — so hand-edits to an individual SERVICE_KNOWLEDGE.md are clobbered on the next
+rebuild. Fix the template or the subagent prompt and regenerate.
 
-### 26. Keep the build procedure in version control
+### 20. Commit in logical chunks
 
-If the CLI syntax changes six months from now, you want to re-run this whole procedure and regenerate. Do not hand-edit individual SERVICE_KNOWLEDGE.md files; fix the template, regenerate. Any hand-edits get clobbered on the next rebuild.
+One commit with 32 new files is unreviewable. Split: top-level docs plus the skill scaffold; then
+`TEAM_KNOWLEDGE.md` across all teams; then the service dossiers (one commit is fine when they were
+generated together).
 
-### 27. Commit in logical chunks
+## Data hygiene
 
-One commit with 32 new files is painful to review. Prefer:
+### 21. Redact before pasting a log line
 
-1. Top-level docs (`SKILL.md`, `COMPANY_*.md`) + skill scaffold.
-2. `TEAM_KNOWLEDGE.md` × all teams.
-3. `SERVICE_KNOWLEDGE.md` × all services (acceptable to be one commit if they're generated together).
+Live probes return customer data. Log shape needs *an* example, not a real one:
+`customer: <redacted>`, `usr.email: user@example.com`.
 
-## Data-hygiene mistakes
+### 22. Reference post-incident PRs by number, not content
 
-### 28. Don't copy customer PII into dossiers
-
-Live log probes will return customer data. The Log shape section needs *an* example, not a real one — redact customer names / API keys / session IDs before pasting. `customer: <redacted>`, `usr.email: user@example.com` are the normal anonymizations.
-
-### 29. Don't leak post-incident PR context
-
-Same rule as `build-incident-history`'s LESSONS: if your investigation runtime is evaluated under a time-bound cheat-prevention block that forbids reading PRs ≥ `declared_at`, per-service dossiers referencing the latest fix PR for a known incident can leak that into the agent's context via retrieval. Reference PR numbers for brevity, not content.
-
-### 30. Keep metric-inventory freshness notes honest
-
-Metric emissions are sparse. A `tsuga metrics list` over 7 days might miss a rarely-emitted counter. When Golden signals cite a metric that wasn't in the sweep, note it: "not observed in the 7d `tsuga metrics list` window; may be sparse — cross-check the live dashboard before assuming absence."
+When the investigation runtime is evaluated under a time-bound block that forbids reading PRs at
+or after `declared_at`, a dossier quoting the fix PR for a known incident leaks it into the
+agent's context through retrieval. Same rule as `build-incident-history`.

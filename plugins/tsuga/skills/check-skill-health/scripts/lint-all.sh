@@ -4,23 +4,25 @@
 # Usage:
 #   lint-all.sh                                   # auto-discover in standard paths
 #   lint-all.sh <skill-dir> [<skill-dir> ...]     # lint specific dirs
-#   lint-all.sh --execute                         # include sampled read-only command safety audit
+#   lint-all.sh --audit-commands                  # also audit sampled commands for read-only shape
 #   lint-all.sh --quiet                           # suppress PASS lines, show only WARN/FAIL
+#
+# No flag runs anything the linted skill documents; --audit-commands inspects command text.
 
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-EXECUTE=0
+AUDIT_COMMANDS=0
 QUIET=0
 targets=()
 
 for arg in "$@"; do
   case "$arg" in
-    --execute) EXECUTE=1 ;;
+    --audit-commands) AUDIT_COMMANDS=1 ;;
     --quiet)   QUIET=1 ;;
     --help|-h)
-      sed -n '2,8p' "$0"
+      sed -n '2,10p' "$0"
       exit 0
       ;;
     --*)
@@ -78,7 +80,7 @@ for skill in "${targets[@]}"; do
     "check-incident-history.sh"
     "check-knowledge-company.sh"
   )
-  [ "$EXECUTE" -eq 1 ] && checks+=("sample-execute-commands.sh")
+  [ "$AUDIT_COMMANDS" -eq 1 ] && checks+=("sample-execute-commands.sh")
 
   this_fail=0
   for c in "${checks[@]}"; do

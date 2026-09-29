@@ -1,61 +1,124 @@
 ---
 name: tsuga-audit-monitor-coverage
-description: "Use when asked to check monitor coverage, services without monitors, alerting gaps, notification routing, notification-rules, silences, stale team references, PagerDuty or Slack routing destinations, teams without configured alerts, monitor ownership, monitor filters, log-error-pattern coverage, active/inactive routing rules, coverage summaries, routing gaps, coverage percentages, or whether alert configuration covers a service/team scope."
+description: "Audits Tsuga alerting configuration for coverage and routing gaps, separating exact service matches from glob, env, cluster and team-scoped coverage. Use when asked to check monitor coverage, services without monitors or SLOs, alerting gaps, notification routing, notification rules, silences, stale team references, PagerDuty or Slack destinations, teams without configured alerts, monitor ownership, monitor filters, log-error-pattern coverage, SLO alert coverage, active or inactive routing rules, coverage summaries or coverage percentages. This is a configuration audit, never live firing state. For reading or editing a single monitor, use tsuga-cli instead."
 ---
 
 # Audit Monitor Coverage
 
-## Example Requests
-
-- "Audit our alerting coverage"
-- "Which services have no monitors?"
-- "Are there notification routing gaps?"
-- "Find services with no alerts configured"
-- "Review our alerting setup"
-- "Which teams have broken notification routing?"
+Answer two questions from configuration alone: which services nothing watches, and which monitors
+reach nobody. Both are snapshots of config. Nothing here shows whether an alert fired, or would.
 
 ## Required Inputs
 
-- **Scope** (optional, default: all services): can be narrowed to a specific team or service. If scoping to all services, read `metadata.pagination.totalCount` from the first page and warn before proceeding when it exceeds 100.
+- **Scope** — defaults to every service, and can narrow to one team, service or env. `services list`
+  takes no filter flags, so a narrower scope is a local filter over the same rows.
 
-## Workflow
+Pull each list at `--limit 1000` first. Nothing in the JSON on stdout carries a total: a truncated
+page prints one plain line on **stderr** (`Showing 2 of 91 (offset 0). Use --limit … --offset 2 …`)
+and a complete page prints nothing there. So the returned row count is the total unless that line
+appeared, in which case take the total from it and page with `--offset`. Confirm the scope with the
+user before auditing more than 100 services.
 
-1. Resolve requested service/team/env scope first. `tsuga services list` has no filter flags, so filter returned rows locally; if `totalCount` shows a full all-service audit would exceed 100 services, confirm scope with the user before continuing.
+A `services list` row is one (service, env) pair, so a service running in three environments is
+three rows. State which denominator the percentages use.
 
-   **`services`, `monitors`, `teams` and `notification-rules` lists are paginated and default to 100 rows.** Coverage computed from one page is wrong. Pass `--limit 1000` (the maximum) and, while `offset + returned < totalCount`, request the next page with `--offset`. The CLI prints the exact next-page command when a response is truncated; treat that notice as a hard stop, not a hint. `notification-silences list` is not paginated: it returns every row and accepts no `--limit`/`--offset`.
+## Where a service name lives
 
-2. `tsuga monitors list` — monitor definitions. Use `-d '<json-filter>'` when a read-only server-side filter is available; otherwise filter locally. Build coverage using the same shapes the app uses for service-related resources:
-   - Aggregation monitors: parse `configuration.queries[].filter` for exact or glob `service:` and `context.service.name:` values, including quoted values.
-   - Log-error-pattern monitors: check `configuration.filter.services`, `env`, and `teamIds` when present.
-   - Deployment/cluster-scoped monitors: treat env/namespace/cluster matches as possible coverage and explain the match basis.
+`monitors list` returns a union discriminated by `configuration.type`, and the service sits
+somewhere different in each shape:
 
-3. `tsuga teams list` — all teams; build `{team-id → team-name}` map.
+- `metric`, `log`, `trace`, `anomaly-log`, `anomaly-metric`, `anomaly-trace` — in
+  `configuration.queries[].filter`, a query string; read `context.service.name:` out of it
+- `log-error-pattern` and `log-error-pattern-increase` — both in
+  `configuration.filter.services[]`, beside the required `configuration.filter.env` and the
+  optional `configuration.filter.teamIds[]`. They watch different failures: the first fires on a
+  new pattern, the second on a volume spike in an existing one, so a service carrying only one is
+  uncovered for the other. Count them separately.
+- `certificate-expiry` — nowhere; it watches certificates, never a service
 
-4. `tsuga notification-rules list` — evaluate active rules by CLI-visible matcher fields: `teamsFilter`, `prioritiesFilter`, `transitionTypesFilter`, `clusterIdsFilter`, `isActive`, and optional `queryString` when present. Treat `targets` as delivery destinations, not match constraints; label tag/dimension matching unverified unless `queryString` exposes it.
+`filter.services` and `filter.teamIds` are both optional and a real monitor often carries only one
+of them. A log-error-pattern monitor scoped by team alone has no `services` key: that is coverage of
+every service those teams own, not zero coverage.
 
-5. `tsuga notification-silences list` — list active silences; note coverage scope and schedule type. For one-time silences report `endTime`; for recurring weekly silences report schedule and timezone.
+A metric monitor may filter on a metric label instead of `context.service.name` — a Prometheus
+`service_name`, a cloud provider's own dimension. Metric label keys are lowercased on ingest, so the
+filter spells a camelCase source key in lowercase. Count such a filter as naming the service, and
+say which key matched.
 
-6. Cross-reference:
-   - Services not covered by any exact-match or supported monitor association → coverage gap
-   - Monitor owner/team with no active matching notification rule after applying CLI-visible filters → routing gap
-   - Notification rule `teamsFilter.teams[]` referencing team IDs not in `teams list` results → stale team reference
+SLOs cover services the same way and alert through the same rules. Fetch
+`tsuga docs get references/slos/overview` when the audit includes them, and count an SLO as coverage
+on the conditions that page sets.
 
-### Confirm Before Applying
+## Exact versus indirect
 
-Before creating any monitors or notification rules, show the full proposed list and wait for explicit confirmation.
+Exact coverage: the filter names the service, quoted or not, with no wildcard —
+`context.service.name:checkout`.
 
-1. Show the proposed change (diff, code block, or table) with a brief explanation of WHY
-2. Wait for explicit user confirmation ("yes" / "no" / "select specific ones")
-3. Apply only after confirmation
+Everything else is *possible or indirect coverage*, reported in its own section with the match basis
+written out:
 
-After deploy, recommend the `tsuga-debug-telemetry-ingestion` skill to verify signal arrival — do not block on it or treat it as a required step.
+- a glob — `context.service.name:web-*` covers `web-admin` only once you expand it
+- env, namespace, `context.cluster_id`, or the monitor's own `clusterIds[]` — scope that names no service
+- a log-error-pattern monitor scoped only by `teamIds`
 
-## Evidence Requirements
+Never fold indirect coverage into the covered count. Someone deciding whether to add a monitor needs
+the two separated.
 
-- "No monitor coverage" = service name not found in exact `service:` / `context.service.name:` aggregation filters, log-error-pattern service filters (`configuration.filter.services`), or app-supported service associations. Glob, env, namespace, tag, or cluster matches are listed separately as "possible or indirect coverage."
-- "Routing gap" = no active notification rule matches the monitor/team after applying CLI-visible filters; target presence only proves a destination exists.
-- Every finding cites the command and value that produced it.
-- State query timestamp in output.
+To narrow before parsing, `monitors list -d '{"filters":{"searchQuery":{"value":"checkout"}}}'`
+matches server-side against monitor ID, name, **query filters** and aggregate fields. It is a
+case-insensitive substring and wildcards in it are literal, so `api` also returns `api-gateway`
+monitors. It never reads `configuration.filter.services[]`, so a log-error-pattern monitor naming the
+service only there is missing from the result and the service reads as uncovered. Use it to reach one
+monitor, never to build the set a coverage count is computed from.
+
+## Routing
+
+`tsuga docs get alert/notifications/rules` states how a rule matches a transition — team, priority,
+status, cluster, additional filters, and the rule that an empty filter matches every value on that
+dimension. Fetch it instead of re-deriving it. Three things it leaves out decide an audit:
+
+- Every rule has at least one destination — `targets` carries `minItems: 1`, so the API rejects a
+  rule without one and the app blocks it earlier. Read `targets` to say *where* an alert goes; do not
+  audit for an empty one, and do not report its absence as a routing gap.
+- `notification-rules list` returns standard rules only. Adaptive rules, which page the root-cause
+  service's own destination rather than a fixed list, are absent from that output and have no CLI
+  command. A monitor covered only by an adaptive rule reads as a gap, so report it as "no standard
+  rule matches" rather than asserting nobody is paged.
+- `teamsFilter` is a union on `type`. `teams[]` exists only when `type` is `specific-teams`;
+  `all-teams` and `all-public-teams` carry no array and cover their whole scope. Reading
+  `teamsFilter.teams` unconditionally invents a gap on every rule of the other two types.
+
+A team ID in a `specific-teams` filter that `teams list` does not return is a stale reference. Join
+on team **ID**: `teams list` gives `{id, name, visibility}`, and `visibility` is what decides whether
+`all-public-teams` reaches a team. A service's `teams[].team` is an observed team *name* from
+telemetry with its own refresh lag, so resolve it through `teams list` before comparing it to
+anything on a monitor or rule.
+
+Cross-check rather than replace: `tsuga quality-reports list --team <team-name>` carries one
+`monitor-has-notification` row per team, computed server-side with the real matcher. It shares the
+adaptive-rule blind spot, and it is a stored report — check its age before leaning on it.
+
+## Silences
+
+`notification-silences list` returns every silence, expired ones included, and takes no pagination
+flags. A silence suppresses only when `isActive` is true **and** its schedule has not expired; check
+both before calling one active. For `schedule.type: one-time` report `schedule.endTime`; for
+`recurring` report the weekly windows and `schedule.timeZone`, which is UTC when absent.
+
+## Evidence Rules
+
+- "No coverage" = no exact `context.service.name` match, no `filter.services` entry, no SLO naming it.
+- "Routing gap" = no active standard rule holding a target matches.
+- A filter shape you cannot parse is reported as unknown, never as uncovered.
+
+## Safety
+
+- Creating monitors or notification rules mutates. Show the full proposed list with the reason for
+  each, wait for explicit confirmation, then apply only what was confirmed.
+- Build payloads from `tsuga monitors create --generate-skeleton` and
+  `tsuga notification-rules create --generate-skeleton`. Fetch `api/createMonitor` or
+  `api/createNotificationRule` only when a field's meaning, enum or response shape is unclear.
+- Never state that a monitor is firing, or that a gap has caused a missed alert.
 
 ## Output Template
 
@@ -64,60 +127,40 @@ After deploy, recommend the `tsuga-debug-telemetry-ingestion` skill to verify si
 Scope: <all services / team <name> / service <name>> | As of: <query timestamp>
 
 ## Summary
-Services audited: <N> | With monitors (exact match): <N> (<pct>%) | No monitors: <N>
-Teams with monitors but no active notification rule: <N>
-Active silences: <N>
+(service, env) pairs audited: <N> | Exact coverage: <N> (<pct>%) | No coverage: <N>
+Teams with monitors but no matching standard rule: <N> | Active silences: <N>
 
-## Uncovered Services (no exact or supported monitor association)
-| Service | Team | Env |
-|---|---|---|
-| <serviceName> | <team name> | <env> |
+## Uncovered
+| Service | Env | Team | Nearest indirect match |
+|---|---|---|---|
 
 ## Possible or Indirect Coverage
-The following monitor filters use glob, env, namespace, tag, or cluster scope and may cover services above:
-- <monitor name>: filter pattern <filter value> (owner: <team>)
+- <monitor or SLO name>: <filter value> — matched on <glob / env / namespace / cluster / team> (owner: <team>)
 
 ## Routing Gaps
 | Team | Issue |
 |---|---|
-| <team name> | Has monitors but no active notification rule |
-| <team name> | Notification rule references non-existent team ID: <id> |
+| <team> | Monitors owned, no active standard rule with a target matches |
+| <team> | Rule <name> references team ID <id>, absent from `teams list` |
 
 ## Active Silences
-- <silence name>: covers <scope>, schedule <one-time endTime / recurring weekly timezone>
+- <name>: <scope>, <one-time until endTime / recurring weekly, timezone>
 
-## Suggested Remediation Commands
-These require your explicit confirmation before execution. Generate skeletons in the CLI, then prepare payloads for review; do not write local files unless the user explicitly approves a local file write.
-
-```bash
-# Start from skeletons. Fetch `tsuga docs get api/createMonitor` or
-# `tsuga docs get api/createNotificationRule` only if field meaning is unclear.
-tsuga monitors create --generate-skeleton
-tsuga notification-rules create --generate-skeleton
-
-# Create a monitor for <service>
-tsuga monitors create -d '<reviewed-json-payload>'
-
-# Create a notification rule for <team>
-tsuga notification-rules create -d '<reviewed-json-payload>'
-```
-
-## Limitations
-- Monitor coverage uses known monitor associations from config fields; unsupported custom filters may still need manual review
-- Services are telemetry-derived inventory snapshots, not an authoritative service ownership registry
-- Monitor firing state not available (config audit only, not runtime audit)
-- Config audit reflects state at query time; newly created monitors/rules not reflected until next query
+## Suggested Remediation
+<proposed monitors and rules, each with the gap it closes — awaiting confirmation>
 ````
 
-## Safety Rules
+## Limitations
 
-- Remediation commands require explicit user confirmation ("yes, proceed") before execution. Never batch-create monitors or rules without the user reviewing the full proposed list.
-- Start proposed payloads from `--generate-skeleton`; fetch `api/createMonitor` / `api/createNotificationRule` only when field meaning, enums, or response shape are unclear.
-- Never claim a monitor is currently firing or that a gap is actively causing missed alerts.
-- State query timestamp in output — this is a configuration snapshot, not live state.
-- If > 100 services: warn the user and confirm scope before running the full audit.
+- Services are a telemetry-derived inventory, not an ownership registry.
+- Routing gaps are bounded by "standard rules only" — adaptive rules are invisible to the CLI.
+- A monitor or rule created after the query is not in the result.
 
 ## Related Skills / Next Steps
-- `tsuga-cli` — quality report review, resource command syntax, and owner/context lookups
-- `tsuga-investigate-service-health` — if a service has gaps, check current health
-- `tsuga-debug-telemetry-ingestion` — if services or signals are missing from Tsuga
+
+- `tsuga docs get references/slos/overview` — SLO coverage and how SLO alerts route
+- `tsuga-cli` — evidence citation, query-timestamp reporting, quality-report staleness and
+  confirm-before-mutating all apply here and are not repeated above
+- `tsuga-investigate-service-health` — check the current health of a service found uncovered
+- `tsuga-debug-telemetry-ingestion` — a service missing from `services list` is an ingestion
+  question, not a coverage one

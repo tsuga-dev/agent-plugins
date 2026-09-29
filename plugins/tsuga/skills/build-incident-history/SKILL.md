@@ -1,6 +1,6 @@
 ---
 name: build-incident-history
-description: "One-shot procedure for turning a raw incident dump (Slack threads, incident reports, GitHub PRs, Tsuga CLI output) into a populated `skills/incident-history/references/incidents/` archive with one folder per incident, each containing a SUMMARY.md with a validated `## Diagnostic path` section. Trigger this skill when bootstrapping `incident-history` from scratch for a new deployment, refreshing an existing archive with new incidents, or reformatting an incident tracker's export into the shape your investigation runtime expects. Inputs: `inputs/incidents/<INC-id>/` directories holding raw material per incident. Outputs: `skills/incident-history/references/incidents/<INC-id>/SUMMARY.md` + `_inventory.csv`."
+description: "Turns a raw incident dump of Slack threads, incident reports, pull requests and Tsuga CLI output into a populated incident-history archive, one folder per incident, each with a SUMMARY.md carrying a validated diagnostic path and a metadata.json for snapshot filtering. Use when bootstrapping incident-history from scratch for a new deployment, refreshing an existing archive with new incidents, or reformatting an incident tracker's export into the shape an investigation runtime expects. Inputs are per-incident directories of raw material; outputs are the incident folders plus an inventory CSV. This is a one-shot build procedure, not an investigation skill."
 ---
 
 # build-incident-history
@@ -28,9 +28,11 @@ skills/incident-history/references/incidents/
 
 - Bootstrapping a new investigation-runtime deployment that has no prior archive.
 - Refreshing the archive with a batch of new incidents.
-- Re-validating an existing archive whose `## Diagnostic path` commands have gone stale after a CLI change.
+- Re-validating an existing archive's `## Diagnostic path` commands against the CLI.
 
 ## Procedure — read in order
+
+To hand the whole flow — build, then health check — to one agent in a single paste, use [`RECOMMENDED_PROMPT.md`](RECOMMENDED_PROMPT.md). It runs the same steps.
 
 1. [`references/INPUT_LAYOUT.md`](references/INPUT_LAYOUT.md) — what raw material you need, where to put it, what each source contributes.
 2. [`references/PROCEDURE.md`](references/PROCEDURE.md) — phase-by-phase workflow. Follow sequentially.
@@ -41,8 +43,8 @@ skills/incident-history/references/incidents/
 
 ## Key principles
 
-- **One subagent per incident.** Do not try to write 174 SUMMARY.md files in a single thread. Fan out and give each subagent a narrow scope: one `INC-id`, one raw-input directory, one output path.
-- **Diagnostic path is the payload.** The `## Diagnostic path` section is what downstream agents actually read for analogue search. Every command in it must parse and execute against a real `tsuga` CLI. No MCP-tool pseudo-syntax. No `rtk` prefix.
+- **One subagent per incident.** A real archive runs to hundreds of dossiers; a single thread cannot write them. Fan out and give each subagent a narrow scope: one `INC-id`, one raw-input directory, one output path.
+- **Diagnostic path is the payload.** The `## Diagnostic path` section is what downstream agents actually read for analogue search. Every command in it must parse and execute as real `tsuga` CLI.
 - **Metadata is non-negotiable.** `metadata.json` with at minimum `declared_at` and `last_iso` (ISO 8601) is required for the snapshot-filter. Incidents missing it get silently dropped by `entrypoint.sh`.
 - **Preserve the slack-quote spirit.** The post-mortem prose is often a Slack thread — keep the direct quotes, attribution, and timestamps. Do not paraphrase. Future analogue search depends on the reader recognizing familiar customer names and error strings.
-- **Test before shipping.** Sample 5 incidents at random and execute every `tsuga` command in their Diagnostic path sections. If any command fails to parse, fix the template and re-run the subagent batch. Do not hand-patch individual files.
+- **Test before shipping.** The sampled-execution gate in `references/VERIFICATION.md` is not optional. A command that fails there is a template bug, not a file bug: fix the template, regenerate the batch, never hand-patch.

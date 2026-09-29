@@ -1,5 +1,6 @@
 #!/bin/bash
-# check-skill-length.sh — validate SKILL.md body length, references depth, bundle size.
+# check-skill-length.sh — validate SKILL.md body length, references depth and table of contents,
+# bundle size.
 #
 # Usage: check-skill-length.sh <skill-dir>
 # Exit:  0 = PASS/WARN, 1 = FAIL, 2 = script error.
@@ -64,6 +65,26 @@ if [ -d "$SKILL_DIR/references" ]; then
     esac
   else
     out+="PASS [length] $SKILL_DIR — references/ depth OK"$'\n'
+  fi
+
+  # --- long reference pages need a table of contents ---
+  # Scoped to the flat pages: a generated per-incident or per-service dossier is data an agent
+  # reads whole, not a page it navigates by section.
+  no_toc=""
+  for ref in "$SKILL_DIR"/references/*.md; do
+    [ -f "$ref" ] || continue
+    ref_lines=$(wc -l < "$ref" | tr -d ' ')
+    [ "$ref_lines" -le 100 ] && continue
+    # A TOC is either a heading that says so or a bullet list of same-page anchor links.
+    head -40 "$ref" | grep -qiE '^#{2,}[[:blank:]]*(contents|table of contents)\b' && continue
+    anchors=$(head -40 "$ref" | grep -cE '^[[:blank:]]*([-*+]|[0-9]+\.)[[:blank:]]+.*\]\(#')
+    [ "$anchors" -ge 3 ] && continue
+    no_toc+="    $(basename "$ref") — $ref_lines lines"$'\n'
+  done
+  if [ -n "$no_toc" ]; then
+    out+="WARN [length] $SKILL_DIR — reference pages over 100 lines with no table of contents"$'\n'
+    out+="$no_toc"
+    warnings=1
   fi
 fi
 

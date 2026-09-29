@@ -1,6 +1,6 @@
 ---
 name: check-skill-health
-description: "Use when linting Tsuga skill bundles after editing runtime skills, generated incident-history or knowledge-company archives, or skill references; use when checking frontmatter, SKILL.md length, forbidden Tsuga CLI patterns, cross-links, required sections, generated dossier structure, sampled read-only command shape, local reference validation, release readiness, or whether a skill tree is ready for review."
+description: "Lints Tsuga skill bundles for the mechanical violations a human reviewer should not have to catch, and reports pass, warn or fail per check. Use when checking frontmatter and description length, SKILL.md body length, forbidden Tsuga CLI patterns, reference-directory depth, bundle size, the structure of generated incident-history or knowledge-company archives, sampled read-only command shape, or whether a skill tree is ready for review. A passing lint is necessary, not sufficient: it does not judge scope, narrative quality or whether the examples are useful."
 ---
 
 <!-- skill-lint: allow-forbidden-examples — this file documents the forbidden patterns as teaching examples -->
@@ -18,26 +18,29 @@ ${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh
 # Lint a specific skill dir
 ${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh /Users/me/proj/skills/knowledge-company
 
-# Include sampled command safety audit; this does not execute commands
-${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --execute
+# Also audit sampled commands for read-only shape; this reads command text, it never runs it
+${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh --audit-commands
 ```
 
 ## What it checks
 
+Why each check exists and how to fix a violation: [`references/RULES.md`](references/RULES.md).
+
 Automated (pass/warn/fail):
 
-- **Frontmatter** — `name:` and `description:` fields present; description 50–120 words (warn outside, fail outside 30–200).
+- **Frontmatter** — `name:` and `description:` fields present; description ≤ 1024 characters (fail — a longer skill is dropped by the loader with no error anywhere), 50–120 words (warn outside, fail outside 30–200).
 - **SKILL.md length** — body ≤ 500 lines (warn at 400, fail at 500).
 - **References depth** — warn if references/ has paths > 1 level deep (exempt: `knowledge-company`'s teams/services taxonomy and `incident-history`'s per-incident folders).
-- **Bundle size** — fail at 15 MB.
-- **Forbidden tokens** — MCP-tool pseudo-syntax (search-logs, aggregate-timeseries, query=, …), `rtk` prefix, wrong singular resource verbs (`tsuga monitor get`), `tsuga spans search`. The two MCP verb names appear without code formatting on purpose: they are the forbidden text itself, not a tool you should call.
+- **Reference table of contents** — warn for a flat reference page over 100 lines with no anchor-link list or Contents heading in its first 40 lines.
+- **Bundle size** — warn at 10 MB, fail at 15 MB.
+- **Forbidden tokens** — MCP-tool pseudo-syntax (search-logs, aggregate-timeseries, query=, …), `rtk` prefix, wrong singular resource verbs (`tsuga monitor get`), command groups that do not exist (`tsuga spans search`, `tsuga alerts list`), `--limit` on a telemetry command. The two MCP verb names appear without code formatting on purpose: they are the forbidden text itself, not a tool you should call.
 - **`incident-history` structure** — every INC-* folder has metadata.json + SUMMARY.md with canonical sections; `_inventory.csv` row count matches folder count.
 - **`knowledge-company` structure** — top-level COMPANY_*.md present; every team dir has TEAM_KNOWLEDGE.md; every service dir has SERVICE_KNOWLEDGE.md with canonical sections.
 - **Cross-links** — every file path referenced from SKILL.md resolves. Only `check-knowledge-company.sh` implements this, so it fires for knowledge-company skills.
 
-Opt-in (`--execute`):
+Opt-in (`--audit-commands`):
 
-- **Sampled command safety audit** — pick up to 5 SERVICE_KNOWLEDGE.md files, extract the first `tsuga` command from each, and verify it is a single read-only command with no shell metacharacters. It does not run the commands.
+- **Sampled command safety audit** — pick up to 5 SERVICE_KNOWLEDGE.md files, extract the first `tsuga` command from each, and verify it is a single read-only command with no shell metacharacters. It reads the command text; it never runs it.
 
 ## What it does NOT check
 
@@ -76,7 +79,7 @@ check-skill-health/
 
 ## Extending
 
-Each script is standalone and can be dropped into another skill's lint flow. Shared argument contract: first arg is the skill directory. `--quiet` is accepted by `lint-all.sh` only, and suppresses PASS lines across the run.
+Each script is standalone and can be dropped into another skill's lint flow. Shared argument contract: first arg is the skill directory. `--quiet` and `--audit-commands` are accepted by `lint-all.sh` only.
 
 ## Related Skills / Next Steps
 
@@ -87,5 +90,5 @@ Each script is standalone and can be dropped into another skill's lint flow. Sha
 ## Limitations
 
 - Passing lint is not proof that a skill works under pressure; still review the workflow and run pressure scenarios.
-- `--execute` is a historical flag name. It audits sampled command shape only and must not run live Tsuga queries.
+- No check runs a command it finds. `--audit-commands` judges command text; nothing in the skill issues a live Tsuga query.
 - Generated archives can contain company-specific context; summarize findings and avoid reproducing sensitive values.

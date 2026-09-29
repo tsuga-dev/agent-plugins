@@ -1,79 +1,62 @@
 ---
 name: gh
-description: "GitHub CLI for inspecting workflow runs, PRs, commits, releases, and deployments. Use to correlate an incident window with what changed, find which PRs touched a service path, verify whether a merged PR actually deployed, inspect a specific commit or its diff, list recent releases and tags, check workflow run status or a failed job's logs, and establish what shipped before a regression started. Pair with local git for exact file diffs. Read-only by default; any mutation needs explicit confirmation."
+description: "Establishes what changed and what actually shipped, using the GitHub CLI for workflow runs, pull requests, commits, releases, deployments and issues, paired with local git for exact file diffs. Use to correlate an incident window with recent changes, find which pull requests touched a service path, verify whether a merged pull request reached an environment, inspect a commit or its diff, list releases and tags, check a workflow run or a failed job's logs, and establish what shipped before a regression started. Read-only by default: any mutation needs explicit confirmation."
 ---
 
 # GitHub CLI (gh)
 
 Answer "what changed and what shipped." Pair with local `git` for exact file diffs.
 
-Authenticated from `GH_TOKEN` at container start. Smoke-test: `gh auth status`.
+Smoke-test access first: `gh auth status`. It must report a logged-in account before anything below is worth running.
 
-## Commands
+Flags and JSON field lists come from `gh <command> --help`. What follows is which call answers which question.
 
-### Workflow runs
+## What shipped in the incident window
 
 ```bash
-gh run list -R owner/repo --created ">=2026-04-20T14:00" --json name,status,conclusion,createdAt,headSha,url,event
-gh run list -R owner/repo --workflow deploy.yml --branch main --limit 20 --json conclusion,createdAt,headSha,url
-gh run view <run-id> -R owner/repo --log
-gh run view <run-id> -R owner/repo --json jobs
+# Workflow runs created in the window
+gh run list -R OWNER/REPO --created ">=<incident-start>" --limit 200 --json name,conclusion,createdAt,headSha,url,event
+# Narrow to the deploy workflow on the branch that actually ships
+gh run list -R OWNER/REPO --workflow deploy.yml --branch main --limit 200 --json conclusion,createdAt,headSha,url
+# PRs merged in the window. `gh search prs` has no mergedAt field — on a merged PR,
+# closedAt IS the merge time.
+gh search prs --repo OWNER/REPO --merged --merged-at "<incident-start>..<incident-end>" --limit 200 \
+  --json number,title,closedAt,url,author
+# Deployments — the only artifact that answers "did it actually roll out"
+gh api repos/OWNER/REPO/deployments --paginate --jq '.[] | {id, environment, created_at, sha, ref}'
+gh api repos/OWNER/REPO/deployments/<id>/statuses --jq '.[] | {state, created_at, description}'
+gh release list -R OWNER/REPO --limit 200 --json tagName,publishedAt,isLatest
 ```
 
-Green run ≠ change in prod. Red run ≠ nothing rolled out. Check per-env deploy status.
+Date flags accept `>=`, `<=` and `A..B` ranges, with or without a time part — `--help` prints only "date".
 
-### Pull requests
+Every `gh` list and search command pages, and truncates by recency rather than by filter: without an
+explicit `--limit` the deploy that caused the incident falls off the page and the window reads as quiet.
+Defaults are 20 for `gh run list`, 30 for `gh search prs`, `gh release list` and `gh pr list`.
+
+## Which PRs touched a service path
+
+Issue search does not index changed files, so a path filter has to go through the commits endpoint, which does. `gh pr list` cannot express a path filter at all.
 
 ```bash
-# PRs merged in a window
-gh search prs --repo owner/repo --merged --merged-at "2026-04-20..2026-04-21" --json number,title,mergedAt,url,author
-# PRs touching a path — issue search does not index changed files, so go through the commits
-# endpoint, which does. `gh pr list` would silently cap at its 30-PR default. Note the window is
-# commit-authored date, not merge date: widen it, then confirm mergedAt per PR below.
-gh api "repos/owner/repo/commits?path=path/to/service&since=2026-04-18T00:00:00Z&until=2026-04-21T00:00:00Z" \
+gh api "repos/OWNER/REPO/commits?path=path/to/service&since=<incident-start>&until=<incident-end>" \
   --paginate --jq '.[].sha' \
-  | while read -r sha; do gh api "repos/owner/repo/commits/$sha/pulls" --jq '.[] | "\(.number) \(.title)"'; done \
+  | while read -r sha; do gh api "repos/OWNER/REPO/commits/$sha/pulls" --jq '.[] | "\(.number) \(.title)"'; done \
   | sort -u
-# PR matching a SHA
-gh pr list -R owner/repo --state merged --search "<sha>" --json number,title,mergedAt,url
-# PR details
-gh pr view <number> -R owner/repo --json files,title,body,mergedAt,author,url
-gh pr diff <number> -R owner/repo
 ```
 
-### Releases
+The window here is commit-authored date, not merge date: widen it, then confirm the merge time per PR below.
+
+`--paginate` emits one JSON array per page, so `--jq '.[]'` is right. A whole-result jq (`length`, `sort_by`) needs `--slurp`, which `gh api` rejects alongside `--jq` — pipe to `jq` instead: `gh api … --paginate --slurp | jq 'add | length'`.
+
+## Drilling into one candidate
 
 ```bash
-gh release list -R owner/repo --limit 10 --json tagName,name,publishedAt,isLatest
-gh release view <tag> -R owner/repo --json body,tagName,publishedAt,assets
-```
-
-### Commits
-
-```bash
-gh api repos/owner/repo/commits --jq '.[] | {sha, author: .commit.author.name, date: .commit.author.date, message: .commit.message | split("\n")[0]}' --paginate | head -40
-gh api repos/owner/repo/commits/<sha> --jq '.files[] | .filename'
-```
-
-### Deployments
-
-```bash
-gh api repos/owner/repo/deployments --paginate --jq '.[] | {id, environment, created_at, sha, ref}' | head -20
-gh api repos/owner/repo/deployments/<id>/statuses --jq '.[] | {state, created_at, description}'
-```
-
-### Issues
-
-```bash
-gh issue list -R owner/repo --search "<keyword> in:title,body" --state open --json number,title,url,createdAt
-gh issue view <number> -R owner/repo --json title,body,comments
-```
-
-### Raw API (when flags don't cover the case)
-
-```bash
-gh api repos/OWNER/REPO/actions/runs --jq '.workflow_runs[0]'
-gh api 'repos/OWNER/REPO/commits?since=2026-04-20T00:00:00Z&until=2026-04-21T00:00:00Z' --paginate
+gh pr view <number> -R OWNER/REPO --json files,title,body,mergedAt,author,url
+gh pr diff <number> -R OWNER/REPO
+gh pr list -R OWNER/REPO --state merged --search "<sha>"    # which PR introduced a SHA
+gh run view <run-id> -R OWNER/REPO --log-failed             # failed steps only
+gh api repos/OWNER/REPO/commits/<sha> --jq '.files[] | .filename'
 ```
 
 ## Local git pairing
@@ -81,7 +64,7 @@ gh api 'repos/OWNER/REPO/commits?since=2026-04-20T00:00:00Z&until=2026-04-21T00:
 `gh` = remote history. `git` = exact file content in the incident window.
 
 ```bash
-git log --since="2026-04-20 09:00" --until="2026-04-20 12:00" --oneline --decorate
+git log --since="<incident-start>" --until="<incident-end>" --oneline --decorate
 git show <sha> --stat
 git diff <old_sha>..<new_sha> -- path/to/config path/to/helm
 git blame path/to/file.yaml
@@ -92,18 +75,20 @@ If `git status` is dirty, the working tree is NOT a safe proxy for the incident 
 ## Anti-patterns
 
 - `merged` ≠ `deployed`. Check workflow run / release / deployment status.
-- `main` ≠ `prod` on every repo. Some deploy from release branch or tagged commit.
+- `main` ≠ `prod` on every repo. Some deploy from a release branch or a tagged commit.
 - Green CI proves build + unit tests, not that the change works under real traffic.
+- Green run ≠ change in prod. Red run ≠ nothing rolled out. Check per-env deploy status.
 - Dependabot / bot commits are still real changes; they cause incidents.
 - Auto-merged PR by someone on vacation ≠ red flag. Don't over-index on authorship.
 
 ## Output style
 
 Every change candidate includes:
+
 - merge timestamp AND deploy timestamp
 - artifact type (PR / run / release / commit)
 - concrete identifier (PR #, SHA, run URL, tag)
 - touched surface (file paths or service)
 - deploy status (`deployed` | `merged only` | `unknown`)
 
-Example citation: `PR #4421 merged 2026-04-20T13:45Z, deployed via run #8192 at 14:02Z, touched services/payments/db.py [evidence: gh_pr, gh_run]`.
+Citation shape: `PR #<number> merged <merge-ts>, deployed via run #<run-id> at <deploy-ts>, touched <path> [evidence: gh_pr, gh_run]`.

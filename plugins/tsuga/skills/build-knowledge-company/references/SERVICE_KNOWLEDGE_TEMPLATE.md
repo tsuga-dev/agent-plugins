@@ -2,6 +2,11 @@
 
 The highest-leverage file in the entire skill. Every section has rules; follow them mechanically. Hallucination-prone sections (Caveats, Incident shapes) have extra guards.
 
+- [Target length](#target-length-180350-lines)
+- [Canonical section list](#canonical-section-list-do-not-rename-do-not-reorder)
+- [Template](#template--copy-verbatim-fill-in-placeholders) — copy verbatim
+- [Rules the subagent must follow](#rules-the-subagent-must-follow) — structure, commands, content, framing, length
+
 ## Target length: 180–350 lines
 
 Under 180: the service probably doesn't merit its own dossier (fold into TEAM_KNOWLEDGE.md instead). Over 350: you are duplicating from the top-level docs or padding the Confidence note — trim.
@@ -178,7 +183,7 @@ What's grounded in live evidence, what's inferred, and what the reader should re
 - **High confidence:** {monitor IDs, metric names, log patterns — anything pulled from authoritative sources and cross-validated}.
 - **Medium confidence:** {things pulled from docs or team dossier but not re-probed live; dashboard counts from an aggregate that may have paginated}.
 - **Low confidence / inferred:** {things the agent guessed, e.g., "probably uses Redis because the image name suggests it" — mark these clearly}.
-- **What to refresh:** "re-run `tsuga metrics list` before assuming a metric is absent — this dossier used a 7-day window which may miss sparse emitters."
+- **What to refresh:** "`tsuga metrics list` is a catalog, not a window: a name absent from it was never emitted, but a name present proves nothing about the period — re-confirm a metric is still live with an `aggregation scalar` count over the window you care about."
 - **Source material quality:** flag here if `monitors.json`/`dashboards.json`/`incident-files.txt` inputs were empty at collect time.
 
 This section is load-bearing. It's what tells a future investigator which claims in the dossier to trust and which to re-verify.

@@ -1,37 +1,21 @@
-<!-- skill-lint: allow-forbidden-examples — procedure references forbidden patterns when describing common failures -->
-
 # PROCEDURE — phases for building incident-history
 
 Ordered. Each phase has a clear completion signal. Do not skip ahead; later phases assume earlier ones' invariants.
 
 ## Phase 0 — sanity check the input
 
-Before touching the output tree:
+Before touching the output tree. A subagent cannot produce a usable SUMMARY.md without `declared_at` and `last_iso`, so every incident folder needs a well-formed `metadata.json` (fields in `INPUT_LAYOUT.md`) or it is excluded from the run.
 
 ```bash
 INPUTS=./inputs/incidents
 
-# How many incident folders?
-ls "$INPUTS" | grep -c '^INC-'
-
-# How many have metadata.json?
-find "$INPUTS" -maxdepth 2 -name metadata.json | wc -l
-
-# Which incidents are missing metadata.json (they must be excluded)
 for d in "$INPUTS"/INC-*/; do
-  [ ! -f "$d/metadata.json" ] && echo "MISSING: $(basename "$d")"
+  jq -e '.incident_id and .declared_at and .last_iso' "$d/metadata.json" >/dev/null 2>&1 \
+    || echo "UNUSABLE: $(basename "$d")"
 done
 ```
 
-**Expected:** metadata.json count == incident folder count. Any missing → fix before continuing. A subagent cannot produce a usable SUMMARY.md without `declared_at` and `last_iso`.
-
-Validate one metadata.json by hand:
-
-```bash
-jq -e '.incident_id and .declared_at and .last_iso' "$INPUTS/INC-0001/metadata.json"
-```
-
-Should print `true`. If not, the loader script emitted malformed JSON — fix it before fanning out.
+**Expected:** no output. Anything listed is a loader-script bug — fix it before fanning out, rather than letting the subagent guess.
 
 ## Phase 1 — prepare the output tree
 
@@ -44,9 +28,9 @@ If `$OUTPUT` already has folders from a previous run, decide: (a) incremental �
 
 ## Phase 2 — per-incident helper extraction (optional but recommended)
 
-For each incident, pre-digest the raw inputs into smaller per-incident helper files that the subagent can skim without re-reading 10 MB of raw Slack JSON. This is what separated "slow subagents" from "fast subagents" during the `knowledge-company` build — prechewing input 10× reduces subagent context burn.
+For each incident, pre-digest the raw inputs into smaller per-incident helper files that the subagent can skim without re-reading 10 MB of raw Slack JSON. Prechewing the input is the single largest reduction in subagent context burn available here.
 
-Example helper script skeleton (keep outside this skill; it's your ops-side glue):
+Example helper script skeleton. Keep it outside this skill — it is ops-side glue — but keep it in version control, because a rebuild needs the same pre-digest to be reproducible.
 
 ```bash
 for inc in "$INPUTS"/INC-*/; do
@@ -67,8 +51,6 @@ for inc in "$INPUTS"/INC-*/; do
   cp "$inc/tsuga/commands.txt" "/tmp/incident-extracts/$inc_id/tsuga-commands.txt" 2>/dev/null
 done
 ```
-
-Result: per-incident helper files the subagent reads instead of raw JSON. Saves tokens and speeds parsing.
 
 ## Phase 3 — fan out subagents
 
@@ -102,23 +84,16 @@ OUTPUT=./skills/incident-history/references/incidents
 } > "$OUTPUT/_inventory.csv"
 ```
 
-Spot-check the resulting CSV: correct row count, no empty cells in the required columns, dates parse.
-
 ## Phase 5 — verification
 
-Run `VERIFICATION.md`'s gates. All must pass before you ship. The most common failure after a first run is `## Diagnostic path` commands that do not execute — either because the subagent wrote MCP-tool pseudo-syntax (`search-logs query='...'`) or because the command references a metric / service / monitor that no longer exists. Both are caught by the sampled execution gate in `VERIFICATION.md`.
+Run `VERIFICATION.md`'s gates. All must pass before you ship. The gate that catches most build bugs is the sampled execution of `## Diagnostic path` commands: a subagent that wrote pseudo-syntax, or that cited a metric / service / monitor absent from the account, fails there.
 
 ## Phase 6 — cross-link with knowledge-company
 
-Once `knowledge-company/` is also populated, the per-service dossier should link to the incidents that reference it. This happens in reverse: `knowledge-company`'s build procedure greps `incident-history`'s SUMMARY files for service-name mentions and pre-builds per-service incident lists. So the order is:
-
-1. Build `incident-history` fully (this skill).
-2. Build `knowledge-company`, which ingests `incident-history` as one of its inputs (see `build-knowledge-company/references/INPUT_LAYOUT.md`).
-
-Do not try to run them in parallel on the first pass — the dependency is one-way.
+The dependency is one-way, so do not run the two builds in parallel: `knowledge-company`'s build greps this archive's SUMMARY files for service-name mentions and pre-builds a per-service incident list. Finish `incident-history` first, then build `knowledge-company`, which takes it as an input (see `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/INPUT_LAYOUT.md`).
 
 ## Phase 7 — commit
 
 One git commit for the batch, with a commit body that lists the incident count and the date range covered. If the archive is large (>50 incidents), split into commits per-year or per-quarter so future diffs are reviewable.
 
-Do not push until someone has sampled 5 random SUMMARY.md files by eye and confirmed they read coherently. Subagents can produce "valid-looking but hallucinated" output when inputs are thin; the human eye catches this faster than any automated check.
+Do not push until `VERIFICATION.md`'s Gate 6 (human eyeball) has been done by a person.

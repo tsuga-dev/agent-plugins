@@ -50,7 +50,7 @@ report() {
 }
 
 # 1. MCP-tool verbs at line start (pseudo-CLI that isn't runnable).
-MCP_VERBS='^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|get-route|list-teams|get-team|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b'
+MCP_VERBS='^(aggregate-scalar|aggregate-timeseries|create-dashboard|create-investigation|create-monitor|delete-dashboard|delete-investigation|get-contrast-sets|get-dashboard|get-doc-page|get-investigation|get-metric|get-metric-assets-usage|get-monitor|get-notification-rule|get-route|get-service|get-team|list-clusters|list-dashboards|list-error-pattern-increases|list-investigations|list-log-attributes|list-metrics|list-monitors|list-new-error-patterns|list-notification-rules|list-quality-reports|list-routes|list-services|list-teams|query-promql|search-docs|search-logs|search-spans|update-dashboard|update-dashboard-graph|update-investigation)\b'
 hits=$(grep -nE "$MCP_VERBS" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report mcp-verbs "$hits"
 
@@ -75,19 +75,25 @@ hits=$(
 hits=$(grep -nE '(^|[[:space:]`])rtk (tsuga|git|gh|yarn|node|npm|jq|grep|find|proxy)\b' "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report rtk-prefix "$hits"
 
-# 4. Singular resource verbs. The pattern cannot match a plural (it requires a space straight
-# after the singular noun), so no plural filter is needed — one would discard whole lines that
-# contain both forms and turn a violation into a PASS.
-hits=$(grep -nE 'tsuga (monitor|dashboard|log-route|team|service|notification-rule|notification-silence) (get|list|create|update|delete)' "${FILES[@]}" 2>/dev/null)
+# 4. Singular resource verbs. Every resource group in the CLI is plural, so the singular is always
+# wrong. The pattern cannot match a plural (it requires a space straight after the singular noun),
+# so no plural filter is needed — one would discard whole lines that contain both forms and turn a
+# violation into a PASS.
+SINGULAR='monitor|dashboard|dashboard-folder|log-route|team|service|slo|investigation|retention-policy|tag-policy|quality-report|public-token|ingestion-api-key|cloud-resource|notification-rule|notification-silence|notification-integration'
+hits=$(grep -nE "tsuga ($SINGULAR) (get|list|create|update|delete)" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report singular-verb "$hits" "use plural: tsuga monitors get"
 
-# 5. `tsuga spans search` → should be `tsuga traces search`.
-hits=$(grep -n 'tsuga spans search' "${FILES[@]}" 2>/dev/null)
-[ -n "$hits" ] && report spans-search "$hits" "use 'tsuga traces search'"
+# 5. Command groups that do not exist. The telemetry groups are logs, traces, metrics and rum;
+# `tsuga spans search`, `tsuga trace get`, `tsuga alerts list` and friends are invented. These
+# spellings stay wrong whatever the CLI adds, because a group name is never singular and the
+# telemetry nouns are already taken. Required to be in command position — at line start or opening
+# an inline code span — so prose like "the tsuga trace summary" is not flagged.
+hits=$(grep -nE '(^|`)tsuga (span|spans|trace|log|metric|event|events|alert|alerts|incident|incidents|query|search) [a-z]' "${FILES[@]}" 2>/dev/null)
+[ -n "$hits" ] && report no-such-group "$hits" "groups are logs, traces, metrics, rum, aggregation"
 
 # 6. --limit on telemetry commands, which take --max-results. Resource commands (monitors,
 # dashboards, …) are genuinely paginated with --limit, so they are not flagged.
-hits=$(grep -nE 'tsuga (logs|traces|metrics|patterns|attributes|aggregation|interesting-fields) [a-z-]+ .*--limit\b' "${FILES[@]}" 2>/dev/null)
+hits=$(grep -nE 'tsuga (logs|traces|metrics|rum|aggregation|interesting-fields) [a-z-]+ .*--limit\b' "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report limit-flag "$hits" "use --max-results"
 
 if [ "$fail" -eq 0 ]; then

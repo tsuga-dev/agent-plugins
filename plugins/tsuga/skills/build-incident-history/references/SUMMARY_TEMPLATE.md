@@ -1,6 +1,15 @@
 # SUMMARY_TEMPLATE — the canonical shape of each incident's SUMMARY.md
 
-Subagents must emit exactly these sections in this order. The retrieval layer relies on stable section names for partial-read optimizations. Do not rename or reorder.
+## Contents
+
+- [Template body](#template-body--copy-verbatim-fill-in-placeholders) — the section contract, copy verbatim
+- [Exemplar](#exemplar--abbreviated) — a filled-in SUMMARY.md at the target density
+
+The canonical section order. `VERIFICATION.md` Gate 2 checks that the seven load-bearing headings are present, not that every optional one is, nor that they appear in this order:
+
+`# {incident_id} — {title}` → identity table → `## Incident at a glance` → `## Timeline` → `## Paging surface during incident` → `## Diagnostic path` → `## Root cause` → `## Remediation` → `## Lessons / follow-ups` → `## Confidence` (optional) → `## Commentary` (optional).
+
+Subagents emit exactly these sections in this order. The retrieval layer relies on stable section names for partial-read optimizations, so do not rename, reorder or add.
 
 Keep the total length under ~400 lines per incident. If you hit 400, trim — most overflow comes from unedited Slack dumps and is fine to lose. The Diagnostic path section is the one to preserve at all costs.
 
@@ -83,8 +92,7 @@ tsuga aggregation timeseries -f /tmp/q.json
 Finding: {…}.
 
 Rules:
-- Every command must parse as real `tsuga` CLI. See `LESSONS.md §"Command-shape mistakes"` for the full translation table and the forbidden-token grep.
-- No `rtk` prefix.
+- Every command must parse as real `tsuga` CLI. The translation table, the aggregation body rules and the forbidden-token grep are in `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md`.
 - If the responder ran the same probe three times with different time ranges, consolidate to one probe with a note about iteration.
 - If a probe returned nothing useful, **keep it** — negative probes are the most valuable signal for analogue search ("tried X, didn't help").
 
@@ -101,7 +109,7 @@ What fixed it, including (a) the immediate mitigation (rollback, scale up, resta
 
 ## Lessons / follow-ups
 
-Bullets. Each is one sentence about something the team learned or committed to change. Examples from real post-mortems in this archive:
+Bullets. Each is one sentence about something the team learned or committed to change. The shape to aim for:
 
 - Ratio monitors without a `noDataBehavior=alert` companion can go silent — audit critical pipelines for this gap.
 - `order-ingest` dropped events for N minutes with no alert because the only P1 was on poll latency, not on batch throughput — add a throughput monitor.

@@ -6,18 +6,20 @@ Unlike `build-incident-history`, this skill is mostly driven by **live queries**
 
 Before starting Phase 0:
 
-- **Tsuga CLI authenticated.** `tsuga config` must show a valid token. Needs read access to: teams, monitors, dashboards, routes, notification-rules, services, logs, traces, metrics, aggregations.
-- **Tsuga MCP tools available to the orchestrating agent.** Subagents fan out via the orchestrator; they will hit MCP tools for the discovery / scoring / live-probe phases (MCP is fine for *internal* probes; the *output* dossiers must use `tsuga` CLI commands).
-- **GitHub access** for the company's main org (`gh auth status` green). Used for phase 1 to resolve "which services live in which repo".
+- **Tsuga CLI authenticated.** Needs read access to teams, monitors, dashboards, log-routes, notification-rules, services, logs, traces, metrics and aggregations.
+- **Tsuga MCP tools available to the orchestrating agent.** Subagents fan out via the orchestrator and will hit MCP tools for the discovery / scoring / live-probe phases. MCP is fine for *internal* probes; the *output* dossiers must carry `tsuga` CLI commands.
+- **GitHub access** — optional. No phase calls `gh`; the repo-to-service mapping is read from `inputs/codebase-repos.json` in Phase 5, falling back to the `teams` field on `tsuga services list`.
 
 Confirm:
 
 ```bash
-tsuga --version
-tsuga teams list | jq 'length'    # >0 teams, else auth is wrong
+tsuga auth whoami                 # calls the API; proves the token is live and names the org
+tsuga teams list | jq 'length'    # >0 teams, else the token lacks scope
 tsuga services list | jq 'length' # >0 services
-gh auth status
 ```
+
+`tsuga auth status` and `tsuga config` only read local state. They report a stored session that the
+API may already reject, so neither is a substitute for a call that reaches the server.
 
 ## Optional raw inputs
 
@@ -45,7 +47,7 @@ inputs/
 ]
 ```
 
-This file feeds the "owner team" annotation in each service dossier's header. If you don't supply it, ownership falls back to the `teams` field on `tsuga services list` (the same mapping Phase 1 scores teams with) — which is authoritative but occasionally gives surprising answers (e.g., `analytics-engine` may live in a `platform`-owned repo but its team tag is `data`). Both inference sources are correct in their own way; the JSON file lets you decide which to prefer.
+This file feeds the "owner team" annotation in each service dossier's header. Without it, ownership falls back to the `teams` field on `tsuga services list` — the same mapping Phase 1 scores teams with, and one that reads by team name rather than id (see `PROCEDURE.md §"Identity fields, once"`). That fallback is authoritative but occasionally surprising: `analytics-engine` may live in a `platform`-owned repo while its team tag says `data`. Both sources are correct in their own way; the JSON file lets you choose.
 
 ## What the raw docs contribute (if present)
 
@@ -68,28 +70,12 @@ If none of these exist, the skill still builds — Phase 1 infers everything fro
 
 If this doesn't exist yet, build it first. Do not fake it — service dossiers without validated incident shapes are worth much less.
 
-## Live discovery — what Phases 0-2 read
+## Live discovery
 
-Phases 0-2 in `PROCEDURE.md` run these calls against the live Tsuga account (`notification-rules list` and `metrics list` belong to Phase 2). Not inputs per se, but worth listing so you can pre-cache them if rate limits are tight:
-
-```bash
-tsuga teams list                                    # all teams + metadata
-tsuga monitors list                                 # all monitors
-tsuga dashboards list                               # all dashboards
-tsuga log-routes list                                   # all telemetry routes
-tsuga services list                                 # all services with 24h activity counters
-tsuga notification-rules list                       # all notification routing rules
-tsuga metrics list                                  # all metric names currently reporting
-
-# Log-volume by service (fuel for service scoring)
-TO=$(date -u +%s); FROM=$((TO - 7 * 86400))      # 7 days; portable on BSD and GNU
-cat > /tmp/svc-vol.json <<JSON
-{"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":200}]}
-JSON
-tsuga aggregation scalar -f /tmp/svc-vol.json > inputs/cache/svc-volume-7d.json
-```
-
-Cache these outputs under `inputs/cache/` if you plan to iterate — they are slow enough that re-running Phase 3 five times will hit your patience before it hits any rate limit.
+The fleet dumps and the service-volume aggregation are listed with the phases that run them, in
+`PROCEDURE.md §"Phase 0"` through `§"Phase 2"`. Cache their output under `inputs/cache/` if you
+plan to iterate: they are slow enough that re-running Phase 3 five times exhausts your patience
+before it hits any rate limit.
 
 ## Per-service helper extraction
 

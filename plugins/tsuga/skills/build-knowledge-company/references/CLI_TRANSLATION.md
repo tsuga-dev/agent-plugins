@@ -2,56 +2,53 @@
 
 # CLI_TRANSLATION — turning MCP-tool shapes into real `tsuga` CLI
 
-The single most expensive bug in the first `knowledge-company` build was subagents emitting MCP-tool pseudo-syntax (`search-logs query='…' from=-1h to=now limit=50`) in the "Ready-to-run" sections. This looks plausible but is not runnable as a `tsuga` CLI invocation. Every subagent prompt must include the contract in this file.
+A subagent holding Tsuga MCP tools writes its dossier commands in the tool vocabulary
+(`search-logs query='…' from=-1h to=now limit=50`) — plausible-looking, not runnable.
 
-## The rule
+**The rule: every command block in every SERVICE_KNOWLEDGE.md must be directly runnable as a
+`tsuga` CLI invocation.** No `rtk` prefix, no tool pseudo-syntax, no placeholder the reader has to
+translate.
 
-**Every command block in every SERVICE_KNOWLEDGE.md must be directly runnable as a `tsuga` CLI invocation.** No exceptions. No `rtk` prefix. No pseudo-syntax. No placeholder commands that require the reader to mentally translate.
+## Name translation
 
-## Translation table
+The CLI names a resource in the plural and the verb second: `tsuga <resource-plural> <verb>`.
+`tsuga monitor get X` does not exist.
 
-### Logs / traces / metrics
-
-| MCP-tool shape | Real `tsuga` CLI |
+| MCP tool | `tsuga` CLI |
 |---|---|
-| `search-logs query="X" from=-1h to=now limit=20` | `tsuga logs search --query "X" --from=-1h --to now --max-results 20` |
-| `search-logs query='X' from=-1h` (no to/limit) | `tsuga logs search --query 'X' --from=-1h` (`--to now` is default; default `--max-results` is 100) |
-| `search-logs` (no args) | `tsuga logs search` |
-| `search-spans query=…` | `tsuga traces search --query "…" --from … --to … --max-results …` (note: **traces**, not spans) |
-| `list-metrics` | `tsuga metrics list` |
-| `list-metrics` (intended to filter by prefix) | `tsuga metrics list \| jq '.[] \| select(.name \| startswith("prefix_"))'` |
-| `get-metric name=X` | `tsuga metrics get X` |
-| `list-log-patterns query="X" from=-1h` | `tsuga logs patterns --query "X" --from=-1h` |
-| `list-new-error-patterns --service X --from=-24h` | `tsuga logs new-error-patterns --service X --from=-24h` |
-| `list-error-pattern-increases --team infra --from=-24h` | `tsuga logs error-pattern-increases --team infra --from=-24h` |
-
-### Resource list / get
-
-| MCP-tool shape | Real `tsuga` CLI |
-|---|---|
-| `list-monitors` | `tsuga monitors list` |
-| `get-monitor id=X` | `tsuga monitors get X` |
-| `list-dashboards` | `tsuga dashboards list` |
-| `list-dashboards owners=A,B` | `tsuga dashboards list -d '{"filters":{"owners":{"values":["A","B"]}}}'` |
-| `get-dashboard id=X` | `tsuga dashboards get X` |
-| `list-routes` / `get-route id=X` | `tsuga log-routes list` / `tsuga log-routes get X` |
-| `list-teams` / `get-team id=X` | `tsuga teams list` / `tsuga teams get X` |
-| `list-services` / `get-service id=X` | `tsuga services list` / `tsuga services get X` |
+| `search-logs` | `tsuga logs search` |
+| `search-spans` | `tsuga traces search` (the CLI verb is **traces**; `spans` is only the TQL data source) |
+| `list-log-patterns` | `tsuga logs patterns` |
+| `list-log-attributes` | `tsuga logs attributes` |
+| `list-new-error-patterns` | `tsuga logs new-error-patterns` |
+| `list-error-pattern-increases` | `tsuga logs error-pattern-increases` |
+| `get-contrast-sets` | `tsuga traces contrast-sets` |
+| `aggregate-scalar` | `tsuga aggregation scalar` |
+| `aggregate-timeseries` | `tsuga aggregation timeseries` |
+| `list-metrics` / `get-metric` | `tsuga metrics list` / `tsuga metrics get <name>` |
+| `list-monitors` / `get-monitor` | `tsuga monitors list` / `tsuga monitors get <id>` |
+| `list-dashboards` / `get-dashboard` | `tsuga dashboards list` / `tsuga dashboards get <id>` |
+| `list-teams` / `get-team` | `tsuga teams list` / `tsuga teams get <id>` |
+| `list-services` / `get-service` | `tsuga services list` / `tsuga services get <id>` |
+| `list-log-routes` / `get-log-route` | `tsuga log-routes list` / `tsuga log-routes get <id>` |
 | `list-notification-rules` | `tsuga notification-rules list` |
 | `list-notification-silences` | `tsuga notification-silences list` |
+| `list-clusters` | `tsuga clusters list` |
+| `list-quality-reports` | `tsuga quality-reports list` |
 
-**Always plural resource names.** `tsuga monitor get X` is wrong. The CLI pattern is `tsuga <resource-plural> <verb>`: `tsuga monitors get`, `tsuga dashboards list`, etc.
+Run `tsuga <command> --help` for the flags; nothing here restates them. Three translation traps
+`--help` will not warn you about:
 
-### Aggregations (scalar / timeseries)
+- A tool's `limit=` becomes `--max-results` on a telemetry search and `--limit` on a paginated
+  resource list. Both flags exist, on different commands.
+- `tsuga logs patterns` has no result cap at all — narrow it with `--query`, not a flag.
+- `tsuga logs error-pattern-increases` filters by `--team` and `--env` only. There is no
+  `--service`; `tsuga logs new-error-patterns` is the one that takes it.
 
-MCP compact shapes like:
+## Aggregations need a body file
 
-```
-aggregate-scalar dataSource=logs aggregate=count filter="…" from=-1h to=now
-aggregate-timeseries dataSource=metrics aggregationWindow=5m aggregate=sum field=foo filter="…" from=-1h to=now groupBy=context.cluster_id
-```
-
-have no one-liner equivalent in the CLI. They require a JSON body file. Translate to **heredoc + CLI invocation**:
+A compact tool call like `aggregate-scalar dataSource=logs aggregate=count filter="…" from=-1h`
+has no one-liner CLI equivalent. It becomes a JSON body plus `-f`:
 
 ```bash
 TO=$(date -u +%s); FROM=$((TO - 3600))
@@ -69,86 +66,35 @@ JSON
 tsuga aggregation scalar -f /tmp/q.json
 ```
 
-For timeseries, add `"aggregationWindow": "5m"` at body level:
+`"timeRange"` takes Unix-seconds integers, which is why the `date` helper is here — a relative
+string like `"-1h"` is rejected in the body even though `--from=-1h` is fine as a flag. Emit the
+helper once per dossier, the first time an aggregation needs it.
 
-```bash
-cat > /tmp/q.json <<JSON
-{
-  "timeRange": {"from": $FROM, "to": $TO},
-  "dataSource": "metrics",
-  "queries": [
-    {"aggregate": {"type": "percentile", "percentile": 95, "field": "my_metric"}, "filter": "context.env:prod"}
-  ],
-  "groupBy": [{"fields": ["context.cluster_id"], "limit": 10}],
-  "aggregationWindow": "5m"
-}
-JSON
-tsuga aggregation timeseries -f /tmp/q.json
-```
+On `"dataSource": "metrics"` every aggregate needs a `"field"`, `count` included — it counts
+datapoints of that metric, and omitting the field returns
+`count aggregate requires a non-empty field`. Swapping in `sum` to dodge the error answers a
+different question.
 
-## Body-structure rules for aggregations
+For the rest of the body — where `groupBy`, `formula`, `aggregationWindow` and per-query
+`functions` sit, and which aggregate a metric's type and temporality call for — start from
+`tsuga aggregation scalar --generate-skeleton` and the `$tsuga-cli` skill. Two doc pages carry the
+rest, both via `tsuga docs get <path>`: `visualize/guides/how-to-choose-a-metric-aggregation` for
+which aggregate a metric type and temporality call for, and `explore/query-syntax` for query-value
+units (`duration` is milliseconds). Do not restate either in a dossier.
 
-These are easy to get wrong. A subagent that hasn't read this section will write malformed JSON that returns an error.
+## Quoting
 
-- `"timeRange"` requires **Unix seconds integers**, not relative strings like `"-1h"`. Use the `FROM=$(date -u ... +%s)` helper.
-- `"dataSource"` is `"logs"`, `"traces"`, or `"metrics"`. Not `"spans"`.
-- `"groupBy"` is at **body level**, not inside query items: `"groupBy": [{"fields": ["error.type"], "limit": 10}]`.
-- `"functions"` (e.g., `rate`, `per-second`, `increase`) are **per-query**: `"functions": [{"type": "rate"}]`.
-- `"formula"` is at body level and references queries by position: `"q1"` = first query, `"q2"` = second, etc. It defaults to `"q1"`, so omit a bare `"q1"`.
-- `"aggregationWindow"` is at body level, only for timeseries (e.g., `"5m"`, `"30m"`).
-- Each query in `"queries"` has `"aggregate"` (object with `"type"`, and `"field"` for anything other than `count`) and `"filter"` (string). No `"id"` field.
-- `count` is valid on `logs` / `traces` but **not on `metrics`** — use `sum` instead.
-- Percentile: `{"type": "percentile", "percentile": 95, "field": "duration"}`. The percentile number goes on the aggregate object, not on the body.
+- Double-quote a query containing a space or a TQL operator: `--query "context.service.name:X level:ERROR"`.
+- Single-quote the outer shell when the query itself contains a phrase match:
+  `--query 'context.service.name:X "Exact phrase"'`.
 
-## Counter-math cheat sheet
+## No `rtk` prefix
 
-When aggregating a metric, picking `aggregate.type` + `functions` wrong produces meaningless values. Always check the metric's type + temporality first:
+The RTK hook rewrites commands at execution time, so `rtk tsuga logs search …` in a dossier buys
+nothing and reads as broken to anyone without the hook. Emit plain `tsuga …`.
 
-```bash
-tsuga metrics get <metric-name>     # returns type + temporality + unit
-```
+## The verification grep
 
-| Metric type | Temporality | Aggregation | Function | Why |
-|---|---|---|---|---|
-| Gauge | — | `max` or `average` | none | Point-in-time values. |
-| Counter | Delta | `sum` | `per-second` | Delta counters report per-interval increments. |
-| Counter | Cumulative | `sum` | `rate` | Monotonically increasing; `rate` = per-second derivative. |
-| Counter | Cumulative | `sum` | `increase` | Same as above but per-bucket totals. |
-| Histogram | — | `percentile` (p50/p95/p99) | none | Pre-aggregated distributions. |
-
-Common mistakes:
-- `{"type": "average", "field": "http.server.request.count"}` on a delta counter averages deltas, meaningless.
-- Charting a cumulative counter with no function produces an ever-increasing line (lifetime total).
-- Applying `per-second` to a gauge double-derives a point-in-time value.
-
-## Duration units
-
-Trace span `duration` is in **milliseconds**. A TQL filter `duration:>10s` is wrong; it's `duration:>10000`. Same for any metric whose name suffix suggests a unit (`*_seconds`, `*_milliseconds`, `*_bytes`).
-
-## Quoting rules
-
-- Double-quote the query string if it contains a space or TQL operator: `--query "context.service.name:X level:ERROR"`.
-- Use single quotes for the outer shell if the query contains double-quoted phrase match: `--query 'context.service.name:X "Exact phrase"'`.
-- Don't mix: `--query "context.service.name:X \"phrase\""` works but is harder to read.
-
-## Forbidden tokens — the verification grep
-
-After writing any SERVICE_KNOWLEDGE.md, this must return zero hits:
-
-```bash
-grep -nE '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' <file>
-
-grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' <file> \
-  | grep -v '"aggregationWindow":' \
-  | grep -v '"dataSource":' \
-  | grep -v '"filter":' \
-  | grep -v '/explorer?query='
-```
-
-Inside JSON heredocs, `"aggregationWindow":`, `"dataSource":`, and `"filter":` are valid and must be kept — the verification grep excludes those. `/explorer?query=` is a legitimate URL parameter, also excluded.
-
-## Do NOT prefix with `rtk`
-
-The RTK hook rewrites commands transparently at execution time. Writing `rtk tsuga logs search …` in a dossier is noise — human readers without the hook see a broken command. Always emit plain `tsuga …`.
-
-If the dossier is for an agent that *does* have the hook, the hook handles it. If it's for a human user or an agent without the hook, `rtk` is wrong. Either way, don't include it.
+`check-skill-health`'s `scripts/check-forbidden-tokens.sh <skill-dir>` is the authoritative check
+and already knows the JSON-key and URL exclusions. Run it over the generated tree rather than
+hand-rolling greps; `VERIFICATION.md` covers what it does not reach.

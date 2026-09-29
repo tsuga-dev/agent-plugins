@@ -4,6 +4,11 @@
 
 Copy this verbatim. Substitute `{svc}`, `{team}`, `{team_id}`, `{company}`, `{N}`, `{svc-prefix}`. Do not edit anything else. The orchestrator's job is to fan out dozens of these in parallel.
 
+## Contents
+
+- [Prompt template](#prompt-template) — the block to copy
+- [Notes for the orchestrator](#notes-for-the-orchestrator) — batch size, placeholder values, failure handling
+
 ## Prompt template
 
 ```
@@ -14,7 +19,7 @@ Write a SERVICE_KNOWLEDGE.md dossier for the {company} service `{svc}` (owning t
 **MUST-READ references (in order, before writing anything):**
 1. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/SERVICE_KNOWLEDGE_TEMPLATE.md` — the canonical section list and every section's rules.
 2. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md` — every command you write must be real `tsuga` CLI, not MCP-tool pseudo-syntax. Follow this contract.
-3. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/LESSONS.md` — read the full list. Every mistake listed cost us time on a previous run.
+3. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/LESSONS.md` — read the full list; each entry is a failure mode this dossier has to avoid.
 
 **Per-service helper inputs (pre-extracted for you):**
 - Monitors targeting this service: `/tmp/service-data/{svc}/monitors.json`
@@ -40,8 +45,9 @@ tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:E
 # 3. Active metric namespace
 tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'
 
-# 4. Service metadata (team membership, 24h counters)
-tsuga services list | jq '.[] | select(.serviceName == "{svc}")'
+# 4. Service metadata (team membership, versions). One row per (service, env), and the default
+#    page is 100 rows, so raise the limit before filtering.
+tsuga services list --limit 1000 | jq '.[] | select(.serviceName == "{svc}")'
 ```
 
 Do not skip these. The Golden signals, Log shape, and Metric-namespace sections all depend on the live output. If a live probe returns empty, **say so in the Confidence note** — do not invent replacement content.
@@ -67,7 +73,7 @@ Do not skip these. The Golden signals, Log shape, and Metric-namespace sections 
 F="skills/knowledge-company/references/teams/{team}/services/{svc}/SERVICE_KNOWLEDGE.md"
 
 # Forbidden MCP-tool verbs
-grep -nE '^(search-logs|search-spans|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-routes|list-teams|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-new-error-patterns|list-error-pattern-increases)\b' "$F"
+grep -nE '^(search-logs|search-spans|get-contrast-sets|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-log-routes|get-log-route|list-teams|get-team|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-log-attributes|list-new-error-patterns|list-error-pattern-increases)\b' "$F"
 
 # Forbidden MCP-tool arg shapes (but OK inside JSON bodies)
 grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' "$F" \
@@ -88,7 +94,7 @@ for h in "## Quick context" "## Ready-to-run" "## Golden signals" "## Log shape"
 done
 ```
 
-All four must return zero hits. If any fail, fix and re-check before declaring done.
+Every grep must return zero hits and every heading check must stay silent. Fix and re-check before declaring done.
 
 **Additionally, execute one command from your own output** to prove it runs:
 
@@ -109,4 +115,4 @@ All four must return zero hits. If any fail, fix and re-check before declaring d
 - **`{N}`:** substitute with the actual count from `/tmp/services-to-dossier.txt` — subagents reading "one of ~30" calibrate differently than "one of ~100".
 - **`{svc-prefix}`:** the prefix you expect the service's metrics to use (`intake_`, `web_backend_`, `bridge_`). If the service has no metric namespace, omit that probe from the prompt.
 - **Failure handling:** if a subagent returns claiming "fixed, 0 matches" but a sampled `tsuga` command doesn't run, the template has a fleet-wide bug. Do NOT hand-patch the output. Fix the template (likely `SERVICE_KNOWLEDGE_TEMPLATE.md` or `LESSONS.md`) and regenerate the affected batch.
-- **Progress tracking:** the first-pass build used one TodoWrite entry per wave of 8 subagents. Mark each wave complete only after its VERIFICATION.md sampled-execution gate passes for 5 random members.
+- **Progress tracking:** one todo entry per wave. Mark a wave complete only after `VERIFICATION.md §"Gate A"` passes for 5 random members of it.
