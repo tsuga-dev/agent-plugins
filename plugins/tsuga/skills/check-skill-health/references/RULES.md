@@ -81,14 +81,14 @@ A 120-word description sits around 900 characters, so the word bound normally bi
 
 **Checks (only fires if target is a knowledge-company skill):**
 - Required top-level files present: `COMPANY_GENERAL_KNOWLEDGE.md`, `COMPANY_TELEMETRY_KNOWLEDGE.md`.
-- `RAW_TELEMETRY_KNOWLEDGE.md` *not* present (folded into COMPANY_TELEMETRY after distillation).
+- `RAW_TELEMETRY_KNOWLEDGE.md` *not* present (its content belongs in `COMPANY_TELEMETRY_KNOWLEDGE.md`).
 - Every `teams/<team>/` has TEAM_KNOWLEDGE.md.
 - Every `teams/<team>/services/<service>/` has SERVICE_KNOWLEDGE.md.
 - SERVICE_KNOWLEDGE.md canonical sections present.
 - TEAM_KNOWLEDGE.md basic sections present (warn only).
 - File paths referenced from SKILL.md resolve (warn only).
 
-**Why:** same logic — retrieval and cross-linking are section-name-stable. The "must not exist" check on RAW_TELEMETRY guards against regression — it used to be a separate file and was folded in during a distillation pass.
+**Why:** same logic — retrieval and cross-linking are section-name-stable. The "must not exist" check on RAW_TELEMETRY guards against regression: that content belongs in `COMPANY_TELEMETRY_KNOWLEDGE.md`, not in a separate file.
 
 **How to fix a FAIL:** regenerate the affected service/team via the `build-knowledge-company` skill.
 

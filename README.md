@@ -37,7 +37,7 @@ codex plugin add tsuga@tsuga
 ### OpenCode
 
 > [!IMPORTANT]
-This has only been tested with opencode v1, as v2 is still in beta.
+Tested with opencode v1 only. opencode v2 is in beta.
 
 Add the skills URL to your `opencode.json`:
 

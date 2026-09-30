@@ -91,6 +91,6 @@ Some services have multiple identities in telemetry (e.g., K8s-scraped vs OTel-s
 
 1. **`{service-name-list}` carries the trigger vocabulary.** List every service that has a SERVICE_KNOWLEDGE.md — comma-separated, backtick-wrapped — up to the 1024-char description cap. Missing a service means the skill won't fire when that service is in an incident title, but blowing the cap drops the whole skill, so for large fleets list the highest-signal names plus the canonical service prefixes instead of the full inventory.
 2. **Do NOT list every service by name in the body.** The description field carries that weight. The body stays short.
-3. **No `RAW_TELEMETRY_KNOWLEDGE.md` reference.** That file was folded into `COMPANY_TELEMETRY_KNOWLEDGE.md` in the distillation pass. Do not resurrect it.
+3. **No `RAW_TELEMETRY_KNOWLEDGE.md` reference.** Its content belongs in `COMPANY_TELEMETRY_KNOWLEDGE.md`. Do not create it.
 4. **No `rtk` tool-note section.** The RTK hook is transparent; end-users of the skill don't need to see it.
 5. **Link sibling skills by `$name` convention** in the Boundary section. These are soft references that render in Claude's UI.

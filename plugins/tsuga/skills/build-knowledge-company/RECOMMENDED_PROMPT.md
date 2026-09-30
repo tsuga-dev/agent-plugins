@@ -53,7 +53,7 @@ Hard rules for the whole flow:
 - Live data overrides the task brief. If the brief says service X does foo and live logs show it does bar, trust the logs and document the discrepancy in the service's Confidence note.
 - No duplication from top-level docs. Pointers only.
 - No invented metric names, monitor IDs, dashboard IDs. Ground everything in `tsuga metrics list` / `tsuga monitors list` / `tsuga dashboards list` output.
-- `RAW_TELEMETRY_KNOWLEDGE.md` must NOT exist in the output tree — its content is folded into `COMPANY_TELEMETRY_KNOWLEDGE.md`. If you find yourself creating it, stop.
+- `RAW_TELEMETRY_KNOWLEDGE.md` must NOT exist in the output tree — its content belongs in `COMPANY_TELEMETRY_KNOWLEDGE.md`. If you find yourself creating it, stop.
 - Do not touch `skills/incident-history/` or any other skill.
 - If the taxonomy discovery in Phase 3 surfaces <15 or >60 services, STOP and ask — the scoring rule is probably wrong for this deployment.
 ```
