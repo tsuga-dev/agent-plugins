@@ -129,6 +129,7 @@ Spans: <targetGroupCount> target, <baselineGroupCount> baseline
 - An empty `contrastSets` next to a high `failedAttributeCount` means most candidates errored out rather than that the two groups are alike. Retry, or name the candidates explicitly with `candidateAttrs`, before reporting "no difference".
 - Discovery ranks candidates by frequency, not by cardinality, so a near-unique attribute such as pod name or full URL is tested by default. One that existed only inside the incident window comes back as a top finding for a reason unrelated to the failure.
 - With `candidateAttrs` omitted, discovery falls back to a fixed default attribute list, which leaves those near-unique attributes out, when it runs long or returns nothing. The response does not say which set was used.
+- Discovery reads a sample of the target group, so a rare attribute can be missing from the tested set. Name an attribute you suspect in `candidateAttrs`; `account-and-settings/ai-access/tsuga-cli` under **Telemetry commands** covers the sampling, the top-20 cut and the timeout.
 - Each attribute is compared on its most frequent values per group, so a value in an attribute's long tail cannot become a finding however concentrated it is in the target.
 - The baseline must be genuinely comparable. Contrasting against a window with different traffic shape produces findings about the traffic, not the failure.
 
