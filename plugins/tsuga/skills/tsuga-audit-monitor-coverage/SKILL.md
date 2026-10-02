@@ -11,7 +11,8 @@ reach nobody. Both are snapshots of config. Nothing here shows whether an alert 
 ## Required Inputs
 
 - **Scope** — defaults to every service, and can narrow to one team, service or env. `services list`
-  takes no filter flags, so a narrower scope is a local filter over the same rows.
+  takes `--env`, so narrow by env server-side; it has no team or service-name flag, so those stay a
+  local filter over the same rows.
 
 Pull each list at the largest page the CLI allows. The paging flags are in
 `account-and-settings/ai-access/tsuga-cli`. Nothing in the JSON on stdout carries a total, so the
@@ -64,7 +65,7 @@ written out:
 Never fold indirect coverage into the covered count. Someone deciding whether to add a monitor needs
 the two separated.
 
-To narrow before parsing, `monitors list -d '{"filters":{"searchQuery":{"value":"checkout"}}}'`
+To narrow before parsing, `monitors list --search-query checkout`
 matches server-side against monitor ID, name, **query filters** and aggregate fields. It is a
 case-insensitive substring and wildcards in it are literal, so `api` also returns `api-gateway`
 monitors. It never reads `configuration.filter.services[]`, so a log-error-pattern monitor naming the

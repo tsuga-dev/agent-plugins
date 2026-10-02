@@ -247,7 +247,7 @@ Per-team inputs:
 
 ```bash
 jq --arg id "$team_id" '[.[] | select(.owner == $id)]' /tmp/monitors-raw.json
-tsuga dashboards list -d "{\"filters\":{\"owners\":{\"values\":[\"$team_id\"]}},\"limit\":1000}"
+jq --arg id "$team_id" '[.[] | select(.owner == $id)]' /tmp/dashboards-raw.json
 jq --arg n "$team_name" '[.[] | select(any(.teams[]?; .team == $n))]' /tmp/services-raw.json
 ```
 
