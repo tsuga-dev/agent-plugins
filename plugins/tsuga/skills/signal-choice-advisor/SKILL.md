@@ -24,7 +24,8 @@ Tsuga docs decide the answer. Use `tsuga docs search`, then `tsuga docs get`; ci
 | Span kind                                                      | `data-collection/guides/how-to-choose-a-span-kind`                 |
 | Anti-patterns, span events, lowercasing, measuring cardinality | `references/telemetry/signal-choice`                               |
 | Mobile RUM events, and what each one is named                   | `data-collection/mobile/rum-events`                                |
-| Browser RUM event naming                                       | `data-collection/browser/grafana-faro`                             |
+| Browser RUM events, and what each one is named                 | `data-collection/browser/rum-events`                               |
+| Naming browser custom actions and measurements                 | `data-collection/browser/grafana-faro`                             |
 | Continuous profiles                                            | `data-collection/profiling`                                        |
 
 If Tsuga docs do not settle a name, use the OpenTelemetry semantic conventions at https://opentelemetry.io/docs/specs/semconv/ and the attribute registry before inventing one. If neither covers the recommendation, label it `Recommendation (not verified in Tsuga or OTel docs)`.
