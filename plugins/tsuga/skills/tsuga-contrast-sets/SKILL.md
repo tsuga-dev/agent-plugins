@@ -40,7 +40,7 @@ For product or API details, use `tsuga docs search`, then `tsuga docs get`. Cite
 
 Run it with `tsuga traces contrast-sets -f groups.json`.
 
-This reads **spans, not logs**, so a service that logs errors without marking spans `status_code:error` produces an empty target group and no findings - `categorize/services/service-page` has that consequence in the UI. `explore/traces` under **Explain a selection** has the same comparison behind a UI. How it picks which attributes to test is in `api/findContrastSets`, on `candidateAttrs`: with none given, discovery takes the most frequent attributes in the target group, minus the ones either group filter references. The payload-level behaviour neither covers is under Limitations below.
+This reads **spans, not logs**, so a service that logs errors without marking spans `status_code:error` produces an empty target group and no findings - `categorize/services/service-page` has that consequence in the UI. `explore/traces` under **Explain a selection** has the same comparison behind a UI. How it picks which attributes to test when `candidateAttrs` is omitted is in `account-and-settings/ai-access/tsuga-cli` under **Telemetry commands**. The payload-level behaviour neither covers is under Limitations below.
 
 ### Explain latency — slow against normal, same window
 
@@ -128,8 +128,8 @@ Spans: <targetGroupCount> target, <baselineGroupCount> baseline
 
 - An empty `contrastSets` next to a high `failedAttributeCount` means most candidates errored out rather than that the two groups are alike. Retry, or name the candidates explicitly with `candidateAttrs`, before reporting "no difference".
 - Discovery ranks candidates by frequency, not by cardinality, so a near-unique attribute such as pod name or full URL is tested by default. One that existed only inside the incident window comes back as a top finding for a reason unrelated to the failure.
-- With `candidateAttrs` omitted, discovery falls back to a fixed default attribute list, which leaves those near-unique attributes out, when it runs long or returns nothing. The response does not say which set was used.
-- Discovery reads a sample of the target group, so a rare attribute can be missing from the tested set. Name an attribute you suspect in `candidateAttrs`; `account-and-settings/ai-access/tsuga-cli` under **Telemetry commands** covers the sampling, the top-20 cut and the timeout.
+- With `candidateAttrs` omitted, discovery falls back to a fixed default attribute list, which leaves those near-unique attributes out, when it times out. The response does not say which set was used.
+- An empty `contrastSets` with `failedAttributeCount` at `0` and `candidateAttrs` omitted can mean discovery found no varying attribute and tested nothing. Name the attributes you suspect in `candidateAttrs` and rerun before reporting "no difference".
 - Each attribute is compared on its most frequent values per group, so a value in an attribute's long tail cannot become a finding however concentrated it is in the target.
 - The baseline must be genuinely comparable. Contrasting against a window with different traffic shape produces findings about the traffic, not the failure.
 
