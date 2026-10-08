@@ -50,7 +50,7 @@ report() {
 }
 
 # 1. MCP-tool verbs at line start (pseudo-CLI that isn't runnable).
-MCP_VERBS='^(aggregate-scalar|aggregate-timeseries|create-dashboard|create-investigation|create-monitor|delete-dashboard|delete-investigation|get-contrast-sets|get-dashboard|get-doc-page|get-investigation|get-metric|get-metric-assets-usage|get-monitor|get-notification-rule|get-route|get-service|get-team|list-clusters|list-dashboards|list-error-pattern-increases|list-investigations|list-log-attributes|list-metrics|list-monitors|list-new-error-patterns|list-notification-rules|list-quality-reports|list-routes|list-services|list-teams|query-promql|search-docs|search-logs|search-spans|update-dashboard|update-dashboard-graph|update-investigation)\b'
+MCP_VERBS='^(aggregate-scalar|aggregate-timeseries|create-dashboard|create-investigation|create-monitor|delete-dashboard|delete-investigation|get-contrast-sets|get-dashboard|get-doc-page|get-investigation|get-metric|get-metric-assets-usage|get-monitor|get-notification-rule|get-route|get-service|get-team|list-clusters|query-dashboards|list-error-pattern-increases|list-investigations|list-log-attributes|list-metrics|query-monitors|list-new-error-patterns|list-notification-rules|list-quality-reports|list-routes|query-services|list-teams|query-promql|search-docs|search-logs|search-spans|update-dashboard|update-dashboard-graph|update-investigation)\b'
 hits=$(grep -nE "$MCP_VERBS" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report mcp-verbs "$hits"
 

@@ -11,8 +11,7 @@ reach nobody. Both are snapshots of config. Nothing here shows whether an alert 
 ## Required Inputs
 
 - **Scope** — defaults to every service, and can narrow to one team, service or env. `services list`
-  takes `--env`, so narrow by env server-side; it has no team or service-name flag, so those stay a
-  local filter over the same rows.
+  takes `--teams`, `--envs` and `--search-query` (a service-name substring), so narrow server-side.
 
 Pull each list at the largest page the CLI allows. The paging flags are in
 `account-and-settings/ai-access/tsuga-cli`. Nothing in the JSON on stdout carries a total, so the

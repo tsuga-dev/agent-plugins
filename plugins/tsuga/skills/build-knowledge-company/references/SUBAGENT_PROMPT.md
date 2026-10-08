@@ -73,7 +73,7 @@ Do not skip these. The Golden signals, Log shape, and Metric-namespace sections 
 F="skills/knowledge-company/references/teams/{team}/services/{svc}/SERVICE_KNOWLEDGE.md"
 
 # Forbidden MCP-tool verbs
-grep -nE '^(search-logs|search-spans|get-contrast-sets|list-metrics|get-metric|list-monitors|get-monitor|list-dashboards|get-dashboard|list-log-routes|get-log-route|list-teams|get-team|list-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-log-attributes|list-new-error-patterns|list-error-pattern-increases)\b' "$F"
+grep -nE '^(search-logs|search-spans|get-contrast-sets|list-metrics|get-metric|query-monitors|get-monitor|query-dashboards|get-dashboard|list-log-routes|get-log-route|list-teams|get-team|query-services|get-service|list-notification-rules|list-notification-silences|aggregate-scalar|aggregate-timeseries|list-log-patterns|list-log-attributes|list-new-error-patterns|list-error-pattern-increases)\b' "$F"
 
 # Forbidden MCP-tool arg shapes (but OK inside JSON bodies)
 grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWindow=|dataSource=)' "$F" \

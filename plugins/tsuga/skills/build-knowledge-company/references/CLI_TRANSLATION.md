@@ -26,10 +26,10 @@ The CLI names a resource in the plural and the verb second: `tsuga <resource-plu
 | `aggregate-scalar` | `tsuga aggregation scalar` |
 | `aggregate-timeseries` | `tsuga aggregation timeseries` |
 | `list-metrics` / `get-metric` | `tsuga metrics list` / `tsuga metrics get <name>` |
-| `list-monitors` / `get-monitor` | `tsuga monitors list` / `tsuga monitors get <id>` |
-| `list-dashboards` / `get-dashboard` | `tsuga dashboards list` / `tsuga dashboards get <id>` |
+| `query-monitors` / `get-monitor` | `tsuga monitors list` / `tsuga monitors get <id>` |
+| `query-dashboards` / `get-dashboard` | `tsuga dashboards list` / `tsuga dashboards get <id>` |
 | `list-teams` / `get-team` | `tsuga teams list` / `tsuga teams get <id>` |
-| `list-services` / `get-service` | `tsuga services list` / `tsuga services get <id>` |
+| `query-services` / `get-service` | `tsuga services list` / `tsuga services get <id>` |
 | `list-log-routes` / `get-log-route` | `tsuga log-routes list` / `tsuga log-routes get <id>` |
 | `list-notification-rules` | `tsuga notification-rules list` |
 | `list-notification-silences` | `tsuga notification-silences list` |
