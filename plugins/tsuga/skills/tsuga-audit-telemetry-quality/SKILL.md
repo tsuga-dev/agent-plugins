@@ -27,7 +27,7 @@ Docs lookup rationale and docs-error behavior: follow `tsuga-cli`.
 
 Two reading rules decide the rest of the audit:
 
-- `status: "ignored"` means the rule did not apply to the available data. It is neither a pass nor a failure: that defect class is unmeasured, so it moves into your own judgment.
+- `status: "ignored"` means the rule did not apply to the available data, or could not be evaluated for that scope (see the playbook on `evaluatedAt`). It is neither a pass nor a failure: that defect class is unmeasured, so it moves into your own judgment.
 - The report is one stored snapshot. A failed row may already be fixed and a passed row may have regressed. Re-check with a scoped query any row you act on.
 
 ## 2. Division of Labour
