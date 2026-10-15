@@ -157,7 +157,7 @@ is_read_only_tsuga_command() {
       esac
       return 1
       ;;
-    tsuga\ services\ list*|tsuga\ services\ get\ *|tsuga\ teams\ list*|tsuga\ teams\ get\ *|tsuga\ monitors\ list*|tsuga\ monitors\ get\ *|tsuga\ dashboards\ list*|tsuga\ dashboards\ get\ *|tsuga\ log-routes\ list*|tsuga\ log-routes\ get\ *|tsuga\ notification-rules\ list*|tsuga\ notification-rules\ get\ *|tsuga\ notification-silences\ list*|tsuga\ notification-silences\ get\ *|tsuga\ quality-reports\ list*|tsuga\ docs\ search\ *|tsuga\ docs\ get\ *)
+    tsuga\ services\ list*|tsuga\ services\ get\ *|tsuga\ teams\ list*|tsuga\ teams\ get\ *|tsuga\ monitors\ list*|tsuga\ monitors\ get\ *|tsuga\ dashboards\ list*|tsuga\ dashboards\ get\ *|tsuga\ log-routes\ list*|tsuga\ log-routes\ get\ *|tsuga\ notification-rules\ list*|tsuga\ notification-rules\ get\ *|tsuga\ adaptive-notification-rules\ list*|tsuga\ adaptive-notification-rules\ get\ *|tsuga\ notification-silences\ list*|tsuga\ notification-silences\ get\ *|tsuga\ quality-reports\ list*|tsuga\ docs\ search\ *|tsuga\ docs\ get\ *)
       return 0
       ;;
     *)

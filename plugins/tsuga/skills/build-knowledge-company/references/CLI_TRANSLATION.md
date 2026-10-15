@@ -32,6 +32,7 @@ The CLI names a resource in the plural and the verb second: `tsuga <resource-plu
 | `query-services` / `get-service` | `tsuga services list` / `tsuga services get <id>` |
 | `list-log-routes` / `get-log-route` | `tsuga log-routes list` / `tsuga log-routes get <id>` |
 | `list-notification-rules` | `tsuga notification-rules list` |
+| `list-adaptive-notification-rules` / `get-adaptive-notification-rule` | `tsuga adaptive-notification-rules list` / `tsuga adaptive-notification-rules get <id>` |
 | `list-notification-silences` | `tsuga notification-silences list` |
 | `list-clusters` | `tsuga clusters list` |
 | `list-quality-reports` | `tsuga quality-reports list` |

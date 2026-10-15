@@ -79,7 +79,7 @@ hits=$(grep -nE '(^|[[:space:]`])rtk (tsuga|git|gh|yarn|node|npm|jq|grep|find|pr
 # wrong. The pattern cannot match a plural (it requires a space straight after the singular noun),
 # so no plural filter is needed — one would discard whole lines that contain both forms and turn a
 # violation into a PASS.
-SINGULAR='monitor|dashboard|dashboard-folder|log-route|team|service|slo|investigation|retention-policy|tag-policy|quality-report|public-token|ingestion-api-key|cloud-resource|notification-rule|notification-silence|notification-integration'
+SINGULAR='monitor|dashboard|dashboard-folder|log-route|team|service|slo|investigation|retention-policy|tag-policy|quality-report|public-token|ingestion-api-key|cloud-resource|notification-rule|adaptive-notification-rule|notification-silence|notification-integration'
 hits=$(grep -nE "tsuga ($SINGULAR) (get|list|create|update|delete)" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report singular-verb "$hits" "use plural: tsuga monitors get"
 
