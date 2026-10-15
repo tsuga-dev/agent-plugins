@@ -51,6 +51,10 @@ tsuga aggregation scalar -f /tmp/q.json          # returns {"results":[{"id":"q1
 
 All five lists non-empty plus a scalar aggregation returning a number = **go**. Anything else, fix
 auth before continuing: the procedure burns hours of subagent work if credentials drop mid-fanout.
+The exception is `services list` empty while the other lists return rows: the Services list is
+built from span metrics, so the account is missing them. Stop and point the user at
+`tsuga docs get data-collection/guides/how-to-generate-span-metrics`; Phase 3 cannot score
+services without them.
 On a multi-cluster account, pin `--cluster <id>` on every call or set a default — otherwise a
 phase can read a different cluster than the one you scored.
 

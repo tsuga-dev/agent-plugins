@@ -22,7 +22,8 @@ Tsuga MCP tools: must be available to your subagents for live discovery + live p
 
 Preconditions — verify before touching anything:
 1. `skills/incident-history/` is already built and non-empty (≥1 INC-* folder with SUMMARY.md). If not, run `$build-incident-history` first — see its RECOMMENDED_PROMPT.md. `knowledge-company` cross-links to incidents; don't fake that dependency.
-2. `tsuga teams list`, `tsuga services list`, `tsuga monitors list`, `tsuga dashboards list` all return non-empty results. If any are empty, fix CLI auth.
+2. `tsuga teams list`, `tsuga monitors list`, `tsuga dashboards list` all return non-empty results. If any are empty, fix CLI auth.
+   `tsuga services list` must return non-empty results too, but it lists only services that send span metrics (`traces.span.metrics.calls`). If it alone is empty, the account is missing span metrics, not auth: stop and point the user at `tsuga docs get data-collection/guides/how-to-generate-span-metrics`.
 3. `tsuga aggregation scalar -f <q>` works end-to-end. Test with a trivial count query before fanning out.
 
 Phase 1 — build:
