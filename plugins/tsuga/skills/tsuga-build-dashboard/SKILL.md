@@ -92,9 +92,10 @@ returned names yourself rather than piping them through non-`tsuga` shell comman
 candidate record its `type` and `temporality` (they decide the aggregation in Step 3), its
 `attributes` (filter and groupBy candidates), and its `unit` (the normalizer).
 
-For **logs**: `tsuga logs attributes` names the attribute dot-paths observed in a range, but names
-only — run `tsuga logs search` over the window to read real values. For **traces**: no catalog, so run
-`tsuga traces search`. Either way a filter and a groupBy must name something that exists.
+For **logs**: `tsuga logs attributes --search <text>` names the attribute dot-paths observed in a
+range that contain that text (such as `k8s`), but names only — run `tsuga logs search` over the window to
+read real values. For **traces**: no catalog, so run `tsuga traces search`. Either way a filter and a
+groupBy must name something that exists.
 
 If no metric appears, widening the window will not help: verify the `context.service.name` spelling
 with `tsuga services list` instead.
