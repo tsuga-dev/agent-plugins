@@ -32,7 +32,6 @@ Date flags accept `>=`, `<=` and `A..B` ranges, with or without a time part — 
 
 Every `gh` list and search command pages, and truncates by recency rather than by filter: without an
 explicit `--limit` the deploy that caused the incident falls off the page and the window reads as quiet.
-Defaults are 20 for `gh run list`, 30 for `gh search prs`, `gh release list` and `gh pr list`.
 
 ## Which PRs touched a service path
 

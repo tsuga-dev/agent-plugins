@@ -105,7 +105,7 @@ tsuga investigations create -d '{
 
 `name`, `slug` and `owner` are required on create — `tsuga investigations create --generate-skeleton` cannot show you that, so build the body from the fields above. The `slug` must be kebab-case and unique in the org, and no later update can change it. (If the skeleton call errors out instead of printing JSON, that is the CLI defect, not a bad payload.)
 
-Keep the returned `id`: you update this record at checkpoints and finish it at step 10. Field-by-field rules, the `contentMd` template and the environment-hygiene checks live in `references/incident-response/investigation-record`. A 403 means the key lacks `investigation` write, or write on the owning team you passed; that reference's skip rules then apply.
+Keep the returned `id`: you update this record at checkpoints and finish it at step 10. The investigation-record reference has the field-by-field rules, the `contentMd` template and the environment-hygiene checks. A 403 means the key lacks `investigation` write, or write on the owning team you passed; that reference's skip rules then apply.
 
 ### 3. Anchor from the broken monitor (if the case cites one)
 
@@ -133,8 +133,8 @@ If scope names a specific tech (Postgres, Redis, Kafka, …), the telemetry bran
 
 Disjoint goals, run concurrently. Each branch is its own subagent; do not serialize.
 
-- **telemetry sweep** — spawn against `references/incident-response/branch-telemetry-sweep`.
-- **change correlation** — spawn against `references/incident-response/branch-change-correlation`.
+- **telemetry sweep** — one subagent, briefed per the role list at the top of this skill.
+- **change correlation** — one subagent, briefed per the role list at the top of this skill.
 - **history** — `$incident-history` (prior incident archive mining, if mounted).
 - **codebase-grep** — the emphasis branch. One subagent per verbatim signal the telemetry sweep surfaces; 5 signals → 5 parallel greps. Brief them per the role list at the top of this skill.
 - **challenger** — one subagent against the leading hypothesis, same role list.
@@ -231,7 +231,7 @@ Hallucinated citations are worse than missing ones. When in doubt, demote.
 
 ### 10. Publish deliverables (default, not optional)
 
-Verdict assigned → publish the two durable artifacts. Full spec and templates: `references/incident-response/investigation-record`.
+Verdict assigned → publish the two durable artifacts.
 
 1. **Proofs dashboard** — one graph per validated telemetry claim, assertion-style graph names, every query probe-verified before create.
 2. **Final investigation record** — one last `tsuga investigations update <id>` that replaces the in-progress notes with the structured document, NOT a dump of the chat verdict. The name drops the "investigating" suffix.
@@ -296,13 +296,5 @@ Deliverables:
 - `tsuga_monitors` is a clue about signal semantics, not live incident truth.
 
 ## References
-
-Load when needed:
-
-- `references/incident-response/branch-telemetry-sweep` — telemetry-sweep subagent procedure
-- `references/incident-response/branch-change-correlation` — change-correlation subagent procedure
-- `references/incident-response/investigation-record` — durable deliverables (record + proofs dashboard) spec + templates
-- `references/incident-response/case-manifest` — JSON shape for structured case input
-- `references/incident-response/playbooks/` — domain disambiguation guides (step 4 lists the six)
 
 `tsuga` command shape, query syntax, safety rules and aggregation invariants come from the `tsuga-cli` skill and `tsuga <command> --help`; this skill does not restate them.

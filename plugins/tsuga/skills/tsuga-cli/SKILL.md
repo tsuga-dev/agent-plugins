@@ -21,7 +21,7 @@ Three layers own different things. Check the first two before trusting anything 
 
 Examples omit `--rationale` for brevity. Add it to docs/API-calling commands when audit context matters; do not hardcode canned rationale text.
 
-Use CLI help and `--generate-skeleton` first for CLI CRUD payload shape. Fetch docs when skeleton output is missing, ambiguous, or you need field semantics, enums, responses, or direct API integration details.
+Use CLI help and `--generate-skeleton` first for CLI CRUD payload shape. Before composing or correcting a request body, fetch its `api/` page from the table below: it has each field's type, enum values, bounds and defaults. Later sections give only what those pages do not say.
 
 Hardcode only the paths you need before you know what to search for; delegate the rest to `tsuga docs search`.
 
@@ -53,10 +53,10 @@ If docs are unavailable, report the CLI error and use `--help` / `--generate-ske
 
 The CLI prints results on stdout and everything else on stderr. Four behaviors change how output must be parsed:
 
-- **A parse error yields empty stdout.** An unrecognized subcommand, an unrecognized flag, or a bare command group produce no stdout at all: the error and help go to stderr. Empty stdout means "the command did not run", not "no results". Help the agent *requested* by a flag is the reverse — it goes to **stdout** at exit 0, including the `-h` that a bare `--from -1h` lexes into. Stdout that starts with `DESCRIPTION` is a help page, not a result.
+- **A parse error yields empty stdout.** An unrecognized subcommand, an unrecognized flag, or a bare command group produce no stdout at all: the error and help go to stderr. Empty stdout means "the command did not run", not "no results". Help the agent _requested_ by a flag is the reverse — it goes to **stdout** at exit 0, including the `-h` that a bare `--from -1h` lexes into. Stdout that starts with `DESCRIPTION` is a help page, not a result.
 - **Errors are plain text on stderr, never JSON.** An API failure prints `Error: <message>`, then `Status:`, `Request ID:` and `Details:` on their own lines. The API's machine-readable `code` is parsed and then dropped before rendering, so string-match the message.
-- **Branch on the exit code, not on stderr text.** `0` success, `1` other failure, `2` bad input, `3` auth, `4` API error, `5` network, `6` local state. The full table is on `account-and-settings/ai-access/tsuga-cli`. Two things it leaves implicit: every API failure collapses to `4`, so there is no distinct code for "not found" versus "unauthorized" versus "invalid query"; and a `2` from a numeric flag means the request was never sent, so it is not a statement about the data.
-- **`--log-level debug` prints each API response's method, URL, status and request id** to stderr, leaving stdout parseable. Quote the request id when reporting an API failure.
+- **Branch on the exit code, not on stderr text.** The CLI page's "Handle failures in scripts" table has the codes. Two things it leaves implicit: every API failure collapses to `4`, so there is no distinct code for "not found" versus "unauthorized" versus "invalid query"; and a `2` (a bad body, time value or link) means the request was never sent, so it is not a statement about the data. A malformed numeric flag is a parse error: exit `1` with empty stdout.
+- **Quote the request id when reporting an API failure.** `--log-level debug` prints it ("Debug API requests" on the CLI page).
 - **An unbounded `list` that returned a partial page prints `Showing N of M (offset O). Use --limit … and --offset …`.** Treat that as a hard stop, not a hint: coverage computed from one page is wrong.
 
 `TSUGA_API_URL` is allowlisted to `api.tsuga.com`, `api.tsuga-staging.com`, and localhost. Anything else fails before the request is sent, rather than leaking credentials.
@@ -64,12 +64,12 @@ The CLI prints results on stdout and everything else on stderr. Four behaviors c
 ## CLI-First Rules
 
 - During skill execution, use `tsuga` commands only. Do not curl APIs directly and do not add shell pipelines or command substitution to examples.
-- When the user pastes a Tsuga link — a short link (`https://app.tsuga.com/l/<code>`), a widget share link (`https://api.tsuga.com/v0/widget-shares/<orgId>/<code>`), or an app URL — run `tsuga unshorten <url>` before anything else. Never open the link or guess its query: the short link hides it, and a share link's unfurl carries only an image. All decoded URL parameters are under `searchParams`. Reuse `searchParams.query`, `searchParams.timeRange.from`/`to` for an absolute time range, and `searchParams.clusterId` in the follow-up command, and say which settings you did not carry over. Exit `4` means an API error; inspect the reported HTTP status. Only a `404` means the code is unknown, expired, or belongs to another organization; ask for a fresh link or verify the signed-in organization. Handle permission and server errors according to their status instead.
+- When the user pastes a Tsuga link — a short link (`https://app.tsuga.com/l/<code>`), a widget share link (`https://api.tsuga.com/v0/widget-shares/<orgId>/<code>`), or an app URL — run `tsuga unshorten <url>` before anything else. Never open the link or guess its query. Reuse `searchParams.query`, `searchParams.timeRange.from`/`to` for an absolute time range, and `searchParams.clusterId` in the follow-up command, and say which settings you did not carry over. "Expand a shared link" on the CLI page says what each failure status means; on a `404`, ask for a fresh link or verify the signed-in organization.
 - Always state `--from`/`--to`, or explicitly say the CLI default is being used.
-- Limit result count with the command's own flag, never `| head`. Check `--help`: the flag is not uniform. `--max-results` is on `logs search`, `traces search` and `rum search`; `--limit` is on most resource `list` commands but **not** on `notification-silences list`, `retention-policies list`, `tag-policies list`, `metrics list`, `interesting-fields list` or `clusters list`, and it *is* on three commands that are not lists: `quality-reports examples`, `kubernetes events` and `profiles top`. The raw-log cap under Safety still applies.
-- Use `--fields` to keep only the evidence needed for the task. Check `--help` for each command's output formats; field selection and response-wrapper behavior are documented on `account-and-settings/ai-access/tsuga-cli`. Keep fields needed to interpret results, such as timestamps and denominators.
-- Filter a resource `list` with its own flags (`--owners`, `--search-query`, `--exclude-<flag>`), listed by `--help`, rather than hand-building a `-d` body. Value syntax and the flag-over-`-d` precedence are under "Filter and sort list results" on `account-and-settings/ai-access/tsuga-cli`.
-- `--generate-skeleton` covers more than create/update: it is also on `grok parse`, `promql query`, `profiles query`, `traces contrast-sets`, `interesting-fields list`, and five resource `list` commands that accept `-d` but not `-f`. Run `--help` rather than assuming which body flags a command takes.
+- Limit result count with the command's own flag, never `| head`. The flag differs by command (`--max-results` on the searches, `--limit` on most but not all `list` commands and on a few that are not lists), so read it from that command's `--help`. The raw-log cap under Safety still applies.
+- Use `--fields` to keep only the evidence needed for the task. Check `--help` for each command's output formats; field selection and response-wrapper behavior are under "Select output fields" on the CLI page. Keep fields needed to interpret results, such as timestamps and denominators.
+- Filter a resource `list` with its own flags (`--owners`, `--search-query`, `--exclude-<flag>`), listed by `--help`, rather than hand-building a `-d` body. Value syntax and the flag-over-`-d` precedence are under "Filter and sort list results" on the CLI page.
+- `--generate-skeleton` covers more than create/update, including some query and `list` commands. Run `--help` rather than assuming which body flags a command takes.
 - Start narrow: service + team + env when known. Expand only when scoped queries return nothing, and state why.
 - Every finding cites the command and value that produced it.
 - A single signal is consistent with a hypothesis, not proof. Root cause needs at least two corroborating signals.
@@ -86,7 +86,7 @@ The CLI prints results on stdout and everything else on stderr. Four behaviors c
 - Cap raw log fetches at `--max-results 10`; use `tsuga logs patterns` for scale.
 - If `context.sensitive == "true"` appears, stop reproducing samples from that service.
 - Get explicit confirmation before any command that mutates remote state, local config, or the local environment: every resource `create`/`update`/`delete`, `auth login`/`logout`/`operation-key`, `config set default`, `config reset defaults`, `setup`, `install plugin`, `self-update`, `feedback`, and `profiles pprof -O <FILE>`, which writes a file. When confirming a `monitors update` or `slos update`, say whether it resets alert state, which closes open alerts and notifies again: `tsuga docs get alert/guides/how-alert-state-resets` lists the edits that do.
-- `auth status`, `config` with no subcommand, and every read command are safe to run unprompted. `auth status` never calls the API: it reports the saved credential only, so it cannot prove a credential is live. Use `auth whoami` for that. Never run `auth token` — it prints a live bearer token to stdout, straight into the transcript.
+- `auth status`, `config` with no subcommand, and every read command are safe to run unprompted. To prove a credential is live, use `auth whoami`, not `auth status`. Never run `auth token` — it prints a live bearer token to stdout, straight into the transcript.
 - No command is fully side-effect-free: any API call can renew and persist the OAuth session. That is a local credential write, not a change to Tsuga data.
 - Never claim alert firing state, deployment causality, on-call schedules, or ownership unless the command output directly proves it.
 
@@ -98,14 +98,14 @@ The CLI prints results on stdout and everything else on stderr. Four behaviors c
 
 ## Defaults Are Global, Not Per Command
 
-The builtin values are on `account-and-settings/ai-access/tsuga-cli`, and `tsuga config` prints the active ones. They come from one map keyed by **flag name**, not by command, so `tsuga config set default from --value=-1h` moves the window for logs, traces, RUM, metrics and `service-graph get` at once. Run `tsuga config` before querying, and state the window you actually queried rather than assuming the builtin.
+The builtin values are under "Set persistent defaults" on the CLI page, and `tsuga config` prints the active ones. They come from one map keyed by **flag name**, not by command, so `tsuga config set default from --value=-1h` moves the window for logs, traces, RUM, metrics and `service-graph get` at once. Run `tsuga config` before querying, and state the window you actually queried rather than assuming the builtin.
 
 ## TQL
 
-Fetch `explore/query-syntax` from the table above for the operators, field-level OR, ranges, wildcards and free-text matching. Three things it leaves out:
+The query syntax page covers the operators, field-level OR, ranges, wildcards and free-text matching. Three things it leaves out:
 
 - A space between two field filters is an implicit AND: `context.service.name:api status:500` keeps only the records matching both. An explicit `AND` between them is accepted and parses identically, so either form works.
-- `_exists_:field` is **not** rejected — it parses as a filter on a field literally named `_exists_` and silently returns zero rows. Use `field:*` to test that a field is set.
+- `_exists_:field` is **not** rejected — it parses as a filter on a field literally named `_exists_` and silently returns zero rows. Use the page's `field:*` form instead.
 - Exclusive ranges `{A TO B}` are rejected by the API with `must match format "tsuga-query"`; emulate one with `field:>A field:<B`.
 
 ## Logs
@@ -120,16 +120,14 @@ Raw samples do not scale. Past a handful of rows use `tsuga logs patterns`; for 
 
 ## RUM
 
-`tsuga rum search` queries raw RUM events, not aggregates; `tsuga rum attributes` lists the queryable attribute dot-paths. Both need `rum` read access, which a `viewer`, `editor` or `admin` role carries and an operation key needs granted explicitly. The stream model, the field-prefix rule, and the permission detail are on the CLI docs page — fetch `account-and-settings/ai-access/tsuga-cli` rather than guessing. The one rule worth repeating: a query filters on a **single stream** (`measurements.`, `events.` or `exceptions.`), so never mix fields from two streams in one query. In `rum search` an unprefixed field falls back to `events`; in an aggregation a bare name resolves to the stream that declares it, and a name that picks out no single stream falls back to `events` - whether every stream carries it or none does, so a misspelling queries `events` rather than failing.
+A RUM query reads one stream. The stream rules for a search and for an aggregation are under "Streams, field names, and types" on `data-collection/browser/rum-events`; fetch it before writing a RUM query or body. What it leaves implicit: in an aggregation, a field name that picks out no single stream, a misspelling included, reads `events` rather than failing. `rum search` and `rum attributes` both need RUM read access; the CLI page names the operation-key permission.
 
 ## Aggregations
 
-`tsuga aggregation scalar --generate-skeleton` prints a runnable body. Fetch `api/aggregateScalar` or `api/aggregateTimeseries` for field semantics the skeleton does not show. Keep these invariants:
+`tsuga aggregation scalar --generate-skeleton` prints a runnable body. The CLI sends that body to the public endpoint unchanged, so the aggregation API pages are authoritative for it, not the skeleton. What they leave out:
 
-- `timeRange.from` and `timeRange.to` are Unix seconds, not `-1h`.
-- For multi-cluster tenants, the resolution order and the exact failure message are under "Select a cluster" on `account-and-settings/ai-access/tsuga-cli`. Public API `clusterId` is a query parameter, not a body field.
-- A timeseries call without `aggregationWindow` fails with `body must have required property 'aggregationWindow'`. `aggregation scalar` accepts the field and silently ignores it, so a copied body gives no warning.
-- `formula` defaults to `q1`, so omit a bare `q1`; keep it when it does arithmetic, like `q1 * 100`.
+- A quoted `timeRange` bound is rejected with `body/timeRange/from must be integer`. Aggregation commands take no `--from` / `--to` flags, so convert a relative time to seconds before writing the body.
+- For multi-cluster tenants, the resolution order and the exact failure message are under "Select a cluster" on the CLI page.
 - `count` ignores `field` on `logs`, `traces` and `rum` — a copied body keeps it and still succeeds, with no warning. On `dataSource: "metrics"` it is the reverse: `field` is **required**, and without it the call fails with `count aggregate requires a non-empty field`.
 
 Canonical shape, and the one the cloud translator references point at (`aggregation timeseries`; drop `aggregationWindow` for `aggregation scalar`):
@@ -151,23 +149,18 @@ Canonical shape, and the one the cloud translator references point at (`aggregat
 
 ## Service Graph
 
-`tsuga service-graph get --help` has the argument and the flags. Pass a **service id** (not a name) from `tsuga services list`. Its `--from`, `--to` and `--query` resolve from the global defaults above rather than from anything specific to this command.
+`tsuga service-graph get --help` has the argument and the flags. Pass a **service id** (not a name) from `tsuga services list`. Its `--from` and `--to` resolve from the global defaults above; `--query` does not.
 
 > An empty graph usually means no traces in the window, not no dependencies. Widen `--from` before concluding isolation.
 
 ## Profiles
-
-`tsuga profiles top` ranks functions by self and inclusive sample value, `pprof` writes
-a merged profile for `go tool pprof`, and `query` returns folded stacks. The flags and sample types
-are on the CLI docs page; the collection model is in `data-collection/profiling`.
 
 Reach for a profile only after an aggregation has narrowed the problem to one service and operation:
 it answers "where is the CPU going inside this process", which no span or metric can. It is the wrong
 tool for a slow downstream call — a trace shows that, and `tsuga-analyze-trace-latency` owns it.
 
 An address where a function name should be is a **symbolization gap, not a mystery frame in the
-code**. Which runtimes resolve depends on the profiler image, so check
-`data-collection/profiling` for the current picture rather than assuming. Never build a narrative
+code**; the profiling page says which runtimes resolve. Never build a narrative
 on unresolved frames, and say how many of the top frames were unresolved when you report a
 profile at all.
 
@@ -175,14 +168,14 @@ profile at all.
 
 Run `tsuga metrics get <name>` before choosing aggregate/function. Type, temporality and unit decide the math, and the wrong choice produces plausible garbage. `visualize/guides/how-to-choose-a-metric-aggregation` has the choice table for gauges and samples, delta and cumulative counters, and histograms. Two things to add:
 
-- **The payload spellings.** That table names UI labels. `aggregate.type` carries `average`, `max`, `min`, `sum` and `percentile` (which also needs `field` and `percentile`). Everything the page calls a function is a separate per-query `functions` array entry: **Normalize per second** is `per-second`, then `rate`, `increase` and `last`.
+- **The payload spellings.** That table names UI labels. Copy the `aggregate.type` or `functions[].type` value whose meaning matches the label rather than lowercasing the label: **Normalize per second** is `per-second`, **Scale square root** is `sqrt`. Everything the page calls a function is a separate per-query `functions` array entry rather than an `aggregate.type`.
 - **Which end of a gauge to read.** The page answers **Average**, which is the baseline. Use `max` when the question is saturation.
 
 When the right metric is unclear, inspect existing dashboards before the metric catalog; dashboards contain validated metric/filter/aggregation combinations.
 
 ## Reference Bundles
 
-Fetch these with `tsuga docs get <path>` for content not covered by the product docs. They are served by path only and are not returned by `tsuga docs search`. If a translator needs local post-processing, describe what to inspect in the returned `tsuga` output instead of adding non-`tsuga` shell commands.
+Fetch these with `tsuga docs get <path>` for content not covered by the product docs. If a translator needs local post-processing, describe what to inspect in the returned `tsuga` output instead of adding non-`tsuga` shell commands.
 
 - `references/cli/app-deep-links` - app URL shapes.
 - `references/cli/kubectl-translator`, `references/cli/aws-translator`, `references/cli/gcp-translator`, `references/cli/azure-translator` - cloud/Kubernetes command translators.

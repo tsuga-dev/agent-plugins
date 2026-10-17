@@ -31,7 +31,7 @@ Infer the runtime from the repository, then fetch its page. The detection cues a
 | Ruby | `Gemfile`, `config.ru`, `config/application.rb`, `config/initializers/`, `sidekiq.yml` | `tsuga docs get data-collection/ruby` |
 | Rust | `Cargo.toml`, `src/main.rs`, `src/lib.rs`, `tracing`/`tokio`/`opentelemetry` dependencies | `tsuga docs get data-collection/rust` |
 
-Each language page carries install, bootstrap, environment variables, traces, metrics, and logs for that runtime. The per-runtime traps — initialization order, shutdown and flush paths, provider lifetime, agent-versus-SDK conflicts, context across async and worker boundaries — are listed per language under `Check high-risk language paths` in `tsuga docs get data-collection/guides/how-to-audit-opentelemetry-instrumentation`. Read that section and the language page before writing code, rather than recalled SDK rules.
+Each language page carries install, bootstrap, environment variables, traces, metrics, and logs for that runtime. The per-runtime traps — initialization order, shutdown and flush paths, provider lifetime, agent-versus-SDK conflicts, context across async and worker boundaries — are listed per language under `Check high-risk language paths` on the instrumentation audit page (table below). Read that section and the language page before writing code, rather than recalled SDK rules.
 
 Fetch shared docs as needed:
 
@@ -55,7 +55,7 @@ Fetch shared docs as needed:
 
 State the scope explicitly before proposing changes, for example `Signal scope: traces yes, logs yes, metrics no`.
 
-A broad request (`add OTel`, `instrument this service`, `set up observability`) means all three signals. `how-to-correlate-logs-and-traces` above splits OTLP log export, which carries `trace_id` and `span_id` on the records, from the stdout-and-file path, where the collector promotes them. Scope accordingly: a request for trace IDs in logs is usually only the second path. Both can be active at once and double-export the same record.
+A broad request (`add OTel`, `instrument this service`, `set up observability`) means all three signals. A request for trace IDs in logs usually means only the stdout-and-file path on the log-trace correlation page above, not OTLP log export. Both paths can be active at once and double-export the same record.
 
 ## Preflight
 
@@ -82,15 +82,9 @@ Generated code reads endpoints, service name, resource attributes, and keys from
 
 ## Verification
 
-Code that compiles is not telemetry that arrived. Do not state that a signal reaches Tsuga without a command and a returned value. One arrival check per in-scope signal, with the window bounded explicitly rather than left to the CLI default:
+Code that compiles is not telemetry that arrived. Do not state that a signal reaches Tsuga without a command and a returned value. Run one arrival check per in-scope signal with the three commands under `Validate from the command line` on the arrival page (table above), with `--from` and `timeRange.from` set to the deploy time rather than a relative default.
 
-```bash
-tsuga logs search   --query "context.service.name:<service>" --from <deploy-time> --to now --max-results 10
-tsuga traces search --query "context.service.name:<service>" --from <deploy-time> --to now --max-results 10
-tsuga aggregation scalar -d '{"dataSource":"metrics","timeRange":{"from":<deploy-time-unix-seconds>,"to":<now-unix-seconds>},"queries":[{"aggregate":{"type":"count","field":"<metric.name>"},"filter":"*"}]}'
-```
-
-Metrics need at least one full export interval inside the window before absence means anything. `tsuga metrics list` and `tsuga metrics get` read a name catalog, not the window, so the count is the only arrival evidence (`tsuga docs get explore/guides/how-to-troubleshoot-an-empty-query-result`). An empty result proves nothing about the cause: hand off to `tsuga-debug-telemetry-ingestion`, which owns classification and the debugging path. For the indexing delay, the name catalog, the UI walkthrough and the per-signal correlation checks, use `tsuga docs get data-collection/guides/how-to-validate-telemetry-arrival-in-tsuga`.
+`tsuga metrics get` reads the same name catalog as `metrics list`, so it is not arrival evidence either. An empty result proves nothing about the cause: hand off to `tsuga-debug-telemetry-ingestion`, which owns classification and the debugging path.
 
 ## Output Template
 

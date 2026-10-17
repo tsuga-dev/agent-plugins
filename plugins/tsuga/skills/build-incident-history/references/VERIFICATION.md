@@ -75,7 +75,7 @@ for f in $files; do
 done
 ```
 
-Paste each block into a shell and confirm it parses and returns a response. Empty results (`{"logs":[]}`) pass; an error does not. A mistyped `tsuga` command prints **empty stdout**, so treat no output at all as a failure, not a pass.
+Paste each block into a shell and confirm it parses and returns a response. Empty results (`[]`) pass; an error does not. A mistyped `tsuga` command prints **empty stdout**, so treat no output at all as a failure, not a pass.
 
 **Pass:** every sampled command executes cleanly.
 

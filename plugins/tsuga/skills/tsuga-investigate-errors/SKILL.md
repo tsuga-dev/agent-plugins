@@ -36,9 +36,9 @@ description: "Quantifies and explains a service's errors: confirms the count wit
    ```
    This is the authoritative error count. Do not claim errors are elevated without this value.
 
-3. `tsuga logs patterns --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to>` — cluster errors by structure. `tsuga docs get explore/logs` ("Log patterns") says what the numbers mean, including why a count is not exact and the 100-pattern cap per level and team; `size` is that page's Count. What it leaves out: `sampleSize` is the sum of the returned patterns' sizes, not a count of logs sampled, so `size / sampleSize` is a share of this call's own result and only step 2 gives the window total. `groups` holds the attribute key/value pairs constant across every log in the pattern, typically `level` and `context.team`. Under `-o tsv|csv` the same numbers come back as `count` and `ratio` (`size / sampleSize`); the app's Patterns view divides by the window total instead, so the ratio a user reads there is smaller. `context.team` is flattened to a `team` column.
+3. `tsuga logs patterns --query "context.service.name:\"<name>\" level:ERROR <env filter if provided>" --from <from> --to <to>` — cluster errors by structure. `tsuga docs get explore/logs` ("Log patterns") says what the numbers mean, including why a count is not exact and the 100-pattern cap per level and team; Each row carries `count` (that page's Count), `sampleSize`, `ratio` (`count / sampleSize`), `pattern`, and the attribute values constant across every log in the pattern as columns, typically `level` and `team`. What the page leaves out: `sampleSize` is the sum of the returned patterns' counts, not a count of logs sampled, so `ratio` is a share of this call's own result and only step 2 gives the window total. The app's Patterns view divides by the window total instead, so the ratio a user reads there is smaller.
 
-4. `tsuga logs new-error-patterns --team <team> --service <name> --from <from> --to <to>` (add `--env <env>` if known) — detects error patterns first seen in the window. Every filter is optional; omitting one widens the scan, so state the scope you actually queried. Rows carry no pattern string — the only structure is an optional `exampleLog`.
+4. `tsuga logs new-error-patterns --team <team> --service <name> --from <from> --to <to>` (add `--env <env>` if known) — detects error patterns first seen in the window. Omitting a filter widens the scan, so state the scope you actually queried. Rows carry no pattern string — the only structure is an optional `exampleLog`.
 
 5. `tsuga logs error-pattern-increases --team <team> --from <from> --to <to>` (add `--env <env>` if provided) — detects anomalous team-level error volume. Cross-reference returned patterns against the service name and steps 2–3 before treating them as service-relevant.
 
@@ -48,13 +48,13 @@ description: "Quantifies and explains a service's errors: confirms the count wit
    - target: `context.service.name:"<name>" status_code:error <env filter if provided>`
    - baseline: `context.service.name:"<name>" NOT status_code:error <env filter if provided>`
 
-   `timeRange` here is Unix seconds and is not resolved from relative strings, unlike `--from` / `--to`. For the body shape, the tuning flags, how to read the response and what an empty target group means, follow `tsuga-contrast-sets`.
+   `timeRange` here is Unix seconds and is not resolved from relative strings, unlike `--from` / `--to`. For the body shape, the tuning fields, how to read the response and what an empty target group means, follow `tsuga-contrast-sets`.
 
 ## Evidence Requirements
 
 - "Errors are elevated" = scalar count > 0, confirmed by step 2 (aggregation scalar). Not assumed from log presence alone.
 - State exact count + window in all findings.
-- "Error pattern X is dominant" = `size` value from `logs patterns`, cited explicitly and noted as excluding the tail the cap cut.
+- "Error pattern X is dominant" = `count` value from `logs patterns`, cited explicitly and noted as excluding the tail the cap cut.
 - "Attribute X explains the errors" = a `values` entry from `traces contrast-sets`, cited per `tsuga-contrast-sets`.
 - "Root cause" requires at least two corroborating signals; log-only evidence is a finding or hypothesis, not root cause.
 
@@ -73,7 +73,7 @@ Source: aggregation scalar, filter: context.service.name:"<name>" level:ERROR <e
 ## Error Patterns (<N> patterns from logs patterns)
 | Sanitized structure summary | Count | Team |
 |---|---|---|
-| <pattern tokens...> | <size> | <context.team from groups> |
+| <pattern tokens...> | <count> | <team> |
 
 ## Error Pattern Increases (<N> spiking patterns from error-pattern-increases)
 | Pattern summary | Team | Env | Increase timestamps (UTC) |

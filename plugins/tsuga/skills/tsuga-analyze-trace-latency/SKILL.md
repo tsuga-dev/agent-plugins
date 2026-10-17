@@ -21,7 +21,7 @@ description: "Investigates where latency comes from: finds the peak window, rank
 
 ## Workflow
 
-1. `tsuga services list`, plus `tsuga teams list` / `teams get <team-id>` when ownership matters. How to read `traceRequestRate` / `traceErrorRate` is step 2 of `references/incident-response/branch-telemetry-sweep`. Neither value is a reason to stop before querying the requested window.
+1. `tsuga services list`, plus `tsuga teams list` / `teams get <team-id>` when ownership matters. That page's step 2 covers how to read `traceRequestRate` / `traceErrorRate`. Neither value is a reason to stop before querying the requested window.
 
 2. Selected percentile per operation per 5-minute window, in one call:
 
@@ -55,7 +55,7 @@ Zero results is a valid outcome — not every service emits both signals.
 
 ## Drilling into one trace
 
-The steps above find _which operation_ is slow across many traces. `tsuga traces latency-summary` and `tsuga traces summarize` explain _one_ trace. Both are read-only and both take `--trace-id` and a `--from`/`--to` that covers the trace (`--help` has the flags). `explore/traces` ("Search traces outside the app") has the span cap, which command reports truncation, and each field's unit. Reading the two payloads:
+The steps above find _which operation_ is slow across many traces. `tsuga traces latency-summary` and `tsuga traces summarize` explain _one_ trace. Both are read-only, and their `--from`/`--to` must cover the trace. `explore/traces` ("Search traces outside the app") has the span cap, which command reports truncation, and each field's unit. Reading the two payloads:
 
 **One trace is one sample.** Use it to pick what to look at next, never to make a service-wide claim without steps 2–4.
 

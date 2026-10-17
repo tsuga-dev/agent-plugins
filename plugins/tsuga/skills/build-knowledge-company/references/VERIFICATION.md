@@ -36,7 +36,7 @@ The four gates below are what the linter cannot reach. Run them by hand.
 
 The only gate that catches an invented metric name or monitor ID. Take 5 random dossiers, paste
 every `tsuga` command from their Ready-to-run sections into a shell, and confirm each one parses
-and returns a response. Empty results (`{"logs":[]}`, `{"series":[]}`) pass; a CLI or API error
+and returns a response. Empty results (`[]` from a search, `{"series":[]}` from a timeseries) pass; a CLI or API error
 does not.
 
 ```bash
@@ -63,10 +63,10 @@ grep -lr "tsuga aggregation" "$OUT"/teams \
   | while read -r f; do echo "=== $f ==="; awk '/<<JSON$/,/^JSON$/' "$f" | head -50; done
 ```
 
-Each body must have `"timeRange"` in Unix seconds (`$FROM` / `$TO`, never a relative string), a
-`"dataSource"` of `"logs"`, `"traces"`, `"metrics"` or `"rum"` (never `"spans"`), `"groupBy"` /
-`"formula"` / `"aggregationWindow"` at body level rather than inside a query item, and a
-`"field"` on every aggregate when the data source is `"metrics"`.
+Each body must match the request-body table on `api/aggregateScalar` or `api/aggregateTimeseries`,
+plus three traps those pages do not show: `"timeRange"` built from `$FROM` / `$TO`, never a relative
+string; never `"dataSource": "spans"`; and a `"field"` on every aggregate when the data source is
+`"metrics"`, `count` included.
 
 ## Gate C — team cross-link
 

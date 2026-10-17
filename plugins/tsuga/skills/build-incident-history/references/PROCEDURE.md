@@ -86,7 +86,7 @@ OUTPUT=./skills/incident-history/references/incidents
 
 ## Phase 5 — verification
 
-Run `VERIFICATION.md`'s gates. All must pass before you ship. The gate that catches most build bugs is the sampled execution of `## Diagnostic path` commands: a subagent that wrote pseudo-syntax, or that cited a metric / service / monitor absent from the account, fails there.
+Run `VERIFICATION.md`'s gates. All must pass before you ship. The gate that catches most build bugs is the sampled execution of `## Diagnostic path` commands: a subagent that wrote pseudo-syntax, or cited a monitor ID absent from the account, fails there. A metric or service absent from the account returns empty or `0` and passes, so Gate 6 has to catch it.
 
 ## Phase 6 — cross-link with knowledge-company
 

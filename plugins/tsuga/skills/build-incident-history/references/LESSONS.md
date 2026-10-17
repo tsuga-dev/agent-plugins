@@ -8,7 +8,7 @@ Every command a subagent writes into `## Diagnostic path` must be runnable `tsug
 
 The translation table, the aggregation body rules and the forbidden-token grep live in **`${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md`**. That is the contract; do not restate it here and do not let a subagent work without it. `check-skill-health`'s `scripts/check-forbidden-tokens.sh` enforces it mechanically.
 
-Flags a template cannot get from that file, because they are what `--help` prints: `tsuga logs search` and `tsuga traces search` take `--from`, `--to`, `--query`, `--max-results`; `tsuga aggregation scalar|timeseries` take only `-f`/`-d`/`--generate-skeleton`, so the time range lives in the JSON body.
+Read the flags from `tsuga <command> --help`. The aggregation commands take no time flags, so the time range lives in the JSON body.
 
 ## Content mistakes
 

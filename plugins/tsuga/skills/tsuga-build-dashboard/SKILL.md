@@ -28,13 +28,17 @@ Design, build, and validate a Tsuga dashboard.
 Two reference pages carry every field-level rule. Fetch them with `tsuga docs get`; do not reconstruct
 their contents from memory, and do not guess a field name that neither page lists.
 
-- `references/dashboards/widget-reference` — every widget type with worked JSON, the required and
-  optional field list per type, the cross-cutting options (`groupBy`, `groupByMode`, `aliases`,
-  `legendMode`, `customLink`, `yAxisSettings`), normalizers, formula patterns, `functions`, the
-  connection and PromQL variants, and the per-type gotchas.
+- `references/dashboards/widget-reference` — every widget type with worked JSON, the cross-cutting
+  options (`groupBy`, `groupByMode`, `aliases`, `legendMode`, `customLink`, `yAxisSettings`),
+  normalizers, formula patterns, `functions`, the connection and PromQL variants, and the per-type
+  gotchas.
 - `references/dashboards/layout-rules` — the 12-column grid, row tiling patterns, minimum widget
   size, section ordering, the section color rotation, widget naming, dashboard-level filters,
   folders, and `timePreset` values.
+
+For a field's exact spelling, accepted values, bounds or defaults, and which fields each widget type
+takes (the page's by-`type` table), fetch `api/createDashboard` (envelope and `graphs[]`) or
+`api/updateDashboardGraph` (`visualization`); the two references above have what they cannot say.
 
 For product behaviour behind a field, use `tsuga docs search` then `tsuga docs get`, and cite `path`,
 `title`, and `link`. The reference pages above defer to
@@ -92,9 +96,8 @@ returned names yourself rather than piping them through non-`tsuga` shell comman
 candidate record its `type` and `temporality` (they decide the aggregation in Step 3), its
 `attributes` (filter and groupBy candidates), and its `unit` (the normalizer).
 
-For **logs**: `tsuga logs attributes --search <text>` names the attribute dot-paths observed in a
-range that contain that text (such as `k8s`), but names only — run `tsuga logs search` over the window to
-read real values. For **traces**: no catalog, so run `tsuga traces search`. Either way a filter and a
+For **logs**: `tsuga logs attributes` returns names only — run
+`tsuga logs search` over the window to read real values. For **traces**: no catalog, so run `tsuga traces search`. Either way a filter and a
 groupBy must name something that exists.
 
 If no metric appears, widening the window will not help: verify the `context.service.name` spelling
@@ -118,8 +121,7 @@ unverified body.
 ### Step 4 — Assemble the payload
 
 Embed the verified queries into widget JSON, following the two reference pages above. Run
-`tsuga dashboards create` (or `tsuga dashboards update`) with `--generate-skeleton` for the envelope, and read the
-`api/createDashboard` / `api/updateDashboard` doc pages when a dashboard-level field is unclear.
+`tsuga dashboards create` (or `tsuga dashboards update`) with `--generate-skeleton` for the envelope.
 
 ### Step 5 — Confirm, then create or update
 
@@ -166,8 +168,7 @@ one-widget change goes through the whole-dashboard update above.
 - KPI tiles without trend context.
 - Raw counts without normalization.
 - Inconsistent filters or dimensions across widgets.
-- Duplicate chart names, or a name that breaks `references/dashboards/layout-rules` ("Widget
-  Naming").
+- Duplicate chart names, or a name that breaks the layout rules' "Widget Naming".
 
 ## Ship checklist
 

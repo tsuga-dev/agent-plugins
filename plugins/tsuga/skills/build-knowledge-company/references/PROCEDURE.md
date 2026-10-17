@@ -23,12 +23,11 @@ right:
 
 - `tsuga teams list` → `.id` (`jqzx-rd5j6-k084`) and `.name` (`central`).
 - `tsuga monitors list` / `tsuga dashboards list` → `.owner` is the team **id**.
-- `tsuga services list` → `.teams` is an array of objects, `[{"team": "central", "lastSeenAt": …}]`,
+- `tsuga services list` → `.teams` is an array of objects, `[{"team": "central"}]`,
   keyed by team **name**.
 
 Comparing `.teams[]` to an id, or to a bare string, silently matches nothing and scores every team
-at zero. `services list` also returns one row per service/env sighting, not one per service, so
-every count over it needs `map(.serviceName) | unique` first.
+at zero. `services list` rows are per environment (`categorize/services/index`), so every count over it needs `map(.serviceName) | unique` first.
 
 ## Phase 0 — access check
 
@@ -51,8 +50,8 @@ tsuga aggregation scalar -f /tmp/q.json          # returns {"results":[{"id":"q1
 
 All five lists non-empty plus a scalar aggregation returning a number = **go**. Anything else, fix
 auth before continuing: the procedure burns hours of subagent work if credentials drop mid-fanout.
-The exception is `services list` empty while the other lists return rows: the Services list is
-built from span metrics, so the account is missing them. Stop and point the user at
+The exception is `services list` empty while the other lists return rows: the account is missing
+span metrics. Stop and point the user at
 `tsuga docs get data-collection/guides/how-to-generate-span-metrics`; Phase 3 cannot score
 services without them.
 On a multi-cluster account, pin `--cluster <id>` on every call or set a default — otherwise a

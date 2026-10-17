@@ -27,7 +27,7 @@ Every aggregation below is one JSON body. How you pass its time range and scope 
 
 `account-and-settings/ai-access/tsuga-cli` ("Telemetry commands") has the formats `--from` / `--to` accept, and the negative-offset trap. Inside a JSON body passed with `-d '<json>'` or `-f <file>`, `timeRange.from` / `to` are unix seconds only. Pass the cluster as a flag, `tsuga --cluster <cluster-id> ...`, never as a body field. Never curl the API directly.
 
-In an organization with several clusters, the telemetry calls in this workflow - the aggregations, `tsuga logs error-pattern-increases`, `tsuga logs search`, `tsuga traces search` - fail loudly without a cluster. `tsuga services list` does not: it answers silently from the organization's first cluster. Resolve the cluster once with `tsuga clusters list` and pass it to every call, or the registry will describe the wrong cluster's service, or report a live service as missing.
+In an organization with several clusters, resolve the cluster once with `tsuga clusters list` and pass it to every call. The aggregations, `tsuga logs error-pattern-increases`, `tsuga logs search` and `tsuga traces search` fail loudly without it. `tsuga services list` does not: `api/queryServices` documents that omitting the cluster answers silently from the organization's first one, so the registry will otherwise describe the wrong cluster's service, or report a live service as missing.
 
 ## Documentation grounding
 
@@ -37,7 +37,7 @@ Do not delay active triage for docs. For product or API details, use `tsuga docs
 
 ### 1 - Service registry
 
-`tsuga services list` - confirm the service, take the owning team from `teams[].team`, and note the query time. `teams[]` holds one `{team, lastSeenAt}` object per observed team, so the name is `teams[].team`, not `teams[0]`; `tsuga teams get` takes an id, so match the name against `tsuga teams list` first when you need the team's details.
+`tsuga services list` - confirm the service, take the owning team from `teams[].team`, and note the query time. `teams[]` holds one `{team}` object per observed team, so the name is `teams[].team`, not `teams[0]`; `tsuga teams get` takes an id, so match the name against `tsuga teams list` first when you need the team's details.
 
 Read the row's rates carefully:
 
@@ -49,7 +49,7 @@ Read the row's rates carefully:
 
 ### 2 - Monitor inventory
 
-`tsuga monitors list` - count monitors whose `configuration.queries[].filter` references this service name; note `configuration.type`, `priority`, and the query time for each match. This is configuration state, not firing state. A `log-error-pattern` monitor names its services in `configuration.filter.services[]` instead and carries no `queries`, so it is missing from this count - say the count covers query-filter monitors rather than reporting the service as uncovered.
+`tsuga monitors list` - count monitors whose `configuration.queries[].filter` references this service name; note `configuration.type`, `priority`, and the query time for each match. This is configuration state, not firing state. Pattern monitor types name their services in `configuration.filter.services[]` instead and carry no `queries`, so they are missing from this count - say the count covers query-filter monitors rather than reporting the service as uncovered.
 
 ### 3 - Parallel signal sweep
 

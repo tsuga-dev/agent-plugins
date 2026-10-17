@@ -5,7 +5,7 @@
 - [Template body](#template-body--copy-verbatim-fill-in-placeholders) — the section contract, copy verbatim
 - [Exemplar](#exemplar--abbreviated) — a filled-in SUMMARY.md at the target density
 
-The canonical section order. `VERIFICATION.md` Gate 2 checks that the seven load-bearing headings are present, not that every optional one is, nor that they appear in this order:
+The canonical section order. `VERIFICATION.md` Gate 2 checks that the seven load-bearing headings are present and in this order, plus the H1, not that every optional one is:
 
 `# {incident_id} — {title}` → identity table → `## Incident at a glance` → `## Timeline` → `## Paging surface during incident` → `## Diagnostic path` → `## Root cause` → `## Remediation` → `## Lessons / follow-ups` → `## Confidence` (optional) → `## Commentary` (optional).
 

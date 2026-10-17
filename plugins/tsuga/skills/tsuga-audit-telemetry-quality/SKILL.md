@@ -23,29 +23,29 @@ Docs lookup rationale and docs-error behavior: follow `tsuga-cli`.
 
 ## 1. Read the Quality Report First
 
-`tsuga quality-reports list --team <TEAM_NAME>`, plus `--cluster <CLUSTER_ID>` when the org has more than one cluster. The list is paginated, so page it out before scoring anything. For the row shape, per-team scoring, the `min(rows.createdAt)` report timestamp, the 48-hour staleness flag, the tag-policy compliance rules, and the `examples`/`exampleCount` preview rule, follow `references/cli/playbooks/reliability-review`.
+`tsuga quality-reports list --team <TEAM_NAME>`; page it out before scoring anything. For the row shape, per-team scoring, the `min(rows.createdAt)` report timestamp, the 48-hour staleness flag, the tag-policy compliance rules, and the `examples`/`exampleCount` preview rule, follow `references/cli/playbooks/reliability-review`.
 
 Two reading rules decide the rest of the audit:
 
 - `status: "ignored"` means the rule did not apply to the available data, or could not be evaluated for that scope (see the playbook on `evaluatedAt`). It is neither a pass nor a failure: that defect class is unmeasured, so it moves into your own judgment.
-- The report is one stored snapshot. A failed row may already be fixed and a passed row may have regressed. Re-check with a scoped query any row you act on.
+- A failed row may already be fixed and a passed row may have regressed. Re-check with a scoped query any row you act on.
 
 ## 2. Division of Labour
 
-`how-to-audit-telemetry-quality` names the rule families the report covers and the areas left to you, and `account-and-settings/quality-reports` lists the remaining families. The `ruleId` values in the returned rows are the authoritative list of what the report measures. The report also flags:
+The audit guide names the rule families the report covers and the areas left to you, and the quality-reports page ("Notable rule families") lists the rest. The `ruleId` values in the returned rows are the authoritative list of what the report measures. The report also flags:
 
-| Area                | Also flagged by the report                                                                                                                                     |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Area                | Also flagged by the report                                                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Log structure       | ungrouped multiline stack traces, attribute naming variants, attributes that always carry identical values, attributes that should be remapped to standard ones |
-| Log timestamps      | logs dated ahead of their intake time                                                                                                                          |
-| Log severity        | DEBUG logs in production                                                                                                                                       |
-| Trace shape         | an orphan span is one whose `parent_span_id` resolves to no span in the trace                                                                                  |
-| Collection coverage | missing Collector self-metrics                                                                                                                                 |
+| Log timestamps      | logs dated ahead of their intake time                                                                                                                           |
+| Log severity        | DEBUG logs in production                                                                                                                                        |
+| Trace shape         | an orphan span is one whose `parent_span_id` resolves to no span in the trace                                                                                   |
+| Collection coverage | missing Collector self-metrics                                                                                                                                  |
 
 Quote the failing row and its recommendation for any of those. The CLI mechanics for the areas left to you:
 
-- **Metric naming, instrument type, and temporality fit.** `tsuga metrics list` returns the cluster's metric-name catalog with each name's type and temporality, so read temporality off the list and take attributes from `tsuga metrics get <METRIC_NAME>`. Both ignore `--from`/`--to`, and a name outlives the metric, so whether one is live comes from an aggregation count over the window and nothing else. That rule is on `explore/guides/how-to-troubleshoot-an-empty-query-result`.
-- **Cardinality.** Count it with a `tsuga aggregation scalar` `unique-count` on `<METRIC_NAME>` for the metric's series count, then on `<METRIC_NAME>.<ATTRIBUTE>` for each suspect dimension. Spell the attribute exactly as `tsuga metrics get <METRIC_NAME>` lists it, `context.` prefix included: a path naming no stored attribute is not rejected and returns `0`, which reads like an absent dimension, so confirm the spelling before trusting a zero. The body, and the same count for an attribute that lives on spans or logs, are in `references/telemetry/signal-choice`.
+- **Metric naming, instrument type, and temporality fit.** `tsuga metrics list` returns the cluster's metric-name catalog with each name's type and temporality, so read temporality off the list and take attributes from `tsuga metrics get <METRIC_NAME>`. Both ignore `--from`/`--to`, so a name on the list is not evidence of data in your window; only an aggregation count is. "Widen the time range" on `explore/guides/how-to-troubleshoot-an-empty-query-result` has why.
+- **Cardinality.** The `unique-count` recipe and the zero a misspelt attribute returns are in "Audit metrics" in the audit guide. `references/telemetry/signal-choice` has the request body, the same count for an attribute that lives on spans or logs, and how far off the sketch can be.
 - **Span naming, kind, status discipline, links, and noise.** Aggregate on `span.name` and `span.kind` before sampling with `tsuga traces search --max-results 10`, and reconstruct the multi-service flow before calling a span duplicated.
 - **Application-log trace correlation.** The report scores the share of logs without `trace_id` across all of a team's traced services, so one low-volume service can lack it entirely while the row passes. Count logs with and without `trace_id` per `context.service.name` before calling correlation healthy.
 
@@ -73,7 +73,7 @@ Route missing telemetry or broken parent/child linkage to `tsuga-debug-telemetry
 ## Evidence Rules
 
 - Every finding cites the command and value that produced it, or the quality-report row it came from.
-- Cardinality findings quote the count and the window it came from, and say it is an estimate. `references/telemetry/signal-choice` has how far off the sketch can be.
+- Cardinality findings quote the count and the window it came from, and say it is an estimate.
 - Source-code findings cite file path and line. If not confirmed in Tsuga, label as `Recommendation (not verified in Tsuga)`.
 
 ## Safety

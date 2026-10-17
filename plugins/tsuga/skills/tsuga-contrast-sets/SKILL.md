@@ -44,7 +44,7 @@ This reads **spans, not logs**, so a service that logs errors without marking sp
 
 ### Explain latency — slow against normal, same window
 
-Same shape, splitting on `duration` instead of status. `duration` is in **milliseconds**. Pick the two bounds from an actual latency distribution (`tsuga-analyze-trace-latency`) rather than guessing, and leave a gap between them so the groups are genuinely distinct:
+Same shape, splitting on `duration` instead of status. Pick the two bounds from an actual latency distribution (`tsuga-analyze-trace-latency`) rather than guessing, and leave a gap between them so the groups are genuinely distinct:
 
 ```
 targetGroup:   context.service.name:"<name>" duration:><p90>
@@ -81,13 +81,13 @@ baselineGroup: context.service.name:"<name>" context.service.version:"<previous>
 
 Add `status_code:error` to both when the flag was an error-rate regression, or a `duration` bound to both when it was latency. Adding it to only one side contrasts the wrong thing.
 
-Use one window covering both versions when `firstSeenAt` / `lastSeenAt` show they overlapped, which keeps the window out of the contrast. For a clean cutover, `categorize/services/faulty-deployments` covers giving each group its own version's window and what that costs a finding. Re-run any strong finding against the previous version inside its own window before calling it a consequence of the deploy.
+Use one window covering both versions when `firstSeenAt` / `lastSeenAt` show they overlapped, which keeps the window out of the contrast. For a clean cutover, the same page covers giving each group its own version's window and what that costs a finding. Re-run any strong finding against the previous version inside its own window before calling it a consequence of the deploy.
 
 Findings here read as "the new version's failures concentrate on this route / pod / host", which is what turns a rollback decision into a fix.
 
 ## Tuning
 
-The doc page `api/findContrastSets` carries the full body shape: every knob, its range, and what it gates. The defaults are `topK: 10`, `minLift: 1.5`, `minSupport: 0.5`. Reach for them only when the default result is unreadable, and change one at a time.
+The doc page `api/findContrastSets` carries the full body shape: every knob, its range, and what it gates. What it does not say: the defaults are `topK: 10`, `minLift: 1.5`, `minSupport: 0.5`. Reach for them only when the default result is unreadable, and change one at a time.
 
 `candidateAttrs` names span attributes in the `span_attributes.*` namespace, not the `spanAttributes.*` spelling that appears in span search responses.
 
@@ -128,8 +128,7 @@ Spans: <targetGroupCount> target, <baselineGroupCount> baseline
 
 - An empty `contrastSets` next to a high `failedAttributeCount` means most candidates errored out rather than that the two groups are alike. Retry, or name the candidates explicitly with `candidateAttrs`, before reporting "no difference".
 - Discovery ranks candidates by frequency, not by cardinality, so a near-unique attribute such as pod name or full URL is tested by default. One that existed only inside the incident window comes back as a top finding for a reason unrelated to the failure.
-- With `candidateAttrs` omitted, discovery falls back to a fixed default attribute list, which leaves those near-unique attributes out, when it times out. The response does not say which set was used.
-- An empty `contrastSets` with `failedAttributeCount` at `0` and `candidateAttrs` omitted can mean discovery found no varying attribute and tested nothing. Name the attributes you suspect in `candidateAttrs` and rerun before reporting "no difference".
+- The timeout fallback to the default attribute list leaves those near-unique attributes out, and the response does not say which set was used.
 - Each attribute is compared on its most frequent values per group, so a value in an attribute's long tail cannot become a finding however concentrated it is in the target.
 - The baseline must be genuinely comparable. Contrasting against a window with different traffic shape produces findings about the traffic, not the failure.
 

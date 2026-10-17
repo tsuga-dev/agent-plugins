@@ -42,11 +42,10 @@ tsuga logs search --query "context.env:prod context.service.name:{svc}" --from=-
 # 2. Top error patterns in the last 24h
 tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from=-24h
 
-# 3. Active metric namespace
+# 3. Metric catalog (names only, not proof of recent data)
 tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'
 
-# 4. Service metadata (team membership, versions). One row per (service, env), and the default
-#    page is 100 rows, so raise the limit before filtering.
+# 4. Service metadata (team membership, versions). One row per (service, env).
 tsuga services list --limit 1000 | jq '.[] | select(.serviceName == "{svc}")'
 ```
 

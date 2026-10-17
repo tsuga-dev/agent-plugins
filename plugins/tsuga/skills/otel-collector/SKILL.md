@@ -59,14 +59,14 @@ Remote Kubernetes, Tsuga, customer, or prospect environment changes require a se
 Processor order, the `memory_limiter` position, receiver binding, and batch/queue sizing are stated on the pipelines and operating pages above. Follow those pages rather than a remembered order.
 
 - Component types are snake_case. The pipelines page above has the spelling rule and a worked example of a directory name that does not match the registered type.
-- Never write a real ingestion key, operation key, token, or account ID into a config. Use environment variables such as `${TSUGA_INGESTION_KEY}`, or a platform secret.
+- Never write a real ingestion key, operation key, token, or account ID into a config.
 - The Collector has no dry-run flag. The deploy and operating pages above give the `validate` command and the rule that it must run with the deployed distribution.
-- On the Kubernetes chart, the operating page sends you to `helm template` instead. The render fails on a bad value or on a collector image below the chart's floor. `validate` cannot read the rendered manifest, so extract the collector config from it first if you want to run it.
+- On the Kubernetes chart, the render replaces `validate` (Kubernetes page, `Validate Kubernetes telemetry in Tsuga`). To run `validate` as well, extract the collector config from the rendered manifest first.
 - Print validation and rollout commands for an operator to run. This skill must not execute non-`tsuga` commands.
 
 ## OTTL Guardrails
 
-Fetch the transform and redact page above before writing a statement. It states the syntax rules a statement fails to parse without — no assignment operator, `nil` rather than `null`, the `where ... != nil` guard — plus `error_mode: ignore`, what `error_mode` does not cover, and the rule against inventing attribute names. Beyond it:
+The transform and redact page states the syntax rules a statement fails to parse without — no assignment operator, `nil` rather than `null`, the `where ... != nil` guard — plus `error_mode: ignore`, what `error_mode` does not cover, and the rule against inventing attribute names. Beyond it:
 
 - Prefer exact equality over regex. Regex costs more per record and is easier to get subtly wrong.
 

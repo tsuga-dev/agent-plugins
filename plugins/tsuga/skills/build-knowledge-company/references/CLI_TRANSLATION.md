@@ -37,14 +37,12 @@ The CLI names a resource in the plural and the verb second: `tsuga <resource-plu
 | `list-clusters` | `tsuga clusters list` |
 | `list-quality-reports` | `tsuga quality-reports list` |
 
-Run `tsuga <command> --help` for the flags; nothing here restates them. Three translation traps
+Run `tsuga <command> --help` for the flags; nothing here restates them. Two translation traps
 `--help` will not warn you about:
 
 - A tool's `limit=` becomes `--max-results` on a telemetry search and `--limit` on a paginated
   resource list. Both flags exist, on different commands.
 - `tsuga logs patterns` has no result cap at all — narrow it with `--query`, not a flag.
-- `tsuga logs error-pattern-increases` filters by `--team` and `--env` only. There is no
-  `--service`; `tsuga logs new-error-patterns` is the one that takes it.
 
 ## Aggregations need a body file
 

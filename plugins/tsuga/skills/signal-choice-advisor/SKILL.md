@@ -28,27 +28,27 @@ Tsuga docs decide the answer. Use `tsuga docs search`, then `tsuga docs get`; ci
 | Naming browser custom actions and measurements                 | `data-collection/browser/grafana-faro`                             |
 | Continuous profiles                                            | `data-collection/profiling`                                        |
 
-If Tsuga docs do not settle a name, use the OpenTelemetry semantic conventions at https://opentelemetry.io/docs/specs/semconv/ and the attribute registry before inventing one. If neither covers the recommendation, label it `Recommendation (not verified in Tsuga or OTel docs)`.
+If neither that page's "Check semantic conventions before naming" nor the conventions it links settle a name, label the recommendation `Recommendation (not verified in Tsuga or OTel docs)`.
 
 ## Judgment the docs do not carry
 
-- `how-to-choose-a-telemetry-signal` rules against duplicating a span's count or duration as a metric unless the measurement is product-specific and traces cannot derive it. It does not say how to judge that: add a Histogram only when the aggregate distribution is the question and the trace sample rate cannot answer it. Never add a parallel Counter: it drifts from the span count and has to be reconciled forever.
+- Duplicating a span's count or duration as a metric ("Prefer traces for operations" on that page): add a Histogram only when the aggregate distribution is the question and the trace sample rate cannot answer it. Never add a parallel Counter: it drifts from the span count and has to be reconciled forever.
 - "Did Y happen inside operation Z": a structured log carrying `trace_id` and `span_id` - not a child span, and not a span event.
-- RUM events and continuous profiles are separate ingestion paths, not a fifth instrument to choose between. Reach for them when the question is frontend timing, a crash, or CPU attribution, and say so explicitly rather than modelling it as a metric. Both have their own views. Profiles arrive as `profile.samples.<service>` metrics, so a widget can chart sample counts but not the call stack. A recommendation that has to land on a dashboard has to be `logs`, `metrics` or `traces`.
+- RUM events and continuous profiles are separate ingestion paths, not a fifth instrument to choose between. Reach for them when the question is frontend timing, a crash, or CPU attribution, and say so explicitly rather than modelling it as a metric. Both have their own views; a dashboard widget can chart profile sample counts, not the call stack.
 - Reject the metric attributes on that page's deny list outright rather than measuring them, and treat query strings and trace IDs the same way. Measure every other candidate rather than guessing. Never quote a series-count zone or threshold - Tsuga publishes none.
 
 ## Workflow
 
 1. Gather the requirement. If it is too vague to name an operation, ask: "What specific operation, event, or measurement are you trying to capture?"
 2. If a service name was given: `tsuga services list`, then read `traceRequestRate`. A value means the service already emits traces, so check whether the proposal duplicates a span aggregation. An absent field means the query failed, not zero.
-3. If the metric already exists: `tsuga metrics get` for its type, unit, temporality and attribute names. Where it returns `attributeCardinalities`, read them, and take what those figures measure from `references/telemetry/signal-choice`. Where it returns attribute names only, measure cardinality with the aggregation on that same page.
+3. If the metric already exists: `tsuga metrics get` for its type, unit, temporality and attribute names. Where it returns `attributeCardinalities`, read them; where it returns attribute names only, run the count. The signal-choice reference's "Count cardinality, do not guess it" covers both.
 4. Recommend the signal, the name, the placement and the dimensions. Name the alternatives you rejected and why.
 5. If you read source or live telemetry, share what you saw and ask whether it matches how the service instruments itself.
 6. Hand the SDK implementation off - this skill never writes instrumentation code. Where an `otel-instrumentation` skill is available, it owns that step.
 
 ## Verification
 
-After the change ships, confirm the signal arrives: `tsuga traces search` or `tsuga logs search` for a new span or log, an `tsuga aggregation scalar` count over the window for a new metric, with the metric name as the aggregate `field` - `count` on `metrics` fails without one. The metric catalog ignores the time range, so a name in `tsuga metrics list` and a `tsuga metrics get` hit both say the name was seen at some point, never that a datapoint landed in the window.
+After the change ships, confirm the signal arrives: `tsuga traces search` or `tsuga logs search` for a new span or log, an `tsuga aggregation scalar` count over the window for a new metric, with the metric name as the aggregate `field` - `count` on `metrics` fails without one. A `tsuga metrics list` or `tsuga metrics get` hit never says a datapoint landed in the window (`api/listMetrics`).
 
 ## Output
 
@@ -82,9 +82,8 @@ Label every finding `source: code analysis` or `source: tsuga CLI`, and a verifi
 
 ## Safety
 
-- Never recommend a metric dimension carrying per-request unique identifiers (`user_id`, `order_id`, `session_id`, `request_id`).
+- Never recommend a metric dimension from that deny list, or a per-session identifier.
 - If cardinality was not measured, state it as an unquantified risk rather than guessing a number.
-- If OTel semconv defines a standard name, always prefer it.
 - Advisory output only. If you propose a source change, show it and require explicit confirmation before any edit.
 - Never read `.env`, `*.secret`, `*credentials*`, or `*token*` files, and never reproduce keys, tokens, or endpoint values found in source.
 - State assumptions and cardinality risks in the Limitations section.
