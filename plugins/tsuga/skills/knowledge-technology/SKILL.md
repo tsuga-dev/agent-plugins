@@ -35,7 +35,7 @@ Fetch with `tsuga docs get <path> | jq -r .content`. These pages are path-addres
 
 Coverage gaps worth knowing before you fetch: `cert-manager`, `containerd`, `etcd`, `mongodb` and `vault` have `overview` only. `airflow`, `aws-vpc-flow-logs` and `gcp-vpc-flow-logs` are log-first and have no `metrics`.
 
-Not listed? Fall back to a generic sweep via `$incident-investigation`.
+Not listed? Fall back to a generic sweep via `$incident-investigation`. A standalone Linux host (VM, bare metal) has no reference page: fetch `integrations/linux-host` rather than reading its `system.*` metrics through the `kubernetes` catalog.
 
 ## Reading the metrics CSV
 

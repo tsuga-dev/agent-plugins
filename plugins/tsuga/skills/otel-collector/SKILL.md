@@ -20,6 +20,7 @@ Fetch the relevant docs before writing or reviewing Collector config:
 | Component choice, processor order, connectors, stateful routing, container/file log parsing and `trace_id` promotion | `tsuga docs get data-collection/guides/collector-pipelines` |
 | Receiver exposure, `memory_limiter`, batch/queue/retry sizing, scaling, Collector self-telemetry | `tsuga docs get data-collection/guides/how-to-operate-an-opentelemetry-collector` |
 | Kubernetes chart | `tsuga docs get integrations/kubernetes/helm-chart` |
+| Linux VM host agent (systemd), `host_metrics` scrapers | `tsuga docs get data-collection/guides/how-to-install-the-collector-on-a-linux-vm`, `tsuga docs get integrations/linux-host` |
 | OTLP export to Tsuga | `tsuga docs get data-collection/forward-to-tsuga/configure-otlp-export` |
 | Resource attributes | `tsuga docs get data-collection/guides/how-to-add-resource-attributes` |
 | OTel field mapping | `tsuga docs get data-collection/guides/default-mapping-for-opentelemetry-formats` |
