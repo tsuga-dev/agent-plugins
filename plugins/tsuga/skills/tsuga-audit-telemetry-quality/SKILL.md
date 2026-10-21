@@ -47,7 +47,7 @@ Quote the failing row and its recommendation for any of those. The CLI mechanics
 - **Metric naming, instrument type, and temporality fit.** `tsuga metrics list` returns the cluster's metric-name catalog with each name's type and temporality, so read temporality off the list and take attributes from `tsuga metrics get <METRIC_NAME>`. Both ignore `--from`/`--to`, so a name on the list is not evidence of data in your window; only an aggregation count is. "Widen the time range" on `explore/guides/how-to-troubleshoot-an-empty-query-result` has why.
 - **Cardinality.** The `unique-count` recipe and the zero a misspelt attribute returns are in "Audit metrics" in the audit guide. `references/telemetry/signal-choice` has the request body, the same count for an attribute that lives on spans or logs, and how far off the sketch can be.
 - **Span naming, kind, status discipline, links, and noise.** Aggregate on `span.name` and `span.kind` before sampling with `tsuga traces search --max-results 10`, and reconstruct the multi-service flow before calling a span duplicated.
-- **Application-log trace correlation.** The report scores the share of logs without `trace_id` across all of a team's traced services, so one low-volume service can lack it entirely while the row passes. Count logs with and without `trace_id` per `context.service.name` before calling correlation healthy.
+- **Application-log trace correlation.** The report pools logs from the team's most-traced services only, so a low-volume service can lack `trace_id` entirely, or sit outside the checked set, while the row passes. Count logs with and without `trace_id` per `context.service.name` before calling correlation healthy.
 
 ## 3. Classify Before Recommending
 
