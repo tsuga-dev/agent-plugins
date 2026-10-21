@@ -90,14 +90,14 @@ Pick the widget's `source` from the question before discovering anything — "ho
 usually a log or span count, "how much memory" is a metric.
 
 For **metrics**: `tsuga metrics list` and `tsuga metrics get`. Both read a name catalog, so confirm with an
-aggregation count over the window before building on a name — see
+aggregation count over the last 30 minutes, widened as in Step 3 only when empty, before building on a name — see
 `explore/guides/how-to-troubleshoot-an-empty-query-result`. **Never invent metric names.** Read the
 returned names yourself rather than piping them through non-`tsuga` shell commands. For each
 candidate record its `type` and `temporality` (they decide the aggregation in Step 3), its
 `attributes` (filter and groupBy candidates), and its `unit` (the normalizer).
 
 For **logs**: `tsuga logs attributes` returns names only — run
-`tsuga logs search` over the window to read real values. For **traces**: no catalog, so run `tsuga traces search`. Either way a filter and a
+`tsuga logs search` over the last 30 minutes, widened as in Step 3 only when empty, to read real values. For **traces**: no catalog, so run `tsuga traces search`. Either way a filter and a
 groupBy must name something that exists.
 
 If no metric appears, widening the window will not help: verify the `context.service.name` spelling
@@ -115,8 +115,11 @@ The body shape, the filter syntax and the counter math all belong to `tsuga-cli`
 and confirm it **returns data** before embedding: `tsuga aggregation timeseries` for time-bucketed widgets,
 `tsuga aggregation scalar` for scalar and grouped ones. On a multi-cluster org scope the verification call
 with the `--cluster <cluster-id>` flag, not a body field; the dashboard payload itself carries no
-cluster. If a query returns nothing, fix it at the metric or filter level — never embed an
-unverified body.
+cluster. Set the body's `timeRange` to the **last 30 minutes**, not the widget's own window: the
+check executes on the org's cluster, and a 24h or 7-day scan per widget can saturate it for every
+user. Only when the result is empty, widen the `timeRange` one step at a time, up to **7 days** at most. If a query
+still returns nothing at 7 days, fix it at the metric or filter level — never embed an unverified
+body.
 
 ### Step 4 — Assemble the payload
 

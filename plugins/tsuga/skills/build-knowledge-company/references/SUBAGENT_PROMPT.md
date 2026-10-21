@@ -36,8 +36,8 @@ Write a SERVICE_KNOWLEDGE.md dossier for the {company} service `{svc}` (owning t
 **Live probes you MUST run** (before writing — this grounds the dossier in reality):
 
 ```bash
-# 1. Log shape + volume in the last 7 days
-tsuga logs search --query "context.env:prod context.service.name:{svc}" --from=-7d --max-results 50
+# 1. Log shape + volume in the last 24h (widen to -48h, then -72h, only if empty)
+tsuga logs search --query "context.env:prod context.service.name:{svc}" --from=-24h --max-results 50
 
 # 2. Top error patterns in the last 24h
 tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from=-24h

@@ -207,7 +207,7 @@ This section is load-bearing. It's what tells a future investigator which claims
 
 7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it's in `tsuga metrics list`. If it isn't, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
 8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
-9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-7d --max-results 50` before writing Log shape. The patterns must come from real output.
+9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-24h --max-results 50` before writing Log shape, widening to `-48h`, then `-72h`, only if it returns nothing. The patterns must come from real output.
 10. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".
 
 ### On framing
