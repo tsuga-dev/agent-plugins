@@ -19,7 +19,7 @@ Fetch the relevant docs before writing or reviewing Collector config:
 | Existing Collectors | `tsuga docs get data-collection/forward-to-tsuga/existing-collectors` |
 | Component choice, processor order, connectors, stateful routing, container/file log parsing and `trace_id` promotion | `tsuga docs get data-collection/guides/collector-pipelines` |
 | Receiver exposure, `memory_limiter`, batch/queue/retry sizing, scaling, Collector self-telemetry | `tsuga docs get data-collection/guides/how-to-operate-an-opentelemetry-collector` |
-| Kubernetes chart | `tsuga docs get integrations/kubernetes/helm-chart` |
+| Kubernetes chart | `tsuga docs get integrations/kubernetes/helm-chart` to install, `tsuga docs get integrations/kubernetes/helm-chart-reference` for values, `extra*` components, `customConfig` and the image floor |
 | Linux VM host agent (systemd), `host_metrics` scrapers | `tsuga docs get data-collection/guides/how-to-install-the-collector-on-a-linux-vm`, `tsuga docs get integrations/linux-host` |
 | OTLP export to Tsuga | `tsuga docs get data-collection/forward-to-tsuga/configure-otlp-export` |
 | Resource attributes | `tsuga docs get data-collection/guides/how-to-add-resource-attributes` |
@@ -62,7 +62,7 @@ Processor order, the `memory_limiter` position, receiver binding, and batch/queu
 - Component types are snake_case. The pipelines page above has the spelling rule and a worked example of a directory name that does not match the registered type.
 - Never write a real ingestion key, operation key, token, or account ID into a config.
 - The Collector has no dry-run flag. The deploy and operating pages above give the `validate` command and the rule that it must run with the deployed distribution.
-- On the Kubernetes chart, the render replaces `validate` (Kubernetes page, `Validate Kubernetes telemetry in Tsuga`). To run `validate` as well, extract the collector config from the rendered manifest first.
+- On the Kubernetes chart, the render replaces `validate` (Helm chart install page, step 1, `helm template`). To run `validate` as well, extract the collector config from the rendered manifest first.
 - Print validation and rollout commands for an operator to run. This skill must not execute non-`tsuga` commands.
 
 ## OTTL Guardrails
