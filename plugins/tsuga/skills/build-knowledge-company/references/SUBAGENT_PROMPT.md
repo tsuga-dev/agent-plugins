@@ -79,7 +79,7 @@ grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWind
   | grep -v '"aggregationWindow":' \
   | grep -v '"dataSource":' \
   | grep -v '"filter":' \
-  | grep -v '/explorer?query='
+  | grep -vE '/(logs|explorer)\?query='
 
 # Forbidden rtk prefix
 grep -nE '^rtk |[[:space:]]rtk ' "$F"
