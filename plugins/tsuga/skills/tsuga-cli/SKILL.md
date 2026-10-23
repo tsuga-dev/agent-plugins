@@ -57,7 +57,7 @@ The CLI prints results on stdout and everything else on stderr. Four behaviors c
 - **Errors are plain text on stderr, never JSON.** An API failure prints `Error: <message>`, then `Status:`, `Request ID:` and `Details:` on their own lines. The API's machine-readable `code` is parsed and then dropped before rendering, so string-match the message.
 - **Branch on the exit code, not on stderr text.** The CLI page's "Handle failures in scripts" table has the codes. Two things it leaves implicit: every API failure collapses to `4`, so there is no distinct code for "not found" versus "unauthorized" versus "invalid query"; and a `2` (a bad body, time value or link) means the request was never sent, so it is not a statement about the data. A malformed numeric flag is a parse error: exit `1` with empty stdout.
 - **Quote the request id when reporting an API failure.** `--log-level debug` prints it ("Debug API requests" on the CLI page).
-- **An unbounded `list` that returned a partial page prints `Showing N of M (offset O). Use --limit … and --offset …`.** Treat that as a hard stop, not a hint: coverage computed from one page is wrong.
+- **An unbounded `list` that returned a partial page prints `Showing N of M (offset O). Use --limit … and --offset …`.** Treat that as a hard stop, not a hint: coverage computed from one page is wrong. Rerun with `--all` to get every item.
 
 `TSUGA_API_URL` is allowlisted to `api.tsuga.com`, `api.tsuga-staging.com`, and localhost. Anything else fails before the request is sent, rather than leaking credentials.
 
