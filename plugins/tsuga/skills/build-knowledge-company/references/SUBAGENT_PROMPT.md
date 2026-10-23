@@ -45,8 +45,9 @@ tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:E
 # 3. Metric catalog (names only, not proof of recent data)
 tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'
 
-# 4. Service metadata (team membership, versions). One row per (service, env).
-tsuga services list --limit 1000 | jq '.[] | select(.serviceName == "{svc}")'
+# 4. Service metadata (team membership, versions). One row per (service, env). The search
+#    filters on the server, so the 1,000-name list cap can't hide it; jq drops partial-name matches.
+tsuga services list --search-query "{svc}" | jq '.[] | select(.serviceName == "{svc}")'
 ```
 
 Do not skip these. The Golden signals, Log shape, and Metric-namespace sections all depend on the live output. If a live probe returns empty, **say so in the Confidence note** — do not invent replacement content.

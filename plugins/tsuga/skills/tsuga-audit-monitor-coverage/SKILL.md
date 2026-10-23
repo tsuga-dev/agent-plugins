@@ -17,7 +17,9 @@ pages do not say. None of them documents a response.
 ## Required Inputs
 
 - **Scope** — defaults to every service, and can narrow to one team, service or env: narrow server-side
-  with the `services list` filters.
+  with the `services list` filters. It lists only services with span metrics in `--stats-window`
+  (default `1h`), so pass `--stats-window 24h` or a service quiet for the last hour drops out of
+  the denominator.
   Set `--cluster` per cluster on a multi-cluster org, or the audit silently covers only the first
   cluster. A row is one (service, env) pair, so a service running in three environments is three
   rows: state which denominator the percentages use.

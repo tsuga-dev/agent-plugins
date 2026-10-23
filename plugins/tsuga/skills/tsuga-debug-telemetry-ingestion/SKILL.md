@@ -36,7 +36,7 @@ Hand a confirmed-language source fix to `otel-instrumentation` and a Collector c
 
 Name one of these before the second query. Each has a different next hop, and the wrong one costs an hour.
 
-- **Service not visible.** `tsuga services list` is a catalog, not arrival evidence: "Check the service identity fields" in the inventory guide has the refresh cycle, lookback and removal delay that decide whether a service has a row yet, or still. Query the signal directly before concluding either way.
+- **Service not visible.** `tsuga services list` reads span metrics only, so it proves span-metric arrival and nothing about logs or raw traces. `categorize/guides/how-to-troubleshoot-service-inventory-issues` has what creates a row and the catalog delay. Search with `--search-query` before calling a service missing, and query the signal directly before concluding either way.
 - **All signals missing.** One thing shared by all three: endpoint, key, protocol, or a Collector that is down. Not instrumentation.
 - **One signal missing.** That signal's provider, exporter, or pipeline. The other two already prove the endpoint and the key work.
 - **Sparse signal.** A sampler or a filter processor, not export.
