@@ -43,7 +43,7 @@ tsuga logs search --query "context.env:prod context.service.name:{svc}" --from=-
 tsuga logs patterns --query "context.env:prod context.service.name:{svc} level:ERROR" --from=-24h
 
 # 3. Metric catalog (names only, not proof of recent data)
-tsuga metrics list | jq '.[] | select(.name | startswith("{svc-prefix}"))'
+tsuga metrics list --search "{svc-prefix}"
 
 # 4. Service metadata (team membership, versions). One row per (service, env). The search
 #    filters on the server, so the 1,000-name list cap can't hide it; jq drops partial-name matches.

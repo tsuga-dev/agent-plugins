@@ -172,7 +172,7 @@ Run `tsuga metrics get <name>` before choosing aggregate/function. Type, tempora
 - **The payload spellings.** That table names UI labels. Copy the `aggregate.type` or `functions[].type` value whose meaning matches the label rather than lowercasing the label: **Normalize per second** is `per-second`, **Scale square root** is `sqrt`. Everything the page calls a function is a separate per-query `functions` array entry rather than an `aggregate.type`.
 - **Which end of a gauge to read.** The page answers **Average**, which is the baseline. Use `max` when the question is saturation.
 
-When the right metric is unclear, inspect existing dashboards before the metric catalog; dashboards contain validated metric/filter/aggregation combinations.
+When the right metric is unclear, inspect existing dashboards before searching the metric catalog with `tsuga metrics list --search <text>`; dashboards contain validated metric/filter/aggregation combinations.
 
 ## Reference Bundles
 

@@ -110,7 +110,7 @@ Traffic / errors / latency / saturation. Each signal names a **specific metric o
 | Latency | p95 of `{metric}` | <{ms}ms | >{ms}ms | `{monitor_id}` |
 | Saturation | `{queue_depth_or_pool_metric}` | <{N} | >{N} | `{monitor_id}` |
 
-If any signal has no live-metric backing (i.e., you can't find the metric in `tsuga metrics list`), say so explicitly: "No emitted metric for this signal; derive by log count." Don't invent a metric name.
+If any signal has no live-metric backing (i.e., `tsuga metrics list --search <prefix>` finds no metric for it), say so explicitly: "No emitted metric for this signal; derive by log count." Don't invent a metric name.
 
 ## Log shape
 
@@ -205,7 +205,7 @@ This section is load-bearing. It's what tells a future investigator which claims
 
 ### On content
 
-7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it's in `tsuga metrics list`. If it isn't, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
+7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it with `tsuga metrics get <name>`. If that returns not found, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
 8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
 9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-24h --max-results 50` before writing Log shape, widening to `-48h`, then `-72h`, only if it returns nothing. The patterns must come from real output.
 10. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".

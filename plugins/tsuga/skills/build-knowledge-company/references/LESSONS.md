@@ -18,7 +18,7 @@ Read before starting, re-read before each subagent batch. Command shape lives in
 It means the subagent believes its own grep returned zero. Sample 5–10 output files by eye and
 check independently:
 
-- Do the Golden signals cite metric names that appear in `tsuga metrics list`?
+- Do the Golden signals cite metric names that resolve via `tsuga metrics get <name>`?
 - Do the Monitor reproductions use IDs that resolve via `tsuga monitors get <id>`?
 - Does at least one Ready-to-run command execute cleanly when pasted into a shell?
 

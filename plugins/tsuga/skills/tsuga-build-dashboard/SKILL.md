@@ -89,7 +89,8 @@ Latency:    1× timeseries (p50/p95/p99), 1× top-list (slowest operations)
 Pick the widget's `source` from the question before discovering anything — "how many errors" is
 usually a log or span count, "how much memory" is a metric.
 
-For **metrics**: `tsuga metrics list` and `tsuga metrics get`. Both read a name catalog, so confirm with an
+For **metrics**: `tsuga metrics list --search <text>` to find candidates, then `tsuga metrics get` per
+name. Both read a name catalog, so confirm with an
 aggregation count over the last 30 minutes, widened as in Step 3 only when empty, before building on a name — see
 `explore/guides/how-to-troubleshoot-an-empty-query-result`. **Never invent metric names.** Read the
 returned names yourself rather than piping them through non-`tsuga` shell commands. For each
@@ -155,7 +156,7 @@ one-widget change goes through the whole-dashboard update above.
 
 ## Evidence requirements
 
-- Every metric name must come from `tsuga metrics list` — never invented.
+- Every metric name must resolve with `tsuga metrics get` — never invented.
 - Every aggregation body must be verified with `tsuga aggregation scalar` or `tsuga aggregation timeseries`, and
   return data, before embedding.
 - `owner` must be a team ID from `tsuga teams list` — never inferred from a name.
