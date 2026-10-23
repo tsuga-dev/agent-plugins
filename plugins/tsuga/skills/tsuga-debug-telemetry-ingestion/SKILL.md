@@ -50,6 +50,7 @@ Name one of these before the second query. Each has a different next hop, and th
 - **A timestamp in the future is accepted and then unqueryable.** "Max age at intake" has the rule and the clock check. It looks exactly like a broken exporter, so check the clock before the pipeline.
 - **`tsuga metrics list` ignores `--from` and `--to`.** The arrival guide has why a name on it is not arrival evidence and what is. `tsuga metrics get <name>` reads that same catalog and returns metadata only.
 - **Metric attribute keys are lowercased on ingest.** The mapping guide's "Metrics" section has the rule, the empty result a wrong-case filter returns, and which signals are exempt. RUM keys keep their case too. From the CLI, read the spelling off the `attributes` list in `tsuga metrics get <name>` before reporting a metric as missing.
+- **An attribute sent with an empty value is not stored.** The mapping guide's "Mapping summary" has the payload shapes. Records that arrive without one attribute point at the sender's value for that key, not at the pipeline.
 - **Absence of callee spans is not propagation evidence.** That is an ingestion or instrumentation gap on the callee. Broken linkage needs callee spans carrying a missing or wrong parent, or several unrelated trace IDs for one logical request.
 
 ## RUM
