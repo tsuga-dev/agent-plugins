@@ -63,7 +63,7 @@ phase can read a different cluster than the one you scored.
 OUT=./skills/knowledge-company/references
 mkdir -p "$OUT/teams"
 
-tsuga teams list --limit 1000 > /tmp/teams-raw.json
+tsuga teams list --all > /tmp/teams-raw.json
 jq 'length as $n | "discovered \($n) teams"' /tmp/teams-raw.json
 
 jq -r '.[] | [.id, .name, .visibility // "private"] | @tsv' /tmp/teams-raw.json > /tmp/team-index.tsv
@@ -74,9 +74,9 @@ zero services can be skipped. Score each one, caching the fleet dumps so the loo
 them per team:
 
 ```bash
-tsuga monitors list   --limit 1000 > /tmp/monitors-raw.json
-tsuga services list   --limit 1000 > /tmp/services-raw.json
-tsuga dashboards list --limit 1000 > /tmp/dashboards-raw.json
+tsuga monitors list   --all > /tmp/monitors-raw.json
+tsuga services list   --all > /tmp/services-raw.json
+tsuga dashboards list --all > /tmp/dashboards-raw.json
 
 while IFS=$'\t' read -r team_id team_name vis; do
   monitors=$(jq --arg id "$team_id" '[.[] | select(.owner == $id)] | length' /tmp/monitors-raw.json)
@@ -95,9 +95,9 @@ TEAM_KNOWLEDGE.md. Everyone else does.
 These feed the top-level docs:
 
 ```bash
-tsuga notification-rules list --limit 1000 > /tmp/notification-rules.json
-tsuga log-routes list         --limit 1000 > /tmp/routes.json
-tsuga metrics list                         > /tmp/metrics.json
+tsuga notification-rules list --all > /tmp/notification-rules.json
+tsuga log-routes list         --all > /tmp/routes.json
+tsuga metrics list            --all > /tmp/metrics.json
 
 # Service-to-volume table (fuel for service scoring). `dataSource` is body-level, so logs and
 # traces need one call each; ranking on logs alone buries a well-instrumented, log-quiet API.
@@ -190,7 +190,7 @@ A monitor's filter lives at `.configuration.queries[].filter`, and a dashboard's
 ```bash
 SVC_DATA=/tmp/service-data
 mkdir -p "$SVC_DATA"
-tsuga dashboards list --limit 1000 > /tmp/dashboards-raw.json
+tsuga dashboards list --all > /tmp/dashboards-raw.json
 
 while read -r svc; do
   mkdir -p "$SVC_DATA/$svc"

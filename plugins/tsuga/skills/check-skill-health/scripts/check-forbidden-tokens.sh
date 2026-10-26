@@ -92,8 +92,8 @@ hits=$(grep -nE '(^|`)tsuga (span|spans|trace|log|metric|event|events|alert|aler
 [ -n "$hits" ] && report no-such-group "$hits" "groups are logs, traces, metrics, rum, aggregation"
 
 # 6. --limit on telemetry commands, which take --max-results. Resource commands (monitors,
-# dashboards, …) are genuinely paginated with --limit, so they are not flagged.
-hits=$(grep -nE 'tsuga (logs|traces|metrics|rum|aggregation|interesting-fields) [a-z-]+ .*--limit\b' "${FILES[@]}" 2>/dev/null)
+# dashboards, …) and `metrics list` are genuinely paginated with --limit, so they are not flagged.
+hits=$(grep -nE 'tsuga ((logs|traces|rum|aggregation|interesting-fields) [a-z-]+|metrics (get|assets-usage)) .*--limit\b' "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report limit-flag "$hits" "use --max-results"
 
 if [ "$fail" -eq 0 ]; then

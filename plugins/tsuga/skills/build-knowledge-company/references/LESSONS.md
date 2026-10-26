@@ -120,8 +120,10 @@ for days, that belongs in Caveats.
 It lists the cluster's metric-name catalog and ignores `--from` / `--to` — the same invocation
 returns the same rows at `-5m` and at `-30d` — and it keeps a name for weeks after the metric
 stops reporting. So a name being in the list says nothing about whether that metric arrived in
-the window you care about; only an `aggregation scalar` count over the window does. A Golden
-signal citing a name the list does not carry is the one to challenge.
+the window you care about; only an `aggregation scalar` count over the window does. The list is
+also paginated and returns only the first page unless you pass `--all`, so a name missing from an
+unsearched first page proves nothing; a name missing from `--search <name>` or `--all` output was
+never seen. A Golden signal citing a name the full list does not carry is the one to challenge.
 
 ## Process
 
