@@ -183,7 +183,7 @@ What's grounded in live evidence, what's inferred, and what the reader should re
 - **High confidence:** {monitor IDs, metric names, log patterns — anything pulled from authoritative sources and cross-validated}.
 - **Medium confidence:** {things pulled from docs or team dossier but not re-probed live; dashboard counts from an aggregate that may have paginated}.
 - **Low confidence / inferred:** {things the agent guessed, e.g., "probably uses Redis because the image name suggests it" — mark these clearly}.
-- **What to refresh:** "`tsuga metrics list` is a catalog, not a window: a name absent from a `--search` or `--all` result was never emitted (absence from an unsearched first page proves nothing), but a name present proves nothing about the period — re-confirm a metric is still live with an `aggregation scalar` count over the window you care about."
+- **What to refresh:** "`tsuga metrics list` is a catalog, not a window: a name absent from a `--search` or `--all` result has not reported for weeks, if ever (absence from an unsearched first page proves nothing), but a name present proves nothing about the period — confirm a metric is live with an `aggregation scalar` count over the window you care about."
 - **Source material quality:** flag here if `monitors.json`/`dashboards.json`/`incident-files.txt` inputs were empty at collect time.
 
 This section is load-bearing. It's what tells a future investigator which claims in the dossier to trust and which to re-verify.
