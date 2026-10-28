@@ -48,107 +48,50 @@
       ]
     },
     {
-      "name": "gh",
-      "description": "GitHub CLI for inspecting workflow runs, PRs, commits, releases, and deployments.",
+      "name": "tsuga-audit",
+      "description": "Use when auditing a Tsuga configuration: quality report, monitor and SLO coverage, notification routing, dashboards, metrics, or telemetry quality.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "incident-investigation",
-      "description": "Primary entry point for active-incident investigation, post-incident RCA, or recurring-degradation triage.",
-      "files": [
-        "SKILL.md",
-        "agents/openai.yaml"
-      ]
-    },
-    {
-      "name": "knowledge-technology",
-      "description": "Per-technology reference bundles with metric names, incident shapes, derived signals, and log patterns.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "otel-collector",
-      "description": "Use when Collector YAML, Helm values, OTLP exporters, receiver binding, pipeline topology, or OTTL expressions are involved.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "otel-instrumentation",
-      "description": "Use when adding, fixing, generating, or auditing OpenTelemetry app SDK setup across nine languages.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "signal-choice-advisor",
-      "description": "Use when choosing an OpenTelemetry signal, instrument, or telemetry name.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "tsuga-analyze-trace-latency",
-      "description": "Use when asked about slow requests, high latency, latency spikes, p95/p99 trace duration, or slow spans.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "tsuga-audit-monitor-coverage",
-      "description": "Use when asked to check monitor coverage, services without monitors, alerting gaps, or notification routing.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "tsuga-audit-telemetry-quality",
-      "description": "Use when auditing telemetry quality for logs, metrics, traces, or resource identity.",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "tsuga-build-dashboard",
-      "description": "Use when asked to create, update, validate, or review a Tsuga dashboard or its widgets.",
+      "name": "tsuga-build-assets",
+      "description": "Use when creating, updating, or deleting Tsuga dashboards, monitors, SLOs, notification rules, routes, policies, or other assets.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "tsuga-cli",
-      "description": "Use when a task involves Tsuga CLI commands, TQL search, aggregation bodies, or service ownership.",
+      "description": "Use when running the tsuga CLI itself: install, auth, configuration, commands and flags, output, exit codes, and which commands need confirmation.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "tsuga-contrast-sets",
-      "description": "Use when asked what distinguishes one group of spans from another: why these requests fail, what the slow ones have in common, or what changed between two deployed versions.",
+      "name": "tsuga-collect-data",
+      "description": "Use when getting telemetry into Tsuga: OpenTelemetry SDK setup, Collector config and OTTL, signal choice, or missing data.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "tsuga-debug-telemetry-ingestion",
-      "description": "Use when telemetry is missing, sparse, delayed, or not visible in Tsuga.",
+      "name": "tsuga-design",
+      "description": "Use when deciding what to measure or configure: objectives, SLIs, signals, comparisons, verification, or team, access and retention strategy.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "tsuga-investigate-errors",
-      "description": "Use when asked about service errors, error spikes, exception patterns, or anomalous error volume.",
+      "name": "tsuga-investigate",
+      "description": "Use when investigating incidents, service health, errors, latency, one trace, or what separates failing spans from healthy ones.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "tsuga-investigate-service-health",
-      "description": "Use when investigating active incidents, service health checks, degraded service reports, or error spikes.",
+      "name": "tsuga-query-data",
+      "description": "Use when a task needs data from Tsuga: TQL filters, aggregation bodies, PromQL, metric and field lookup, or Tsuga docs lookup.",
       "files": [
         "SKILL.md"
       ]

@@ -1,6 +1,6 @@
 #!/bin/bash
 # skill-lint: allow-forbidden-examples — the checker is allowed to name the patterns it hunts.
-# check-forbidden-tokens.sh — flag MCP-tool pseudo-syntax, rtk prefix, and wrong CLI shape.
+# check-forbidden-tokens.sh — flag MCP-tool pseudo-syntax and wrong CLI shape.
 #
 # Usage: check-forbidden-tokens.sh <skill-dir>
 # Exit:  0 = PASS, 1 = FAIL, 2 = script error.
@@ -70,12 +70,7 @@ hits=$(
 )
 [ -n "$hits" ] && report mcp-args "$hits"
 
-# 3. rtk used as a command prefix. Prose mentioning the tool is fine, so require a real binary
-# after it rather than any lowercase word.
-hits=$(grep -nE '(^|[[:space:]`])rtk (tsuga|git|gh|yarn|node|npm|jq|grep|find|proxy)\b' "${FILES[@]}" 2>/dev/null)
-[ -n "$hits" ] && report rtk-prefix "$hits"
-
-# 4. Singular resource verbs. Every resource group in the CLI is plural, so the singular is always
+# 3. Singular resource verbs. Every resource group in the CLI is plural, so the singular is always
 # wrong. The pattern cannot match a plural (it requires a space straight after the singular noun),
 # so no plural filter is needed — one would discard whole lines that contain both forms and turn a
 # violation into a PASS.
@@ -83,7 +78,7 @@ SINGULAR='monitor|dashboard|dashboard-folder|log-route|team|service|slo|investig
 hits=$(grep -nE "tsuga ($SINGULAR) (get|list|create|update|delete)" "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report singular-verb "$hits" "use plural: tsuga monitors get"
 
-# 5. Command groups that do not exist. The telemetry groups are logs, traces, metrics and rum;
+# 4. Command groups that do not exist. The telemetry groups are logs, traces, metrics and rum;
 # `tsuga spans search`, `tsuga trace get`, `tsuga alerts list` and friends are invented. These
 # spellings stay wrong whatever the CLI adds, because a group name is never singular and the
 # telemetry nouns are already taken. Required to be in command position — at line start or opening
@@ -91,13 +86,13 @@ hits=$(grep -nE "tsuga ($SINGULAR) (get|list|create|update|delete)" "${FILES[@]}
 hits=$(grep -nE '(^|`)tsuga (span|spans|trace|log|metric|event|events|alert|alerts|incident|incidents|query|search) [a-z]' "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report no-such-group "$hits" "groups are logs, traces, metrics, rum, aggregation"
 
-# 6. --limit on telemetry commands, which take --max-results. Resource commands (monitors,
+# 5. --limit on telemetry commands, which take --max-results. Resource commands (monitors,
 # dashboards, …) and `metrics list` are genuinely paginated with --limit, so they are not flagged.
 hits=$(grep -nE 'tsuga ((logs|traces|rum|aggregation|interesting-fields) [a-z-]+|metrics (get|assets-usage)) .*--limit\b' "${FILES[@]}" 2>/dev/null)
 [ -n "$hits" ] && report limit-flag "$hits" "use --max-results"
 
 if [ "$fail" -eq 0 ]; then
-  echo "PASS [forbidden] $SKILL_DIR — 0 hits across all 6 patterns"
+  echo "PASS [forbidden] $SKILL_DIR — 0 hits across all 5 patterns"
 fi
 
 exit $fail

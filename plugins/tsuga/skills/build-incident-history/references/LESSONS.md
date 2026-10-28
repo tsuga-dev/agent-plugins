@@ -4,11 +4,9 @@ Read before running the procedure, and re-read before each subagent batch. Each 
 
 ## Command-shape mistakes
 
-Every command a subagent writes into `## Diagnostic path` must be runnable `tsuga` CLI: no MCP-tool pseudo-syntax, no `rtk` prefix, plural resource names, `tsuga traces search` rather than `spans`, `--max-results` on telemetry searches and `--limit` only on the paginated resource lists.
+Every command a subagent writes into `## Diagnostic path` must be runnable `tsuga` CLI.
 
 The translation table, the aggregation body rules and the forbidden-token grep live in **`${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md`**. That is the contract; do not restate it here and do not let a subagent work without it. `check-skill-health`'s `scripts/check-forbidden-tokens.sh` enforces it mechanically.
-
-Read the flags from `tsuga <command> --help`. The aggregation commands take no time flags, so the time range lives in the JSON body.
 
 ## Content mistakes
 

@@ -4,7 +4,17 @@ Official agent plugin published by [Tsuga](https://tsuga.com), shipped as a sing
 
 ## `tsuga`
 
-Operating Tsuga itself: the `tsuga` CLI driver (TQL, aggregations, deep links), live-platform investigation (service health, errors, latency, monitor coverage), dashboard building, an incident-investigation orchestrator, meta-skills for building knowledge-company / incident-history bundles, and OpenTelemetry instrumentation guidance across nine languages (Python, Go, Node.js, Java, .NET, Ruby, Rust, PHP, C++): SDK setup, traces, metrics, logs, trace-log correlation, Collector configuration, OTTL, semantic conventions, instrumentation-quality audits, and telemetry debugging. Live Tsuga workflows require a Tsuga account.
+Operating Tsuga itself, in six job skills and one CLI skill:
+
+- `tsuga-query-data`: the main index. TQL, aggregation bodies, PromQL, metric and field lookup, deep links, and docs lookup.
+- `tsuga-investigate`: incidents and root-cause analysis, service health, errors, latency, single traces, and contrast sets.
+- `tsuga-audit`: configuration review. Quality report, monitor and SLO coverage, notification routing, dashboards, metrics, and telemetry quality.
+- `tsuga-build-assets`: create, update, and delete dashboards, monitors, SLOs, notification rules, routes, policies, and other assets.
+- `tsuga-collect-data`: OpenTelemetry instrumentation across nine languages (Python, Go, Node.js, Java, .NET, Ruby, Rust, PHP, C++), Collector configuration, OTTL, signal choice, and missing-data diagnosis.
+- `tsuga-design`: what to measure or configure and how to verify it. Objectives, SLIs, signal choice, team, access and retention strategy.
+- `tsuga-cli`: running the CLI itself. Install, auth, configuration, commands and flags, output, exit codes, and which commands need confirmation.
+
+It also ships meta-skills for building and validating knowledge-company and incident-history bundles. Live Tsuga workflows require a Tsuga account.
 
 ## Install
 

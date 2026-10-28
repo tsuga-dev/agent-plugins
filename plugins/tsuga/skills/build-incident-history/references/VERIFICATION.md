@@ -22,7 +22,7 @@ ${CLAUDE_PLUGIN_ROOT}/skills/check-skill-health/scripts/lint-all.sh ./skills/inc
 
 **Pass:** exit code 0, no `FAIL` lines.
 
-This covers, and is stricter than, a hand-rolled check of: every `INC-*` folder carrying both `SUMMARY.md` and `metadata.json`; `metadata.json` parsing with ISO-8601 `declared_at` and `last_iso` and an id that matches its folder name; `## Root cause` and `## Diagnostic path` present in every `SUMMARY.md`; `_inventory.csv` row count equal to folder count; and the MCP-pseudo-syntax / `rtk` / singular-resource / `--limit` forbidden-token sweep.
+This covers, and is stricter than, a hand-rolled check of: every `INC-*` folder carrying both `SUMMARY.md` and `metadata.json`; `metadata.json` parsing with ISO-8601 `declared_at` and `last_iso` and an id that matches its folder name; `## Root cause` and `## Diagnostic path` present in every `SUMMARY.md`; `_inventory.csv` row count equal to folder count; and the MCP-pseudo-syntax / singular-resource / `--limit` forbidden-token sweep.
 
 A folder whose `last_iso` does not parse is the one failure that matters most: `entrypoint.sh`'s `SNAPSHOT_AT` filter drops those incidents silently rather than erroring.
 

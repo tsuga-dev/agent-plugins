@@ -35,8 +35,8 @@ plausible-looking fabrication.
 
 ### 3. Canonical headings only
 
-Subagents given latitude coin sections — "Ad-hoc scans", "Post-mortem debrief", "Hot-take",
-"rtk scans (ready-to-kick investigations)". Reject all of them. The section list in
+Subagents given latitude coin sections — "Ad-hoc scans", "Post-mortem debrief", "Hot-take".
+Reject all of them. The section list in
 `SERVICE_KNOWLEDGE_TEMPLATE.md` is fixed, and downstream retrieval depends on stable names.
 
 ### 4. Live data overrides the task brief

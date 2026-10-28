@@ -39,7 +39,7 @@ Return a concise summary:
 - The commit you made (or the diff you staged).
 
 Hard rules for the whole flow:
-- Every `tsuga` command you emit must be real CLI. No MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, `limit=`). No `rtk` prefix. `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md` has the full translation contract.
+- Every `tsuga` command you emit must be real CLI. No MCP-tool pseudo-syntax (`search-logs`, `aggregate-timeseries`, `query=`, `from=-`, `limit=`). `${CLAUDE_PLUGIN_ROOT}/skills/build-knowledge-company/references/CLI_TRANSLATION.md` has the full translation contract.
 - No leakage of post-incident PR content (titles, bodies, diffs) into SUMMARY.md. Reference the PR number only. If your investigation runtime is evaluated under a time-bound cheat-prevention block, leaking fixes poisons future benchmarking.
 - Scrub PII before ingesting: customer API keys, user emails, session IDs must be redacted.
 - Do not delete anything outside `skills/incident-history/`. Do not touch any other skill.

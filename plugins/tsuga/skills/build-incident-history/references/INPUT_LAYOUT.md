@@ -67,7 +67,7 @@ If all you have is `metadata.json` + a Slack thread + a few `tsuga` commands the
 ## What NOT to put in `inputs/incidents/`
 
 - Raw customer data (PII, credentials, API keys). Scrub before ingesting — once it lands in the archive it's hard to pull back.
-- Post-incident PRs whose merge date is ≥ `declared_at` with rich context. The incident-history archive is consumed by agents under a time-bound constraint; leaking the "answer key" into the SUMMARY poisons future benchmarking runs. Reference the PR number for context, but do not paste the PR diff into the SUMMARY's narrative.
+- Post-incident PRs whose merge date is ≥ `declared_at` with rich context. `LESSONS.md` ("Post-incident PR content") says why.
 - Multi-incident Slack threads. A subagent handed a merged thread produces a SUMMARY.md that conflates two root causes. Split them manually — one folder per incident.
 
 ### Pre-ingest scrub

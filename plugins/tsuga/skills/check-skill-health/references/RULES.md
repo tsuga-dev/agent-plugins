@@ -49,14 +49,13 @@ A 120-word description sits around 900 characters, so the word bound normally bi
 
 ## check-forbidden-tokens.sh
 
-**Checks:** 6 patterns that have bitten us before.
+**Checks:** 5 patterns that have bitten us before.
 
 1. **MCP-tool verb prefixes** (`search-logs`, `aggregate-timeseries`, etc.) — these are not runnable `tsuga` CLI commands. Subagents with access to MCP tools write them naturally.
 2. **MCP-tool argument shape** written as bare tokens (`query=`, `from=-`, `to=now`, `limit=`, …) — same problem. The real CLI uses `--query`, `--from`, `--to`, `--max-results`. Only the bare form is forbidden: the flag form `--from=-1h` is required, because a bare `-1h` lexes into the short options `-1` and `-h`.
-3. **`rtk` prefix** — the RTK hook is transparent; writing `rtk tsuga …` in docs is noise. `build-incident-history` and `build-knowledge-company` ban the same spelling in their own generation gates, so a dossier that carries it came from a template that drifted.
-4. **Singular resource verbs** (`tsuga monitor get` instead of `tsuga monitors get`). Every resource group in the CLI is plural, so a singular group is wrong whatever the CLI adds next.
-5. **Command groups that do not exist** — `tsuga spans search`, `tsuga trace get`, `tsuga alerts list`. The telemetry groups are `logs`, `traces`, `metrics` and `rum`, plus `aggregation`. Matched only in command position (line start, or opening an inline code span) so prose that names a trace or a metric is left alone.
-6. **`--limit`** — not a flag on the telemetry commands. Only `logs search`, `traces search` and `rum search` take `--max-results`; `metrics get`, `metrics assets-usage`, `aggregation` and `interesting-fields` take neither and carry their bounds in the JSON body or not at all. `--limit` is valid on the paginated lists (`tsuga monitors list --limit`, dashboards, teams, services, log-routes, and `metrics list`), so flag it only on the telemetry commands the checker covers: `logs`, `traces`, `rum`, `aggregation`, `interesting-fields`, and `metrics` other than `metrics list`.
+3. **Singular resource verbs** (`tsuga monitor get` instead of `tsuga monitors get`). Every resource group in the CLI is plural, so a singular group is wrong whatever the CLI adds next.
+4. **Command groups that do not exist** — `tsuga spans search`, `tsuga trace get`, `tsuga alerts list`. The telemetry groups are `logs`, `traces`, `metrics` and `rum`, plus `aggregation`. Matched only in command position (line start, or opening an inline code span) so prose that names a trace or a metric is left alone.
+5. **`--limit`** — not a flag on the telemetry commands. Only `logs search`, `traces search` and `rum search` take `--max-results`; `metrics get`, `metrics assets-usage`, `aggregation` and `interesting-fields` take neither and carry their bounds in the JSON body or not at all. `--limit` is valid on the paginated lists (`tsuga monitors list --limit`, dashboards, teams, services, log-routes, and `metrics list`), so flag it only on the telemetry commands the checker covers: `logs`, `traces`, `rum`, `aggregation`, `interesting-fields`, and `metrics` other than `metrics list`.
 
 **Why:** the single most expensive bug class in the first build. Subagents emit plausible-looking pseudo-CLI, the document looks right on review, and it breaks when a real user tries to copy-paste.
 

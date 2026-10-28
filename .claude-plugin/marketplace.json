@@ -5,13 +5,13 @@
     "email": "support@tsuga.com"
   },
   "metadata": {
-    "description": "Tsuga toolkit for AI coding agents: one plugin with the tsuga CLI driver, live-platform investigation, dashboards, incident workflows, OpenTelemetry instrumentation, Collector, signal-choice, telemetry debug, and audit skills.",
-    "version": "0.12.16"
+    "description": "Tsuga toolkit for AI coding agents: one plugin with querying, investigation, configuration audit, asset building, OpenTelemetry data-collection and measurement-design skills, plus the tsuga CLI skill.",
+    "version": "0.13.0"
   },
   "plugins": [
     {
       "name": "tsuga",
-      "description": "Tsuga observability plugin: the `tsuga` CLI driver (commands, TQL syntax, aggregation bodies, counter math, deep links, cloud/k8s translators); live-platform investigation for service health, errors, latency, and monitor coverage; dashboard building; incident orchestration; OpenTelemetry SDK, Collector, OTTL, signal-choice, telemetry debug, and audit skills; and meta-skills for building and validating skill bundles.",
+      "description": "Tsuga observability plugin: querying Tsuga data (TQL, aggregation bodies, PromQL, docs lookup) and running the `tsuga` CLI; investigation of incidents, service health, errors, latency and traces; configuration audits; building dashboards, monitors, SLOs, routing and other assets; getting telemetry in with OpenTelemetry SDKs, the Collector and OTTL; designing what to measure and how to verify it; and meta-skills for building and validating skill bundles.",
       "category": "observability",
       "source": "./plugins/tsuga",
       "strict": false

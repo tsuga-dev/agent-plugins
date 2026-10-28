@@ -82,9 +82,6 @@ grep -nE '(^|[^-[:alnum:]_])(query=|from=-|to=now|limit=|filter=|aggregationWind
   | grep -v '"filter":' \
   | grep -vE '/(logs|explorer)\?query='
 
-# Forbidden rtk prefix
-grep -nE '^rtk |[[:space:]]rtk ' "$F"
-
 # Required H1
 grep -qE '^# Service — ' "$F" || echo "MISSING HEADING: # Service — {svc}"
 

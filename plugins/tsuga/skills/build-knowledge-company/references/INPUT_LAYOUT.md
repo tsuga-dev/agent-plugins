@@ -18,9 +18,6 @@ tsuga teams list | jq 'length'    # >0 teams, else the token lacks scope
 tsuga services list | jq 'length' # >0 services
 ```
 
-`tsuga auth status` and `tsuga config` only read local state. They report a stored session that the
-API may already reject, so neither is a substitute for a call that reaches the server.
-
 ## Optional raw inputs
 
 ```
@@ -47,7 +44,7 @@ inputs/
 ]
 ```
 
-This file feeds the "owner team" annotation in each service dossier's header. Without it, ownership falls back to the `teams` field on `tsuga services list` — the same mapping Phase 1 scores teams with, and one that reads by team name rather than id (see `PROCEDURE.md §"Identity fields, once"`). That fallback is authoritative but occasionally surprising: `analytics-engine` may live in a `platform`-owned repo while its team tag says `data`. Both sources are correct in their own way; the JSON file lets you choose.
+This file feeds the team annotation in each service dossier's header. Without it, ownership falls back to the `teams` field on `tsuga services list` — the same mapping Phase 1 scores teams with, and one that reads by team name rather than id (see `PROCEDURE.md §"Identity fields, once"`). That fallback records the team telemetry carries, not who owns or answers for the service, and it can surprise: `analytics-engine` may live in a `platform`-owned repo while its team tag says `data`. Both sources are correct in their own way; the JSON file lets you choose.
 
 ## What the raw docs contribute (if present)
 

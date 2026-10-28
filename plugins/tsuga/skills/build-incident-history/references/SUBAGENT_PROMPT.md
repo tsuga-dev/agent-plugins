@@ -33,10 +33,6 @@ If the responder's original commands are not recoverable, **do NOT invent them**
 
 And add a `## Confidence` section at the bottom: "low — Diagnostic path not recoverable from inputs."
 
-**Required structure:** exactly the section list in SUMMARY_TEMPLATE.md, in that order, no additions. `## Diagnostic path` is the payload. Every heading is present even when its content is one line — never delete a heading.
-
-**Length target:** under 400 lines. Overflow usually comes from unedited Slack dumps — trim. Never sacrifice the Diagnostic path to save length.
-
 **Rules** (LESSONS.md explains why each one matters):
 
 - **No post-incident-PR leakage.** Reference the resolution PR number; do NOT paste its title, body, or diff.

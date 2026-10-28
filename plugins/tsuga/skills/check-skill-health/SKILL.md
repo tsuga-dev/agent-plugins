@@ -33,7 +33,7 @@ Automated (pass/warn/fail):
 - **References depth** — warn if references/ has paths > 1 level deep (exempt: `knowledge-company`'s teams/services taxonomy and `incident-history`'s per-incident folders).
 - **Reference table of contents** — warn for a flat reference page over 100 lines with no anchor-link list or Contents heading in its first 40 lines.
 - **Bundle size** — warn at 10 MB, fail at 15 MB.
-- **Forbidden tokens** — MCP-tool pseudo-syntax (search-logs, aggregate-timeseries, query=, …), `rtk` prefix, wrong singular resource verbs (`tsuga monitor get`), command groups that do not exist (`tsuga spans search`, `tsuga alerts list`), `--limit` on a telemetry command. The two MCP verb names appear without code formatting on purpose: they are the forbidden text itself, not a tool you should call.
+- **Forbidden tokens** — MCP-tool pseudo-syntax (search-logs, aggregate-timeseries, query=, …), wrong singular resource verbs (`tsuga monitor get`), command groups that do not exist (`tsuga spans search`, `tsuga alerts list`), `--limit` on a telemetry command. The two MCP verb names appear without code formatting on purpose: they are the forbidden text itself, not a tool you should call.
 - **`incident-history` structure** — every INC-* folder has metadata.json + SUMMARY.md with canonical sections; `_inventory.csv` row count matches folder count.
 - **`knowledge-company` structure** — top-level COMPANY_*.md present; every team dir has TEAM_KNOWLEDGE.md; every service dir has SERVICE_KNOWLEDGE.md with canonical sections.
 - **Cross-links** — every file path referenced from SKILL.md resolves. Only `check-knowledge-company.sh` implements this, so it fires for knowledge-company skills.
@@ -51,8 +51,6 @@ Judgment-call rules (see [`references/CHECKLIST.md`](references/CHECKLIST.md) fo
 - "Are the examples genuinely useful?" — requires reading.
 - "Would a real responder find this actionable?" — requires testing on real tasks.
 
-A passing lint is necessary, not sufficient.
-
 ## Layout
 
 ```
@@ -62,7 +60,7 @@ check-skill-health/
 │   ├── lint-all.sh                  ← orchestrator, runs every check
 │   ├── check-frontmatter.sh         ← universal
 │   ├── check-skill-length.sh        ← universal
-│   ├── check-forbidden-tokens.sh    ← Tsuga-specific (MCP-pseudo-syntax + rtk + singular verbs)
+│   ├── check-forbidden-tokens.sh    ← Tsuga-specific (MCP-pseudo-syntax + singular verbs)
 │   ├── check-incident-history.sh    ← skill-specific (INC-*/SUMMARY.md + metadata.json)
 │   ├── check-knowledge-company.sh   ← skill-specific (teams/services/ structure + canonical sections)
 │   └── sample-execute-commands.sh   ← opt-in command safety audit; does not execute
@@ -90,5 +88,4 @@ Each script is standalone and can be dropped into another skill's lint flow. Sha
 ## Limitations
 
 - Passing lint is not proof that a skill works under pressure; still review the workflow and run pressure scenarios.
-- No check runs a command it finds. `--audit-commands` judges command text; nothing in the skill issues a live Tsuga query.
 - Generated archives can contain company-specific context; summarize findings and avoid reproducing sensitive values.

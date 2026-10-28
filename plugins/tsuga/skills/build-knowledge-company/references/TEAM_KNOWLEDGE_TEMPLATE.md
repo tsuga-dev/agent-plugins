@@ -72,7 +72,7 @@ See `services/<service-name>/SERVICE_KNOWLEDGE.md` for:
 ### Services owned but without a dossier
 
 - `<service-X>` — {one-line reason, e.g., "lambda function, no runtime dashboard, grep by function name"}
-- `<service-Y>` — {e.g., "managed Postgres, see `$knowledge-technology` (`references/technologies/postgres/overview`) instead"}
+- `<service-Y>` — {e.g., "managed Postgres, see `tsuga docs get references/technologies/postgres/overview` instead"}
 ```
 
 ## Rules the orchestrator must follow

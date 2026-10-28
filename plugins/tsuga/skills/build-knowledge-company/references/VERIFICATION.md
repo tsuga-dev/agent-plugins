@@ -23,8 +23,7 @@ Between them they cover: SKILL.md frontmatter and length; the required top-level
 `COMPANY_GENERAL_KNOWLEDGE.md` / `COMPANY_TELEMETRY_KNOWLEDGE.md` and the absence of
 `RAW_TELEMETRY_KNOWLEDGE.md`; a `TEAM_KNOWLEDGE.md` in every team dir and a `SERVICE_KNOWLEDGE.md`
 in every service dir; the canonical section headings in both; file references from SKILL.md
-resolving; and the forbidden-token sweep (tool pseudo-syntax, `rtk` prefix, singular resource
-verbs, `tsuga spans search`, `--limit` on a telemetry search). `--audit-commands` adds a read-only audit
+resolving; and the forbidden-token sweep (tool pseudo-syntax, singular resource verbs, `tsuga spans search`, `--limit` on a telemetry search). `--audit-commands` adds a read-only audit
 of the first `tsuga` command in a random sample of dossiers — it inspects shape, it does not run
 anything.
 

@@ -1,6 +1,6 @@
 ---
 name: build-knowledge-company
-description: "Turns a live Tsuga account, a codebase list and ambient docs into a populated knowledge-company tree: company-level general and telemetry knowledge, per-team knowledge files, and per-service dossiers carrying ready-to-run `tsuga` commands discovered from live data rather than a prescribed list. Use when bootstrapping knowledge-company from scratch for a new company, refreshing it after a major service taxonomy change, or after a CLI change that invalidates the existing ready-to-run commands. Requires Tsuga CLI access and a populated incident-history archive to cross-link against. This is a one-shot build procedure, not an investigation skill."
+description: "Turns a live Tsuga account, a codebase list and ambient docs into a populated knowledge-company tree: company-level general and telemetry knowledge, per-team knowledge files, and per-service dossiers carrying ready-to-run `tsuga` commands discovered from live data rather than a prescribed list. Use when bootstrapping knowledge-company from scratch for a new company, refreshing it after a major service taxonomy change, or after a CLI change that invalidates the existing ready-to-run commands. Requires Tsuga CLI access and a populated incident-history archive to cross-link against. This is a one-shot build procedure, not an investigation skill: to investigate an incident, use tsuga-investigate."
 ---
 
 <!-- skill-lint: allow-forbidden-examples — SKILL.md mentions the forbidden patterns as teaching context -->
@@ -37,8 +37,7 @@ The load-bearing artifact is the **per-service SERVICE_KNOWLEDGE.md**. It's what
 ## Before you start
 
 - **Build `incident-history` first.** `knowledge-company`'s service dossiers cross-link to incidents — that requires a populated `skills/incident-history/references/incidents/` tree. See `../build-incident-history/` for that procedure.
-- **Confirm `tsuga` CLI works.** Run `tsuga auth whoami`, `tsuga teams list`, and `tsuga logs search --query '*' --from=-5m --max-results 1`. All three must succeed — `whoami` proves the token reaches the API, the other two prove it has read scope. (`tsuga auth status` only reads local state and proves neither.) If any fail, fix auth with `tsuga auth login`, or `tsuga auth operation-key <key>` for non-interactive use.
-- **Confirm the runtime agent's `knowledge-technology` skill exists** — many cross-links in `knowledge-company` point at it (for Postgres / Kafka / etc. metric catalogs). If absent, either build it or adjust the cross-refs.
+- **Technology cross-links go to served reference pages.** Generic Postgres / Kafka / etc. pages (`overview`, plus `concepts` and `metrics` where they exist) are listed in `references/technologies/index`. Fetch each with `tsuga docs get <path>` before linking it; a 404 means drop the link.
 
 ## Procedure — read in order
 
@@ -60,7 +59,7 @@ health check — in one prompt.
 
 - **Discover taxonomy from live data, not a prescribed list.** `tsuga teams list` + `tsuga services list` + log+trace volume scoring are authoritative. Do not start with a list of "15 services I think exist" — you'll miss ones that matter and add ones that don't.
 - **Parallel subagents, narrow scopes.** One subagent per service. Give each one: specific input files (pre-extracted helpers), specific output path, the template, the lessons doc, and an explicit list of `tsuga` commands to run as live probes before writing.
-- **Every command must be tested.** A subagent holding Tsuga MCP tools writes its commands in the tool vocabulary (`search-logs query='…' from=-1h to=now limit=50`), which reads as plausible and runs as nothing. This is the most expensive defect the procedure has to prevent; `CLI_TRANSLATION.md` is the contract every subagent reads before writing a command.
+- **Every command must be tested.** A subagent holding Tsuga MCP tools writes its commands in the tool vocabulary (`search-logs query='…' from=-1h to=now limit=50`), which reads as plausible and runs as nothing. This is the most expensive defect the procedure has to prevent.
 - **Live data overrides the task brief.** If the brief says "service X is the foo write-path" and the live logs show it's the bar reconciler, trust the logs and reframe. Document the discrepancy in the service's Confidence note.
 - **No invented structure.** Subagents will coin new headings, acronyms, and sections if given latitude. The template's section list is fixed. Use it.
 - **Pointers, not duplication.** Top-level `COMPANY_*.md` files are the single source of truth for company-wide context. Per-team and per-service dossiers point to them. Do not paste the team roster into every service dossier.

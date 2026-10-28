@@ -6,8 +6,7 @@ A subagent holding Tsuga MCP tools writes its dossier commands in the tool vocab
 (`search-logs query='…' from=-1h to=now limit=50`) — plausible-looking, not runnable.
 
 **The rule: every command block in every SERVICE_KNOWLEDGE.md must be directly runnable as a
-`tsuga` CLI invocation.** No `rtk` prefix, no tool pseudo-syntax, no placeholder the reader has to
-translate.
+`tsuga` CLI invocation.** No tool pseudo-syntax, no placeholder the reader has to translate.
 
 ## Name translation
 
@@ -69,14 +68,12 @@ tsuga aggregation scalar -f /tmp/q.json
 string like `"-1h"` is rejected in the body even though `--from=-1h` is fine as a flag. Emit the
 helper once per dossier, the first time an aggregation needs it.
 
-On `"dataSource": "metrics"` every aggregate needs a `"field"`, `count` included — it counts
-datapoints of that metric, and omitting the field returns
-`count aggregate requires a non-empty field`. Swapping in `sum` to dodge the error answers a
-different question.
+`api/aggregateScalar` has when `count` needs a `"field"`. Never swap in `sum` to dodge that error:
+it answers a different question.
 
 For the rest of the body — where `groupBy`, `formula`, `aggregationWindow` and per-query
 `functions` sit, and which aggregate a metric's type and temporality call for — start from
-`tsuga aggregation scalar --generate-skeleton` and the `$tsuga-cli` skill. Two doc pages carry the
+`tsuga aggregation scalar --generate-skeleton` and the `$tsuga-query-data` skill. Two doc pages carry the
 rest, both via `tsuga docs get <path>`: `visualize/guides/how-to-choose-a-metric-aggregation` for
 which aggregate a metric type and temporality call for, and `explore/query-syntax` for query-value
 units (`duration` is milliseconds). Do not restate either in a dossier.
@@ -86,11 +83,6 @@ units (`duration` is milliseconds). Do not restate either in a dossier.
 - Double-quote a query containing a space or a TQL operator: `--query "context.service.name:X level:ERROR"`.
 - Single-quote the outer shell when the query itself contains a phrase match:
   `--query 'context.service.name:X "Exact phrase"'`.
-
-## No `rtk` prefix
-
-The RTK hook rewrites commands at execution time, so `rtk tsuga logs search …` in a dossier buys
-nothing and reads as broken to anyone without the hook. Emit plain `tsuga …`.
 
 ## The verification grep
 

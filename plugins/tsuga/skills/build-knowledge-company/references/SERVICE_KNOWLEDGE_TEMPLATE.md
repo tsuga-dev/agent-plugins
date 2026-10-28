@@ -26,7 +26,7 @@ Under 180: the service probably doesn't merit its own dossier (fold into TEAM_KN
 ## Confidence note        (what's grounded vs. inferred, what to refresh)
 ```
 
-Subagents will try to coin new sections ("Ad-hoc scans", "Post-mortem debrief", "rtk scans"). Reject these. Use the canonical list exactly.
+Subagents will try to coin new sections ("Ad-hoc scans", "Post-mortem debrief"). Reject these. Use the canonical list exactly.
 
 ## Template — copy verbatim, fill in placeholders
 
@@ -38,7 +38,7 @@ Subagents will try to coin new sections ("Ad-hoc scans", "Post-mortem debrief", 
 | Field | Value |
 |---|---|
 | Service name (telemetry) | `context.service.name:{service_name}` (plus aliases if any — see §"Caveats") |
-| Owning team | **{team_name}** (`context.team:{team_tag}`, team id `{team_id}`) |
+| Observed team | **{team_name}** (`context.team:{team_tag}`, team id `{team_id}`); from `codebase-repos.json` when given, otherwise the team telemetry carries, which is not an ownership assignment |
 | Stack | {language, runtime, major frameworks} |
 | Repo | `{repo_path}` |
 | Environments | `prod`, `staging`, `dev` (omit any that don't apply) |
@@ -201,22 +201,21 @@ This section is load-bearing. It's what tells a future investigator which claims
 
 4. **Every bash block must be real `tsuga` CLI.** The `CLI_TRANSLATION.md` contract is non-negotiable. After writing, run the forbidden-token grep from that contract. Zero hits required.
 5. **Include the `FROM=$(date ...)` helper once per file** the first time an aggregation needs it.
-6. **No `rtk` prefix, ever.**
 
 ### On content
 
-7. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it with `tsuga metrics get <name>`. If that returns not found, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
-8. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
-9. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-24h --max-results 50` before writing Log shape, widening to `-48h`, then `-72h`, only if it returns nothing. The patterns must come from real output.
-10. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".
+6. **Every metric name must be real.** Before writing a metric in Golden signals, confirm it with `tsuga metrics get <name>`. If that returns not found, say so in Confidence (low emission? renamed?) rather than writing a plausible-looking name.
+7. **Every monitor ID must be real.** If the subagent's input `monitors.json` is empty, don't invent IDs — write "None owned directly; see §Incident shapes for shared monitors."
+8. **Live probe at least once.** Run `tsuga logs search --query "context.service.name:{service}" --from=-24h --max-results 50` before writing Log shape, widening to `-48h`, then `-72h`, only if it returns nothing. The patterns must come from real output.
+9. **Cite incident SUMMARY paths explicitly.** `skills/incident-history/references/incidents/INC-xxxx/SUMMARY.md` — the full relative path. Don't just say "INC-xxxx".
 
 ### On framing
 
-11. **Live data beats task brief.** If the brief says "service X is the foo write-path" and live logs show it's actually a bar reconciler, trust the logs, reframe, and document the discrepancy in Quick context + Confidence.
-12. **No invented acronyms.** No "rtk scans", no "RTFM checklist", no "PRoBE analysis". Use the terms established in the templates and in `LESSONS.md`.
-13. **Confidence note must be honest.** If the subagent's inputs are thin or its live probes returned empty, the Confidence note should say so clearly. A fabricated dossier is worse than one with an honest "low confidence" note.
+10. **Live data beats task brief.** If the brief says "service X is the foo write-path" and live logs show it's actually a bar reconciler, trust the logs, reframe, and document the discrepancy in Quick context + Confidence.
+11. **No invented acronyms.** No "RTFM checklist", no "PRoBE analysis". Use the terms established in the templates and in `LESSONS.md`.
+12. **Confidence note must be honest.** If the subagent's inputs are thin or its live probes returned empty, the Confidence note should say so clearly. A fabricated dossier is worse than one with an honest "low confidence" note.
 
 ### On length
 
-14. **Target 180–350 lines.** If over, the first things to cut are: padded Caveats, duplicated content from top-level docs, speculative incident shapes.
-15. **Pointers, not duplication.** "See `COMPANY_TELEMETRY_KNOWLEDGE.md §"Canonical query patterns"` for the full table" beats pasting the table.
+13. **Target 180–350 lines.** If over, the first things to cut are: padded Caveats, duplicated content from top-level docs, speculative incident shapes.
+14. **Pointers, not duplication.** "See `COMPANY_TELEMETRY_KNOWLEDGE.md §"Canonical query patterns"` for the full table" beats pasting the table.
