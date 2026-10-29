@@ -17,7 +17,7 @@ Fetch a page with `tsuga docs get` by its exact path, with no `#anchor`. `tsuga 
 
 | Need | Fetch |
 | --- | --- |
-| TQL: operators, precedence, presence, wildcards, log and span fields | `explore/query-syntax` |
+| TQL: operators, precedence, presence, wildcards, log and span fields, metric filter rules | `explore/query-syntax` |
 | Logs and patterns; traces; the logs of one trace | `explore/logs`; `explore/traces`; `explore/guides/how-to-find-logs-for-a-trace` |
 | RUM streams and fields; custom user actions (an event cannot be joined to the action that buffered it) | `data-collection/browser/rum-events`, `data-collection/mobile/rum-events`; `data-collection/guides/how-to-track-user-actions-in-grafana-faro` |
 | Aggregation model, under UI labels | `visualize/analytics/queries` |

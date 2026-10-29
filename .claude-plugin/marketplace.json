@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Tsuga toolkit for AI coding agents: one plugin with querying, investigation, configuration audit, asset building, OpenTelemetry data-collection and measurement-design skills, plus the tsuga CLI skill.",
-    "version": "0.13.1"
+    "version": "0.13.2"
   },
   "plugins": [
     {
