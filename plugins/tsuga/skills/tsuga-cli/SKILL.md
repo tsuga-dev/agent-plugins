@@ -9,7 +9,7 @@ How to run `tsuga` and read what it prints, for every Tsuga job on the CLI. The 
 
 ## Commands and flags
 
-- `tsuga <command> --help` is authoritative for commands, flags and `--generate-skeleton` bodies, and it is cheap. `tsuga schema` is the whole tree in one document, without aliases, defaults or choices: use it for offline validation, not discovery.
+- `tsuga <command> --help` is authoritative for commands, flags and `--generate-skeleton` bodies, and it is cheap. `tsuga schema` is the whole tree in one document and `tsuga schema <command path>` one subtree, without defaults: use it for offline validation, not discovery.
 - Report `tsuga --version`. Run `tsuga self-update` when the CLI prints `Update available`, or when `--help` lacks a flag or subcommand that the docs or this skill name, then tell the user. If the update fails (permissions, a sandbox), say so and carry on with the installed version; never invent another command shape.
 
 ## Run and read
