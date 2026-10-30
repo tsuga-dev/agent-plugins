@@ -72,9 +72,11 @@ The report rows to quote first: `no-empty-dashboards`, `no-stale-dashboards`,
 
 ### Metrics
 
-`tsuga metrics list --search <TEXT> --all` lists names with type and temporality. Take attributes
-from `tsuga metrics get <METRIC_NAME>`. Count series and attribute values with `unique-count` as the
-audit guide shows. Before recommending a rename or a drop, run `tsuga metrics assets-usage <METRIC_NAME>`.
+`tsuga metrics list --search <TEXT> --all` lists names with type, temporality and `seriesCardinality`.
+Take attributes and `attributeCardinalities` from `tsuga metrics get <METRIC_NAME>`. Both cardinalities
+are periodically refreshed estimates, absent when the catalog has no statistics for the metric yet:
+then count series and attribute values with `unique-count` as the audit guide shows. Before
+recommending a rename or a drop, run `tsuga metrics assets-usage <METRIC_NAME>`.
 
 Standard OTel metric names
 carry no service, so never audit a cluster-wide metric as if one service owned it: a
