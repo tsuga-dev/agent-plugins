@@ -101,6 +101,8 @@ tsuga metrics list            --all > /tmp/metrics.json
 
 # Service-to-volume table (fuel for service scoring). `dataSource` is body-level, so logs and
 # traces need one call each; ranking on logs alone buries a well-instrumented, log-quiet API.
+# 500 is the most groups a logs or traces groupBy level returns: if a call comes back with
+# exactly 500 services, the tail is cut off, so narrow the filter and run it again.
 TO=$(date -u +%s); FROM=$((TO - 604800))
 for SRC in logs traces; do
   cat > /tmp/svc-vol-q.json <<JSON
