@@ -13,7 +13,7 @@ Load the `tsuga-cli` skill before your first `tsuga` command.
 
 ## Documentation grounding
 
-Fetch a page with `tsuga docs get` by its exact path, with no `#anchor`. `tsuga docs search` returns doc and `api/` pages only, never `references/`, and ranks short queries lexically: match on `kind` and `path`, never on rank. If a fetch fails, retry once. For a `references/` path, never search for it or guess another path: say which guidance is missing and continue with what you have. For a public or `api/` page, find it with `tsuga docs search`. If the operation itself is missing on this interface, say so and offer what it does expose. Never invent a schema, field or metric name.
+Fetch a page with `tsuga docs get` by its exact path. `tsuga docs search` returns doc and `api/` pages only, never `references/`, and ranks short queries lexically: match on `kind` and `path`, never on rank. If a fetch fails, retry once. For a `references/` path, never search for it or guess another path: say which guidance is missing and continue with what you have. For a public or `api/` page, find it with `tsuga docs search`. If the operation itself is missing on this interface, say so and offer what it does expose. Never invent a schema, field or metric name.
 
 | Need | Fetch |
 | --- | --- |
