@@ -101,9 +101,11 @@ Each asset's delete and get operations sit beside these on the same `api/` namin
 manages the asset as code, fetch `references/iac/terraform`; as Kubernetes resources (dashboards,
 monitors, SLOs), `account-and-settings/guides/how-to-manage-tsuga-with-the-kubernetes-operator`.
 
-No command changes team membership, sends invitations or creates operation keys: give the user
-`account-and-settings/guides/how-to-add-a-member-to-a-team`, `account-and-settings/guides/how-to-invite-members`
-or `account-and-settings/guides/how-to-create-and-use-an-operation-key`.
+`tsuga team-memberships` adds and removes team members. It cannot change a member's team role:
+give the user `account-and-settings/teams`.
+No command sends invitations or creates operation keys: give the user
+`account-and-settings/guides/how-to-invite-members` or
+`account-and-settings/guides/how-to-create-and-use-an-operation-key`.
 
 ## Administration
 
