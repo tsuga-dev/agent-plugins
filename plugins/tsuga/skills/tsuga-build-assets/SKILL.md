@@ -75,6 +75,10 @@ design skill first (see Hand-offs); resume here with the asset specification it 
    reset. Readback proves saved configuration only: say what it does not prove (effective access,
    retention enforcement, notification delivery) and what needs later observation.
 
+   After a create or update, give the user the asset's app link in that report, unasked: build it
+   from the id with `references/query/app-deep-links` ("Link to one asset"). Print the URL; never
+   open a browser.
+
 ## Asset index
 
 | Asset              | Doc pages (rules, side effects)                                                                          | API pages                                                       |
