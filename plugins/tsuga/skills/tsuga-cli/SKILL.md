@@ -20,7 +20,7 @@ How to run `tsuga` and read what it prints, for every Tsuga job on the CLI. The 
 - Limit results with the command's own flag (`--max-results`, `--limit`, from `--help`), never `| head`. Keep evidence with `--fields`, and filter lists with their flags rather than a hand-built `-d`.
 - Empty stdout means the command did not run. Stdout starting with `DESCRIPTION` is a help page, not a result.
 - Branch on the exit code, not stderr text ("Handle failures in scripts" on the CLI page): an exit `2` says nothing about the data. Quote the `Request ID:` line when you report an API failure.
-- `Showing N of M` is a hard stop: anything computed from that page is wrong. Rerun with `--all` where `--help` lists it; otherwise narrow the query or page with `--limit` and `--offset`.
+- `Showing N of M` is a hard stop: anything computed from that page is wrong. Rerun with `--all` where `--help` lists it; otherwise run the `Next page:` command the notice prints.
 
 ## Safety
 

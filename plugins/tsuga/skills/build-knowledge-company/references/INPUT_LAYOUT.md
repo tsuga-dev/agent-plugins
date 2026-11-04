@@ -14,8 +14,8 @@ Confirm:
 
 ```bash
 tsuga auth whoami                 # calls the API; proves the token is live and names the org
-tsuga teams list | jq 'length'    # >0 teams, else the token lacks scope
-tsuga services list | jq 'length' # >0 services
+tsuga teams list | jq '.data | length'    # >0 teams, else the token lacks scope
+tsuga services list | jq '.data | length' # >0 services
 ```
 
 ## Optional raw inputs

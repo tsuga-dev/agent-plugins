@@ -34,11 +34,11 @@ at zero. `services list` rows are per environment (`categorize/services/index`),
 ```bash
 tsuga --version                                  # must succeed
 tsuga auth whoami                                # calls the API: proves the token works, not just that one is stored
-tsuga teams list      | jq 'length'              # > 0
-tsuga services list   | jq 'length'              # > 0
-tsuga monitors list   | jq 'length'              # > 0
-tsuga dashboards list | jq 'length'              # > 0
-tsuga log-routes list | jq 'length'              # > 0
+tsuga teams list      | jq '.data | length'              # > 0
+tsuga services list   | jq '.data | length'              # > 0
+tsuga monitors list   | jq '.data | length'              # > 0
+tsuga dashboards list | jq '.data | length'              # > 0
+tsuga log-routes list | jq '.data | length'              # > 0
 
 # Aggregation body path — exercise once to confirm the heredoc shape works
 TO=$(date -u +%s); FROM=$((TO - 300))            # 5 minutes; portable on BSD and GNU
@@ -64,9 +64,9 @@ OUT=./skills/knowledge-company/references
 mkdir -p "$OUT/teams"
 
 tsuga teams list --all > /tmp/teams-raw.json
-jq 'length as $n | "discovered \($n) teams"' /tmp/teams-raw.json
+jq '.data | length as $n | "discovered \($n) teams"' /tmp/teams-raw.json
 
-jq -r '.[] | [.id, .name, .visibility // "private"] | @tsv' /tmp/teams-raw.json > /tmp/team-index.tsv
+jq -r '.data[] | [.id, .name, .visibility // "private"] | @tsv' /tmp/teams-raw.json > /tmp/team-index.tsv
 ```
 
 Not every team needs a TEAM_KNOWLEDGE.md — user-only teams (design, advisors) and bystanders with
@@ -79,9 +79,9 @@ tsuga services list   --all > /tmp/services-raw.json
 tsuga dashboards list --all > /tmp/dashboards-raw.json
 
 while IFS=$'\t' read -r team_id team_name vis; do
-  monitors=$(jq --arg id "$team_id" '[.[] | select(.owner == $id)] | length' /tmp/monitors-raw.json)
-  dashboards=$(jq --arg id "$team_id" '[.[] | select(.owner == $id)] | length' /tmp/dashboards-raw.json)
-  services=$(jq --arg n "$team_name" '[.[] | select(any(.teams[]?; .team == $n))] | map(.serviceName) | unique | length' /tmp/services-raw.json)
+  monitors=$(jq --arg id "$team_id" '[.data[] | select(.owner == $id)] | length' /tmp/monitors-raw.json)
+  dashboards=$(jq --arg id "$team_id" '[.data[] | select(.owner == $id)] | length' /tmp/dashboards-raw.json)
+  services=$(jq --arg n "$team_name" '[.data[] | select(any(.teams[]?; .team == $n))] | map(.serviceName) | unique | length' /tmp/services-raw.json)
   printf '%s\t%s\t%s\t%s\t%s\n' "$team_id" "$team_name" "$monitors" "$dashboards" "$services"
 done < /tmp/team-index.tsv > /tmp/team-score.tsv
 sort -k3,3nr -k5,5nr /tmp/team-score.tsv
@@ -147,8 +147,8 @@ jq -r '.[] | [.svc, .vol] | @tsv' /tmp/svc-volume-7d.json | head -40 > /tmp/top-
 # so split them into words and keep only the ones that are real service names — matching a bare
 # lowercase run against the title would pull out mid-word fragments and ordinary English words,
 # and every one of those spawns a subagent for a service that does not exist.
-jq -r '.[] | .serviceName' /tmp/services-raw.json | sort -u > /tmp/all-services.txt
-jq -r '.[] | .name' /tmp/monitors-raw.json \
+jq -r '.data[] | .serviceName' /tmp/services-raw.json | sort -u > /tmp/all-services.txt
+jq -r '.data[] | .name' /tmp/monitors-raw.json \
   | tr -cs 'a-zA-Z0-9-' '\n' \
   | sed -E 's/-[A-Z][A-Za-z0-9]*$//' \
   | sort -u \
@@ -198,13 +198,13 @@ while read -r svc; do
   mkdir -p "$SVC_DATA/$svc"
 
   # Monitors targeting this service — by title or by a query filter naming it
-  jq --arg s "$svc" '[.[] | select(
+  jq --arg s "$svc" '[.data[] | select(
     (.name | contains($s)) or
     (any(.configuration.queries[]?; (.filter // "") | contains($s)))
   )]' /tmp/monitors-raw.json > "$SVC_DATA/$svc/monitors.json"
 
   # Dashboards — by title or by a graph title naming it
-  jq --arg s "$svc" '[.[] | select(
+  jq --arg s "$svc" '[.data[] | select(
     (.name | contains($s)) or
     (any(.graphs[]?; (.name // "") | contains($s)))
   )]' /tmp/dashboards-raw.json > "$SVC_DATA/$svc/dashboards.json"
@@ -251,9 +251,9 @@ ownership split — a service whose code one team owns and whose paging monitors
 Per-team inputs:
 
 ```bash
-jq --arg id "$team_id" '[.[] | select(.owner == $id)]' /tmp/monitors-raw.json
-jq --arg id "$team_id" '[.[] | select(.owner == $id)]' /tmp/dashboards-raw.json
-jq --arg n "$team_name" '[.[] | select(any(.teams[]?; .team == $n))]' /tmp/services-raw.json
+jq --arg id "$team_id" '[.data[] | select(.owner == $id)]' /tmp/monitors-raw.json
+jq --arg id "$team_id" '[.data[] | select(.owner == $id)]' /tmp/dashboards-raw.json
+jq --arg n "$team_name" '[.data[] | select(any(.teams[]?; .team == $n))]' /tmp/services-raw.json
 ```
 
 ## Phase 7 — write per-service dossiers (parallel, subagent per service)

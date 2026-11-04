@@ -47,7 +47,7 @@ tsuga metrics list --search "{svc-prefix}"
 
 # 4. Service metadata (team membership, versions). One row per (service, env). The search
 #    filters on the server, so the 1,000-name list cap can't hide it; jq drops partial-name matches.
-tsuga services list --search-query "{svc}" | jq '.[] | select(.serviceName == "{svc}")'
+tsuga services list --search-query "{svc}" | jq '.data[] | select(.serviceName == "{svc}")'
 ```
 
 Do not skip these. The Golden signals, Log shape, and Metric-namespace sections all depend on the live output. If a live probe returns empty, **say so in the Confidence note** — do not invent replacement content.
