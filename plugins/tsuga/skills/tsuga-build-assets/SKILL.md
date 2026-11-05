@@ -110,6 +110,7 @@ give the user `account-and-settings/teams`.
 No command sends invitations or creates operation keys: give the user
 `account-and-settings/guides/how-to-invite-members` or
 `account-and-settings/guides/how-to-create-and-use-an-operation-key`.
+No command deletes telemetry events: give the user `account-and-settings/data-deletion`.
 
 ## Administration
 
