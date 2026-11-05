@@ -64,7 +64,7 @@ with low log volume, and anything added since the last refresh. Use the three-so
 Three axes, three answers. A `health-aggregator` service can be platform-team code in the
 TypeScript repo while its P1 monitors are infra-team owned (they report infra SLIs) and a
 neighbouring monitor is solution-team owned. The dossier lives under the team that owns the code
-repo; monitor ownership comes from `tsuga monitors get <id>` → `.owner`, never from the service's
+repo; monitor ownership comes from `tsuga monitors get <id>` → `.data.owner`, never from the service's
 team.
 
 ### 8. Engine roles are not first-party services

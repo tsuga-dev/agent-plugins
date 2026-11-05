@@ -21,9 +21,9 @@ Ordered. Each phase has a clear completion signal. Do not skip ahead.
 Three lookups disagree about how they name a team, and every phase below depends on getting it
 right:
 
-- `tsuga teams list` → `.id` (`jqzx-rd5j6-k084`) and `.name` (`central`).
-- `tsuga monitors list` / `tsuga dashboards list` → `.owner` is the team **id**.
-- `tsuga services list` → `.teams` is an array of objects, `[{"team": "central"}]`,
+- `tsuga teams list` → `.data[].id` (`jqzx-rd5j6-k084`) and `.data[].name` (`central`).
+- `tsuga monitors list` / `tsuga dashboards list` → `.data[].owner` is the team **id**.
+- `tsuga services list` → `.data[].teams` is an array of objects, `[{"team": "central"}]`,
   keyed by team **name**.
 
 Comparing `.teams[]` to an id, or to a bare string, silently matches nothing and scores every team
@@ -45,7 +45,7 @@ TO=$(date -u +%s); FROM=$((TO - 300))            # 5 minutes; portable on BSD an
 cat > /tmp/q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"*"}]}
 JSON
-tsuga aggregation scalar -f /tmp/q.json          # returns {"results":[{"id":"q1","group":{},"value":N}]}
+tsuga aggregation scalar -f /tmp/q.json          # returns {"data":{"results":[{"id":"q1","group":{},"value":N}]}}
 ```
 
 All five lists non-empty plus a scalar aggregation returning a number = **go**. Anything else, fix
@@ -112,7 +112,7 @@ JSON
 done
 
 # Sum the two per service, ranked
-jq -s '[.[].results[] | select(.value != null)]
+jq -s '[.[].data.results[] | select(.value != null)]
        | group_by(.group."context.service.name")
        | map({svc: .[0].group."context.service.name", vol: (map(.value) | add)})
        | sort_by(-.vol)' /tmp/svc-volume-7d-logs.json /tmp/svc-volume-7d-traces.json \
