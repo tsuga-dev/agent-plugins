@@ -187,12 +187,18 @@ The single biggest speedup in the procedure: each subagent then reads ~10 KB of 
 instead of the full fleet dump.
 
 A monitor's filter lives at `.configuration.queries[].filter`, and a dashboard's graph titles at
-`.graphs[].name`. Match on those, not on a flattened field name:
+`.data.graphs[].name` in `tsuga dashboards get <id>`. Match on those, not on a flattened field name.
+`tsuga dashboards list` returns summaries without `graphs`, carrying `widgetCount` (the graph count
+the dossier templates ask for), so fetch each dashboard once before the loop:
 
 ```bash
 SVC_DATA=/tmp/service-data
-mkdir -p "$SVC_DATA"
+mkdir -p "$SVC_DATA" /tmp/dashboards-full
 tsuga dashboards list --all > /tmp/dashboards-raw.json
+jq -r '.data[].id' /tmp/dashboards-raw.json | while read -r id; do
+  tsuga dashboards get "$id" </dev/null | jq '.data' > "/tmp/dashboards-full/$id.json"
+done
+jq -s '{data: .}' /tmp/dashboards-full/*.json > /tmp/dashboards-graphs.json
 
 while read -r svc; do
   mkdir -p "$SVC_DATA/$svc"
@@ -207,7 +213,7 @@ while read -r svc; do
   jq --arg s "$svc" '[.data[] | select(
     (.name | contains($s)) or
     (any(.graphs[]?; (.name // "") | contains($s)))
-  )]' /tmp/dashboards-raw.json > "$SVC_DATA/$svc/dashboards.json"
+  )]' /tmp/dashboards-graphs.json > "$SVC_DATA/$svc/dashboards.json"
 
   # Incident files mentioning the service
   grep -lE "context\.service\.name(:|%3A)${svc}([^a-zA-Z0-9_-]|$)" \
