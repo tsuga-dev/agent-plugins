@@ -77,6 +77,9 @@ The log patterns call for this surface:
   failed-request count. Report how many consecutive 5-minute windows exceeded the baseline: one
   window can still be the incident. On a low-traffic service, widen the window, and say what stays
   uncertain.
+- **Check the population before calling a gap or an anomaly.** Run the same query org-wide or on a
+  peer (another service, env or cluster) over the same window: a move the peers share is traffic or
+  ingestion, one they do not share belongs to this scope.
 - **Count beside percentile.** Cite each operation's span count beside its percentile and the
   baseline count; a handful of spans cannot rank a percentile. A high span count is volume, not
   throughput pressure: saturation needs utilization or queueing evidence from the resource (CPU,
@@ -107,9 +110,17 @@ The log patterns call for this surface:
 
 ## Output
 
+Run the next call yourself rather than ending on it. Stop only at one of:
+
+- **A verdict that answers the question asked**: a verdict-table row for a health question; for a
+  cause, a traced mechanism that two independent sources support
+  (`references/agents/evidence-and-safety`, "Claim only what the evidence carries").
+- **A named blocker**: what is missing (a permission, a signal that is not emitted, a step this
+  interface lacks, a fact or confirmation only the user has) and who or what can supply it.
+
 Use the output block of the reference you followed. Otherwise: the answer in one sentence, then each
-finding with its tool, filter, window and exact value, then what is unknown and why, then the next
-call to run.
+finding with its tool, filter, window and exact value, then what is unknown and why, then the
+blocker if you stopped at one.
 
 ## Hand-offs
 
