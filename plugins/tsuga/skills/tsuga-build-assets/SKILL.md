@@ -152,6 +152,9 @@ For teams, roles, membership, keys, tokens, retention and tag policies:
   `references/dashboards/layout-rules` before the dashboard envelope.
 - Check the result against `references/dashboards/review-checklist` before you confirm.
 
+- To change one widget, use `tsuga dashboards update-graph <dashboardId> <graphId>`; it leaves the
+  other widgets alone.
+
 ## Hand-offs
 
 Supports (do the subtask, return here with the result):
