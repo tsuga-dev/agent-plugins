@@ -31,7 +31,7 @@ How to run `tsuga` and read what it prints, for every Tsuga job on the CLI. The 
 
 ## Hand off
 
-This skill covers the CLI, not the job. Load the skill for the job and keep this one for how to run its commands:
+This skill covers the CLI, not the job. Load the skill for the job and keep this one for how to run its commands. If a skill named here is not available, fetch it with `tsuga docs get skills/<name>` and follow it.
 
 - A question about the data, a query, a metric or a field: `tsuga-query-data`.
 - What the data shows: an incident, a service's health, errors, latency, one trace: `tsuga-investigate`.
