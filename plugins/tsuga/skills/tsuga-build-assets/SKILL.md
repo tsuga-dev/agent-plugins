@@ -7,8 +7,7 @@ description: "Creates, updates and deletes Tsuga assets safely: dashboards and w
 
 Create, update or delete any Tsuga asset: dashboards and their widgets, monitors, SLOs, notification
 rules, adaptive rules, integrations, silences, log and metric routes, retention and tag policies,
-teams, custom roles, ingestion keys, public tokens, and dashboard and monitor folders. Investigations
-are not covered here; build one only when the user explicitly asks.
+teams, custom roles, ingestion keys, public tokens, and dashboard and monitor folders.
 
 Load the `tsuga-cli` skill before your first `tsuga` command.
 
