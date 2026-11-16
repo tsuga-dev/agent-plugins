@@ -56,7 +56,7 @@ report rows that bear on it, such as `monitor-has-notification` for routing.
 | Quality report | `tsuga quality-reports list`, every page. Give each row's status, scope (team or global) and the report's generated time; `ignored` means unmeasured, not passed. | `references/audit/reliability-review`, `account-and-settings/quality-reports`; for repair and recheck, `account-and-settings/guides/how-to-investigate-a-failing-quality-rule` |
 | Monitor and SLO coverage | `tsuga services list`, `tsuga monitors list`, `tsuga slos list`. Separate exact from indirect coverage. | `references/audit/coverage`, `api/createMonitor`, `references/slos/overview` |
 | Routing and silences | `tsuga notification-rules list`, the adaptive rules, `tsuga notification-silences list`, `tsuga teams list`. Configuration only: a matching rule is not a delivered notification. | `references/audit/coverage`, `alert/notifications/rules`, `alert/notifications/silences`; when the user reports a notification that did not arrive, `alert/guides/how-to-troubleshoot-notifications-that-are-not-sending` |
-| Dashboards | Quote the dashboard rows of the report, re-run each widget query over the dashboard's `timePreset`, then check the dashboard against the checklist. | `references/dashboards/review-checklist` |
+| Dashboards | Scope by a service, field or metric with `tsuga dashboards list` and `filters.widgetQuery` set to it, instead of reading every dashboard. Quote the dashboard rows of the report, re-run each widget query over the dashboard's `timePreset`, then check the dashboard against the checklist. | `references/dashboards/review-checklist` |
 | Access, retention, tag policies | Read the teams, custom roles and policies in scope. Saved configuration is not effective access or enforced retention. | `account-and-settings/roles-and-permissions`, `account-and-settings/retention`, `account-and-settings/tag-policies` |
 | Metrics, naming, cardinality | List, inspect, count, and check usage before a rename or a drop ("Metrics" below). | `data-collection/guides/how-to-audit-telemetry-quality`, `references/telemetry/signal-choice` |
 | Logs, traces, resource identity | Classify, then recommend. | `data-collection/guides/how-to-audit-telemetry-quality` |
@@ -98,7 +98,9 @@ misses.
   impact. Logs: correlation, structure, severity, noise, or a safety or privacy risk.
 - Never recommend deleting or renaming a metric, attribute or asset without its usage check and
   evidence that the data still arrives. For a log or span attribute, the usage check is
-  `tsuga interesting-fields list` on the service's scope: it ranks the fields dashboards and monitors use.
+  `tsuga interesting-fields list` on the service's scope, which ranks the fields dashboards and monitors
+  use, and `tsuga dashboards list` with `filters.widgetQuery` set to the attribute, which lists every
+  dashboard that names it.
 - Before the final report, share preliminary findings and ask: "Does this match your
   understanding?" Adjust before you recommend.
 
