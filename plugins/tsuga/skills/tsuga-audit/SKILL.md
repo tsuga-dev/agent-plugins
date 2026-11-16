@@ -41,7 +41,7 @@ is in question.
 Pass `--all` to every list that takes it (`tsuga notification-silences list` is not paged), and `--stats-window 24h` to `tsuga services list`: the default `1h` drops
 services quiet for the last hour. Whole monitor rows run to thousands of characters each, so read only
 what the audit needs:
-`tsuga monitors list --all --fields id,name,owner,priority,tags,clusterIds,pauseUntil,configuration.type,configuration.queries,configuration.filter,configuration.conditions,configuration.groupByFields`. Run `tsuga clusters list` first; with more than one
+`tsuga monitors list --all --fields data.id,data.name,data.owner,data.priority,data.tags,data.clusterIds,data.pauseUntil,data.configuration.type,data.configuration.queries,data.configuration.filter,data.configuration.conditions,data.configuration.groupByFields`. Run `tsuga clusters list` first; with more than one
 cluster, run the audit once per cluster with `--cluster` (`references/query/rules`, "Scope every call").
 Trace count: `tsuga aggregation scalar --cluster <id>` with `dataSource` `traces`, a `count` filtered on `context.env:"<env>"`, grouped by `context.service.name` with a group `limit` above the service count, `timeRange` in epoch seconds over the same 24 hours.
 

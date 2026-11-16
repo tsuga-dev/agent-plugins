@@ -17,7 +17,7 @@ How to run `tsuga` and read what it prints, for every Tsuga job on the CLI. The 
 - Use `tsuga` commands only: no `curl`, no pipelines, no command substitution.
 - On a pasted Tsuga link, run `tsuga unshorten <url>` before anything else. Reuse its `query`, absolute `timeRange` and `clusterId`, and say which settings you did not carry over.
 - Run `tsuga config` before querying, since a saved default moves every command's window, and state `--from`/`--to` on every telemetry command. A relative value takes `=`: `--from=-1h`.
-- Limit results with the command's own flag (`--max-results`, `--limit`, from `--help`), never `| head`. Keep evidence with `--fields`, and filter lists with their flags rather than a hand-built `-d`.
+- Limit results with the command's own flag (`--max-results`, `--limit`, from `--help`), never `| head`. Keep evidence with `--fields`, whose paths start at the printed root (`data.message`), and filter lists with their flags rather than a hand-built `-d`.
 - Empty stdout means the command did not run. Stdout starting with `DESCRIPTION` is a help page, not a result.
 - Branch on the exit code, not stderr text ("Handle failures in scripts" on the CLI page): an exit `2` says nothing about the data. Quote the `Request ID:` line when you report an API failure.
 - `Showing N of M` is a hard stop: anything computed from that page is wrong. Rerun with `--all` where `--help` lists it; otherwise run the `Next page:` command the notice prints.
