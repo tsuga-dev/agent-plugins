@@ -61,6 +61,7 @@ Infer the runtime from the repository (on the in-app surface, ask the user), the
 | A database value no dedicated receiver collects (`sql_query`) | `data-collection/guides/how-to-collect-custom-sql-metrics` |
 | A named technology, cloud or integration to collect from | `references/technologies/index` |
 | Kubernetes chart: install and render check, then values | `integrations/kubernetes/helm-chart`, `integrations/kubernetes/helm-chart-reference` |
+| Tsuga operator: install, `TsugaCollectorConfig`, a `TsugaCollector` for a receiver the node agent does not run, such as SNMP | `integrations/kubernetes/tsuga-operator`, `integrations/kubernetes/tsuga-operator-reference` |
 | Linux VM host agent | `data-collection/guides/how-to-install-the-collector-on-a-linux-vm`, `integrations/linux-host` |
 | OTTL `transform` and `filter`, per-signal redaction | `data-collection/guides/how-to-transform-and-redact-telemetry` |
 | One masking policy with the `redaction` processor | `data-collection/guides/how-to-use-the-opentelemetry-redaction-processor` |
