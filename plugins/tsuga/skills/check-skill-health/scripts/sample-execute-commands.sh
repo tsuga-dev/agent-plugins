@@ -111,7 +111,7 @@ is_read_only_tsuga_command() {
   }
 
   # Bounded, not a specific number: templates legitimately use other small limits.
-  # $1 is the endpoint's own ceiling — logs cap at 1000, traces at 10000.
+  # $1 is the endpoint's own ceiling — logs and traces both cap at 1000.
   has_bounded_max_results() {
     local value
     case " $cmd " in
@@ -133,7 +133,7 @@ is_read_only_tsuga_command() {
       return 1
       ;;
     tsuga\ traces\ search\ *)
-      if has_from_to && has_bounded_max_results 10000; then
+      if has_from_to && has_bounded_max_results 1000; then
         return 0
       fi
       return 1
