@@ -96,7 +96,7 @@ Before the second query, name the leading hypothesis, its nearest rival, and the
 - **Propagation:** only once spans exist on both sides. A callee with no spans at all is an instrumentation, sampling or ingestion gap before it is a linkage one.
 - **RUM:** the RUM intake takes a public token, not an ingestion key. A rejected browser request points at the page's origin (the token's allowed domain URLs) before the token. Records present but a Mobile column empty is a classification gap: read the Mobile RUM page's attribute table. Records present but no Mobile row for the app: check its screen views (`data-collection/mobile/screen-tracking`).
 
-When the fault is in a Tsuga log or metric route rather than the sender, the fix is an asset change: hand off to the build-assets skill with the evidence (see Related skills).
+When the fault is in a Tsuga log, metric or span route rather than the sender, the fix is an asset change: hand off to the build-assets skill with the evidence (see Related skills).
 
 What a result does not prove (the named page has the detail):
 
@@ -131,7 +131,7 @@ Supports (do the subtask, return here with the result): `tsuga-query-data` for a
 Hand off (the receiving skill owns the job):
 
 - `tsuga-design`: nothing names what to instrument or why. Resume here when it hands back an instrumentation contract.
-- `tsuga-build-assets`: the fix is a Tsuga log or metric route.
+- `tsuga-build-assets`: the fix is a Tsuga log, metric or span route.
 - `tsuga-audit`: telemetry arrives and the question is whether its shape and naming are right.
 - `tsuga-investigate`: telemetry arrives and the question is what it shows.
 

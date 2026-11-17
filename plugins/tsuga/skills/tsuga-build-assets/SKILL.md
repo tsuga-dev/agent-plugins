@@ -1,12 +1,12 @@
 ---
 name: tsuga-build-assets
-description: "Creates, updates and deletes Tsuga assets safely: dashboards and widgets, monitors, SLOs, notification and adaptive rules, integrations, silences, log and metric routes, retention and tag policies, teams, custom roles, ingestion keys, public tokens and folders. Verifies every embedded query, reads an asset before updating it, and confirms each change first. Use when asked to build, edit, fix, move or delete one of these assets, add or repair a widget or layout, set up alerting or routing, or apply a fix tsuga-audit recommended. For a goal with no asset defined yet (what to alert on), use tsuga-design first; for what the data shows, tsuga-investigate; to review an asset without changing it, tsuga-audit; for a query with no asset use tsuga-query-data."
+description: "Creates, updates and deletes Tsuga assets safely: dashboards and widgets, monitors, SLOs, notification and adaptive rules, integrations, silences, log, metric and span routes, retention and tag policies, teams, custom roles, ingestion keys, public tokens and folders. Verifies every embedded query, reads an asset before updating it, and confirms each change first. Use when asked to build, edit, fix, move or delete one of these assets, add or repair a widget or layout, set up alerting or routing, or apply a fix tsuga-audit recommended. For a goal with no asset defined yet (what to alert on), use tsuga-design first; for what the data shows, tsuga-investigate; to review an asset without changing it, tsuga-audit; for a query with no asset use tsuga-query-data."
 ---
 
 # Build Tsuga assets
 
 Create, update or delete any Tsuga asset: dashboards and their widgets, monitors, SLOs, notification
-rules, adaptive rules, integrations, silences, log and metric routes, retention and tag policies,
+rules, adaptive rules, integrations, silences, log, metric and span routes, retention and tag policies,
 teams, custom roles, ingestion keys, public tokens, and dashboard and monitor folders.
 
 Load the `tsuga-cli` skill before your first `tsuga` command.
@@ -65,7 +65,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
    alert state (`alert/guides/how-alert-state-resets`). Say who it will notify only after the routing
    read in step 1 (run it now if step 1 skipped it): a partial read cannot rule a destination out. To keep a monitor quiet, silence it by its id; changing its priority helps
    only when no matching rule covers every priority. For a delete, say whether it can be undone:
-   only dashboards, monitors, notification rules, log routes and metric routes can be restored, by
+   only dashboards, monitors, notification rules, and log, metric and span routes can be restored, by
    a user in the app (`account-and-settings/guides/how-to-restore-a-deleted-asset-from-audit-logs`);
    no agent interface restores an asset. For a retention policy, state the effective retention
    before and after: a delete falls back to the next broader policy, and a shorter window deletes
@@ -93,6 +93,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
 | silences           | `alert/notifications/silences`                                                                           | `api/createNotificationSilence`, `api/updateNotificationSilence` |
 | log routes         | `process/routes/index`, `process/routes/log-processors`, `process/guides/log-route-libraries`            | `api/createRoute`, `api/updateRoute`                            |
 | metric routes      | `process/routes/index`, `process/routes/metric-processors`                                               | `api/createMetricRoute`, `api/updateMetricRoute`                |
+| span routes        | `process/routes/index`, `process/routes/span-processors`                                                 | `api/createSpanRoute`, `api/updateSpanRoute`                    |
 | retention policies | `account-and-settings/retention`, `account-and-settings/guides/how-to-configure-data-retention-policies` | `api/createRetentionPolicy`, `api/updateRetentionPolicy`        |
 | tag policies       | `account-and-settings/tag-policies`, `account-and-settings/guides/how-to-configure-tag-policies`         | `api/createTagPolicy`, `api/updateTagPolicy`                    |
 | teams              | `account-and-settings/teams`, `account-and-settings/guides/how-to-create-a-team`                         | `api/createTeam`, `api/updateTeam`                              |
@@ -131,7 +132,7 @@ For teams, roles, membership, keys, tokens, retention and tag policies:
   (`account-and-settings/guides/how-to-export-a-resource-as-terraform`), dashboard report
   scheduling (`visualize/guides/how-to-schedule-a-dashboard-report`) and a dashboard from the
   Templates catalog (`visualize/guides/how-to-create-a-dashboard-from-a-template`). Give the user the page. A
-  created log or metric route is evaluated last: create it disabled and have the user check its rank
+  created log, metric or span route is evaluated last: create it disabled and have the user check its rank
   in the app (`process/routes/index`) before enabling it.
 - After a timeout or a partial change across several resources, read each one back and reconcile
   before retrying or reporting.
