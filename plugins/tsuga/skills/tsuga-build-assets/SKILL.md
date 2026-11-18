@@ -7,7 +7,7 @@ description: "Creates, updates and deletes Tsuga assets safely: dashboards and w
 
 Create, update or delete any Tsuga asset: dashboards and their widgets, monitors, SLOs, notification
 rules, adaptive rules, integrations, silences, log, metric and span routes, retention and tag policies,
-teams, custom roles, ingestion keys, public tokens, and dashboard and monitor folders.
+teams, custom roles, ingestion keys, public tokens, cloud accounts, and dashboard and monitor folders.
 
 Load the `tsuga-cli` skill before your first `tsuga` command.
 
@@ -100,6 +100,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
 | custom roles       | `account-and-settings/roles-and-permissions`, `account-and-settings/guides/how-to-create-a-custom-global-role` | `api/createCustomRole`, `api/updateCustomRole`            |
 | ingestion keys     | `account-and-settings/api-keys`, `account-and-settings/guides/how-to-create-an-ingestion-key`; one key shared by several teams: `account-and-settings/guides/how-to-override-data-ownership-on-an-ingestion-key` | `api/createIngestionApiKey`, `api/updateIngestionApiKey`        |
 | public tokens      | `account-and-settings/api-keys`                                                                          | `api/createPublicToken`, `api/updatePublicToken`                |
+| cloud accounts     | `categorize/cloud-resources`, then the provider's setup: `integrations/aws/how-to-connect-an-aws-account-to-cloud-resources`, `integrations/azure/how-to-connect-an-azure-subscription-to-cloud-resources` or `integrations/gcp/how-to-connect-a-gcp-project-to-cloud-resources` | `api/createCloudAccount`, `api/updateCloudAccount`              |
 
 Each asset's delete and get operations sit beside these on the same `api/` naming. When the user
 manages the asset as code, fetch `references/iac/terraform`; as Kubernetes resources (dashboards,
@@ -110,6 +111,7 @@ give the user `account-and-settings/teams`.
 No command sends invitations or creates operation keys: give the user
 `account-and-settings/guides/how-to-invite-members` or
 `account-and-settings/guides/how-to-create-and-use-an-operation-key`.
+No command connects, edits or removes cloud accounts: give the user `categorize/cloud-resources`.
 No command deletes telemetry events: give the user `account-and-settings/data-deletion`.
 
 ## Administration
