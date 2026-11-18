@@ -38,7 +38,7 @@ Fetch a page with `tsuga docs get` by its exact path. `tsuga docs search` return
 
 ## Pick the tool
 
-- Records: `tsuga logs search`, `tsuga traces search`, `tsuga rum search`; clusters of logs: `tsuga logs patterns`; counts, rates, percentiles and group-bys: `tsuga aggregation scalar` and `tsuga aggregation timeseries`; field names: `tsuga logs attributes`, `tsuga interesting-fields list` and, for RUM, `tsuga rum attributes`; metrics: `tsuga metrics list --search`, then `tsuga metrics get`. Confirm each command's flags with `--help`.
+- Records: `tsuga logs search`, `tsuga traces search`, `tsuga rum search`; clusters of logs: `tsuga logs patterns`; counts, rates, percentiles and group-bys: `tsuga aggregation scalar` and `tsuga aggregation timeseries`; field names: `tsuga logs attributes`, `tsuga interesting-fields list` and, for RUM, `tsuga rum attributes` (built-in fields only: a key the app sends, such as `context.user.attributes.<KEY>`, is not listed); metrics: `tsuga metrics list --search`, then `tsuga metrics get`. Confirm each command's flags with `--help`.
 - An empty `tsuga service-graph get` usually means no traces in the window, not an isolated service. It takes a service id from `tsuga services list`, not a name.
 - Reach for `tsuga profiles` once an aggregation has narrowed the problem to one service and CPU is the question. A profile covers the whole service, with no endpoint or operation dimension, shows where CPU went and not why a request waited, and names only the frames the profiler sent. Never build a story on `0x?` frames; say how many of the top frames were unresolved.
 
