@@ -74,7 +74,7 @@ Finding: {one sentence about what the output revealed}.
 
 ```bash
 # For aggregations, use the real CLI shape:
-TO=$(date -u +%s); FROM=$((TO - 3600))
+TO=$(date -u +%s)000; FROM=$((TO - 3600000))
 cat > /tmp/q.json <<JSON
 {
   "timeRange": {"from": $FROM, "to": $TO},
@@ -168,7 +168,7 @@ Finding: no errors. Logs + spans were healthy — metrics-only regression.
 
 ### Probe 2 — is the query engine reporting cold-path saturation?
 ```bash
-TO=$(date -u +%s); FROM=$((TO - 3600))
+TO=$(date -u +%s)000; FROM=$((TO - 3600000))
 cat > /tmp/q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"metrics","queries":[{"aggregate":{"type":"percentile","percentile":95,"field":"query_below_day_duration_milliseconds"},"filter":"context.env:prod context.cluster_id:acme-trading"}],"aggregationWindow":"5m"}
 JSON

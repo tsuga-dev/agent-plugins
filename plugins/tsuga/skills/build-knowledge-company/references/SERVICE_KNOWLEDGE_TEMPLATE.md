@@ -62,8 +62,8 @@ Subsections, each a single purpose:
 tsuga logs search --query "context.env:prod context.service.name:{service_name} level:ERROR" --from=-1h --to now --max-results 20
 
 # For aggregations, use the heredoc pattern:
-TO=$(date -u +%s); FROM=$((TO - 3600))
-# or on Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
+TO=$(date -u +%s)000; FROM=$((TO - 3600000))
+# or on Linux: FROM=$(date -u -d '1 hour ago' +%s)000; TO=$(date -u +%s)000
 cat > /tmp/q.json <<JSON
 {
   "timeRange": {"from": $FROM, "to": $TO},

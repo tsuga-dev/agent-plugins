@@ -49,8 +49,8 @@ A compact tool call like `aggregate-scalar dataSource=logs aggregate=count filte
 has no one-liner CLI equivalent. It becomes a JSON body plus `-f`:
 
 ```bash
-TO=$(date -u +%s); FROM=$((TO - 3600))
-# or on Linux: FROM=$(date -u -d '1 hour ago' +%s); TO=$(date -u +%s)
+TO=$(date -u +%s)000; FROM=$((TO - 3600000))
+# or on Linux: FROM=$(date -u -d '1 hour ago' +%s)000; TO=$(date -u +%s)000
 
 cat > /tmp/q.json <<JSON
 {
@@ -64,14 +64,14 @@ JSON
 tsuga aggregation scalar -f /tmp/q.json
 ```
 
-`"timeRange"` takes Unix-seconds integers, which is why the `date` helper is here — a relative
+`"timeRange"` takes Unix-millisecond integers, which is why the `date` helper is here — a relative
 string like `"-1h"` is rejected in the body even though `--from=-1h` is fine as a flag. Emit the
 helper once per dossier, the first time an aggregation needs it.
 
-`api/aggregateScalar` has when `count` needs a `"field"`. Never swap in `sum` to dodge that error:
+`api/aggregateScalarV2` has when `count` needs a `"field"`. Never swap in `sum` to dodge that error:
 it answers a different question.
 
-For the rest of the body — where `groupBy`, `formula`, `aggregationWindow` and per-query
+For the rest of the body — where `groupBy`, `formulas`, `aggregationWindow` and per-query
 `functions` sit, and which aggregate a metric's type and temporality call for — start from
 `tsuga aggregation scalar --generate-skeleton` and the `$tsuga-query-data` skill. Two doc pages carry the
 rest, both via `tsuga docs get <path>`: `visualize/guides/how-to-choose-a-metric-aggregation` for

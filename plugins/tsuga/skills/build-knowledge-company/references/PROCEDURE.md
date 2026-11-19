@@ -41,11 +41,11 @@ tsuga dashboards list | jq '.data | length'              # > 0
 tsuga log-routes list | jq '.data | length'              # > 0
 
 # Aggregation body path — exercise once to confirm the heredoc shape works
-TO=$(date -u +%s); FROM=$((TO - 300))            # 5 minutes; portable on BSD and GNU
+TO=$(date -u +%s)000; FROM=$((TO - 300000))            # 5 minutes; portable on BSD and GNU
 cat > /tmp/q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"logs","queries":[{"aggregate":{"type":"count"},"filter":"*"}]}
 JSON
-tsuga aggregation scalar -f /tmp/q.json          # returns {"data":{"results":[{"id":"q1","group":{},"value":N}]}}
+tsuga aggregation scalar -f /tmp/q.json          # returns {"data":{"results":[{"group":{},"values":{"q1":N}}]}}
 ```
 
 All five lists non-empty plus a scalar aggregation returning a number = **go**. Anything else, fix
@@ -103,7 +103,7 @@ tsuga metrics list            --all > /tmp/metrics.json
 # traces need one call each; ranking on logs alone buries a well-instrumented, log-quiet API.
 # 500 is the most groups a logs or traces groupBy level returns: if a call comes back with
 # exactly 500 services, the tail is cut off, so narrow the filter and run it again.
-TO=$(date -u +%s); FROM=$((TO - 604800))
+TO=$(date -u +%s)000; FROM=$((TO - 604800000))
 for SRC in logs traces; do
   cat > /tmp/svc-vol-q.json <<JSON
 {"timeRange":{"from":$FROM,"to":$TO},"dataSource":"$SRC","queries":[{"aggregate":{"type":"count"},"filter":"context.env:prod"}],"groupBy":[{"fields":["context.service.name"],"limit":500}]}
@@ -112,9 +112,9 @@ JSON
 done
 
 # Sum the two per service, ranked
-jq -s '[.[].data.results[] | select(.value != null)]
+jq -s '[.[].data.results[] | select(.values.q1 != null)]
        | group_by(.group."context.service.name")
-       | map({svc: .[0].group."context.service.name", vol: (map(.value) | add)})
+       | map({svc: .[0].group."context.service.name", vol: (map(.values.q1) | add)})
        | sort_by(-.vol)' /tmp/svc-volume-7d-logs.json /tmp/svc-volume-7d-traces.json \
   > /tmp/svc-volume-7d.json
 

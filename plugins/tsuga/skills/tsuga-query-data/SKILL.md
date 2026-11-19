@@ -21,7 +21,7 @@ Fetch a page with `tsuga docs get` by its exact path. `tsuga docs search` return
 | Logs and patterns; traces; the logs of one trace | `explore/logs`; `explore/traces`; `explore/guides/how-to-find-logs-for-a-trace` |
 | RUM streams and fields; custom user actions (an event cannot be joined to the action that buffered it) | `data-collection/browser/rum-events`, `data-collection/mobile/rum-events`; `data-collection/guides/how-to-track-user-actions-in-grafana-faro` |
 | Aggregation model, under UI labels | `visualize/analytics/queries` |
-| Aggregation and search request fields | `api/aggregateScalar`, `api/aggregateTimeseries`, `api/searchLogs`, `api/searchSpans` |
+| Aggregation and search request and response fields | `api/aggregateScalarV2`, `api/aggregateTimeseriesV2`, `api/searchLogs`, `api/searchSpans` |
 | A body to start from, and what those pages leave out | `references/query/aggregation-body` |
 | Metric type and temporality to aggregate and function | `visualize/guides/how-to-choose-a-metric-aggregation` |
 | PromQL support; writing and fixing PromQL | `visualize/analytics/promql`; `visualize/guides/how-to-write-promql-queries` |
