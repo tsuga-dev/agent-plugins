@@ -54,6 +54,8 @@ design skill first (see Hand-offs); resume here with the asset specification it 
    change the result. When the asset's own query is legitimately empty, such as a monitor on a rare
    error, run both controls on the query widened by dropping the clause that makes it rare. Once
    they pass, say what empty means, and for a monitor or SLO what its no-data setting does.
+   Before a grok processor goes on a route, test its rules with `tsuga grok parse` as
+   `process/routes/log-processors` ("Test a grok rule outside the app") says.
 3. **Get a skeleton.**
 
    `tsuga <resource> create --generate-skeleton` (or `tsuga <resource> update <id>
@@ -130,12 +132,13 @@ For teams, roles, membership, keys, tokens, retention and tag policies:
   and create another. A public token is not a secret: get and list return it, and the SDK config
   needs it. Nothing rotates a credential: create the new one, move the clients, then delete the old
   one.
-- App only, on every interface: restore (step 5), route rank, Terraform export
+- App only, on every interface: restore (step 5), log, metric and span route rank, Terraform export
   (`account-and-settings/guides/how-to-export-a-resource-as-terraform`), dashboard report
   scheduling (`visualize/guides/how-to-schedule-a-dashboard-report`) and a dashboard from the
   Templates catalog (`visualize/guides/how-to-create-a-dashboard-from-a-template`). Give the user the page. A
   created log, metric or span route is evaluated last: create it disabled and have the user check its rank
   in the app (`process/routes/index`) before enabling it.
+- No command here manages RUM routes or their rank: say so.
 - After a timeout or a partial change across several resources, read each one back and reconcile
   before retrying or reporting.
 
