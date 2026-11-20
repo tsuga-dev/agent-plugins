@@ -6,7 +6,7 @@ description: "Creates, updates and deletes Tsuga assets safely: dashboards and w
 # Build Tsuga assets
 
 Create, update or delete any Tsuga asset: dashboards and their widgets, monitors, SLOs, notification
-rules, adaptive rules, integrations, silences, log, metric and span routes, retention and tag policies,
+rules, adaptive rules, integrations, silences, log, metric, span and RUM routes, retention and tag policies,
 teams, custom roles, ingestion keys, public tokens, cloud accounts, and dashboard and monitor folders.
 
 Load the `tsuga-cli` skill before your first `tsuga` command.
@@ -67,7 +67,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
    alert state (`alert/guides/how-alert-state-resets`). Say who it will notify only after the routing
    read in step 1 (run it now if step 1 skipped it): a partial read cannot rule a destination out. To keep a monitor quiet, silence it by its id; changing its priority helps
    only when no matching rule covers every priority. For a delete, say whether it can be undone:
-   only dashboards, monitors, notification rules, and log, metric and span routes can be restored, by
+   only dashboards, monitors, notification rules, and log, metric, span and RUM routes can be restored, by
    a user in the app (`account-and-settings/guides/how-to-restore-a-deleted-asset-from-audit-logs`);
    no agent interface restores an asset. For a retention policy, state the effective retention
    before and after: a delete falls back to the next broader policy, and a shorter window deletes
@@ -96,6 +96,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
 | log routes         | `process/routes/index`, `process/routes/log-processors`, `process/guides/log-route-libraries`            | `api/createRoute`, `api/updateRoute`                            |
 | metric routes      | `process/routes/index`, `process/routes/metric-processors`                                               | `api/createMetricRoute`, `api/updateMetricRoute`                |
 | span routes        | `process/routes/index`, `process/routes/span-processors`                                                 | `api/createSpanRoute`, `api/updateSpanRoute`                    |
+| RUM routes         | `process/routes/index`, `process/routes/span-processors` (same processors)                               | `api/createRumRoute`, `api/updateRumRoute`                      |
 | retention policies | `account-and-settings/retention`, `account-and-settings/guides/how-to-configure-data-retention-policies` | `api/createRetentionPolicy`, `api/updateRetentionPolicy`        |
 | tag policies       | `account-and-settings/tag-policies`, `account-and-settings/guides/how-to-configure-tag-policies`         | `api/createTagPolicy`, `api/updateTagPolicy`                    |
 | teams              | `account-and-settings/teams`, `account-and-settings/guides/how-to-create-a-team`                         | `api/createTeam`, `api/updateTeam`                              |
