@@ -67,7 +67,7 @@ design skill first (see Hand-offs); resume here with the asset specification it 
    alert state (`alert/guides/how-alert-state-resets`). Say who it will notify only after the routing
    read in step 1 (run it now if step 1 skipped it): a partial read cannot rule a destination out. To keep a monitor quiet, silence it by its id; changing its priority helps
    only when no matching rule covers every priority. For a delete, say whether it can be undone:
-   only dashboards, monitors, notification rules, and log, metric, span and RUM routes can be restored, by
+   only dashboards, monitors, SLOs, notification rules, and log, metric, span and RUM routes can be restored, by
    a user in the app (`account-and-settings/guides/how-to-restore-a-deleted-asset-from-audit-logs`);
    no agent interface restores an asset. For a retention policy, state the effective retention
    before and after: a delete falls back to the next broader policy, and a shorter window deletes
