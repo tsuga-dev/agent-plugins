@@ -1,6 +1,6 @@
 ---
 name: tsuga-investigate
-description: "Investigates what is happening in Tsuga telemetry: incident response and root-cause analysis, service health triage, errors through log patterns and new or rising error patterns, latency and slow operations, where the time went in one trace, what separates failing or slow spans from healthy ones, faulty deployments, and named technologies or symptoms such as OOMKilled, CrashLoopBackOff, connection pool exhaustion, queue lag or replication lag. Use when a monitor fires, an incident is declared, a pasted Tsuga link needs explaining, or someone asks whether a service is healthy, what is failing or slow and why, or for a post-incident RCA. To review alerting or telemetry configuration use tsuga-audit; for telemetry that never arrives use tsuga-collect-data."
+description: "Load this first, before running any tsuga command, for a declared incident, a fired monitor, or a question about what is failing or slow and why. Investigates what is happening in Tsuga telemetry: incident response and root-cause analysis, service health triage, errors through log patterns and new or rising error patterns, latency and slow operations, where the time went in one trace, what separates failing or slow spans from healthy ones, faulty deployments, and named technologies or symptoms such as OOMKilled, CrashLoopBackOff, connection pool exhaustion, queue lag or replication lag. Use when a monitor fires, an incident is declared, a pasted Tsuga link needs explaining, or someone asks whether a service is healthy, what is failing or slow and why, or for a post-incident RCA. To review alerting or telemetry configuration use tsuga-audit; for telemetry that never arrives use tsuga-collect-data."
 ---
 
 # Investigate Tsuga data
@@ -43,14 +43,14 @@ summary or trace summary for one trace, contrast sets for groups of spans.
 | --- | --- | --- |
 | Is X healthy, where to start | Registry row, monitor inventory, four-query sweep, verdict | `references/investigation/service-triage` |
 | What is broken, no service named | Live alerts first where your interface reads them. Then on each cluster (`tsuga clusters list`), error spans grouped by `context.service.name`, compared with the same hour a day earlier (never a window that contains it) and ranked by the change in count; call `tsuga services list` only filtered by env | `references/investigation/service-triage` |
-| Which errors, what is failing | Error count, then log patterns on the scoped error filter, then what is new or rising, then ≤ 10 samples of the pattern that matters | `references/investigation/errors`, `explore/logs` |
-| What is slow, p95 / p99 | Percentile per `span.name` per 5m, then span counts | `references/investigation/latency`, `api/aggregateTimeseriesV2` |
+| Which errors, what is failing | Error count, then contrast sets on the failing spans, then log patterns on the scoped error filter, then what is new or rising, then ≤ 10 samples of the pattern that matters | `references/investigation/errors`, `explore/logs` |
+| What is slow, p95 / p99 | Percentile per `span.name` per 5m, then contrast sets on the slow spans, then span counts | `references/investigation/latency`, `api/aggregateTimeseriesV2` |
 | Where did the time go in one trace | `tsuga traces latency-summary`; `tsuga traces summarize` for a huge repetitive trace | `references/investigation/latency`, `explore/traces` |
 | What separates failing or slow spans, a version diff, a faulty deployment, a release or cohort comparison | Contrast sets; for cohorts, the same aggregation grouped by version or a RUM field first | `references/investigation/contrast-sets`, `categorize/services/faulty-deployments` |
 | A slow or failing page, traced into the backend | Confirm the browser symptom on RUM, take a `trace_id` from the slow requests (the surface note under Inputs says how), then `tsuga traces search` on it; no span means the backend was not traced or was sampled out | `getting-started/investigate-an-incident` ("Cross from the browser into the backend"), `data-collection/browser/rum-events` ("Fetch and XHR requests") |
 | A Kubernetes question in kubectl terms (get pods, describe, why a pod restarted) | The Kubernetes tools, then the pod snapshot's last termination reason | `references/translators/kubectl` ("Reach for the Kubernetes tools first"; a restart: "OOMKilled triage") |
 | A technology or symptom is named (OOMKilled, CrashLoopBackOff, connection pool, replication lag, queue lag…) | Read its metric names before querying | `references/technologies/index` |
-| A declared incident, a fired monitor, an RCA | Classify the mode, anchor on the monitor, run the branches | `references/incident-response/orchestration` |
+| A declared incident, a fired monitor, an RCA | Classify the mode, anchor on the monitor, run the branches. Once an error or latency spike on spans is confirmed, contrast the failing or slow spans against the healthy ones before grouping by any attribute by hand | `references/incident-response/orchestration` |
 
 The log patterns call for this surface:
 
@@ -84,6 +84,16 @@ The log patterns call for this surface:
   baseline count; a handful of spans cannot rank a percentile. A high span count is volume, not
   throughput pressure: saturation needs utilization or queueing evidence from the resource (CPU,
   pool usage, queue depth or wait time).
+- **Contrast before grouping by hand.** Once an error or latency spike on spans is confirmed,
+  contrast the failing or slow spans against the healthy ones before any group-by you choose by
+  hand: one contrast tests many candidate attributes, and a group-by tests one. Group by hand to confirm a
+  finding, or when the contrast is empty. Both groups take the same `<scope>` (the service, and
+  the operation when known) and the same window. For errors, the target is
+  `<scope> status_code:error` and the baseline `<scope> NOT status_code:error`. For latency, first
+  read the p25, p75 and p95 of `duration` over `<scope>` in one scalar aggregation, then the target
+  is `<scope> duration:>=<p95>` (`duration:><p75>` when p75 equals p95) and the baseline
+  `<scope> duration:[<p25> TO <p75>]`, with the percentiles as returned, decimals included. An
+  empty target then means the slowest spans all take the same time: report that instead. A deploy or a faulty version: `references/investigation/contrast-sets`.
 - **One condition per contrast.** Keep the two groups' filters identical apart from the single
   condition being contrasted, or the finding is about the filters.
 - **Error pattern increases are team-level.** Cross-reference a pattern against the service and its
