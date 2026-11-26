@@ -68,7 +68,7 @@ preview come from `tsuga quality-reports examples <ROW_ID>`.
 ### Dashboards
 
 The report rows to quote first: `no-empty-dashboards`, `no-stale-dashboards`,
-`no-unused-dashboards`, `no-absent-log-fields` and `no-orphan-monitors`.
+`no-unused-dashboards`, `no-absent-log-fields`, `no-absent-metric-fields` and `no-orphan-monitors`.
 
 ### Metrics
 
