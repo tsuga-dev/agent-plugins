@@ -15,7 +15,7 @@ How to run `tsuga` and read what it prints, for every Tsuga job on the CLI. The 
 ## Run and read
 
 - Use `tsuga` commands only: no `curl`, no pipelines, no command substitution.
-- On a pasted Tsuga link, run `tsuga unshorten <url>` before anything else. Reuse its `query`, absolute `timeRange` and `clusterId`, and say which settings you did not carry over.
+- On a pasted Tsuga link, run `tsuga unshorten <url>` before anything else. Reuse its `query`, absolute `timeRange` and `clusterIds` (legacy links carry `clusterId`; pass one ID per `--cluster`), and say which settings you did not carry over.
 - State `--from`/`--to` on every telemetry command. A relative value takes `=`: `--from=-1h`. Without them a saved default sets the window; `tsuga config` shows it.
 - Add `--rationale` to API commands to say why, in a few ASCII words: `--rationale "confirming the deploy caused the error spike"`. It never changes the result.
 - Limit results with the command's own flag (`--max-results`, `--limit`, from `--help`), never `| head`. Keep evidence with `--fields`, whose paths start at the printed root (`data.message`), and filter lists with their flags rather than a hand-built `-d`.
