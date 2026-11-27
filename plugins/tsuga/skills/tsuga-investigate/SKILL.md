@@ -93,7 +93,8 @@ The log patterns call for this surface:
   read the p25, p75 and p95 of `duration` over `<scope>` in one scalar aggregation, then the target
   is `<scope> duration:>=<p95>` (`duration:><p75>` when p75 equals p95) and the baseline
   `<scope> duration:[<p25> TO <p75>]`, with the percentiles as returned, decimals included. An
-  empty target then means the slowest spans all take the same time: report that instead. A deploy or a faulty version: `references/investigation/contrast-sets`.
+  empty target then means the slowest spans all take the same time: report that instead. For a deploy or a faulty version, fetch
+  `references/investigation/contrast-sets` ("A faulty deployment").
 - **One condition per contrast.** Keep the two groups' filters identical apart from the single
   condition being contrasted, or the finding is about the filters.
 - **Error pattern increases are team-level.** Cross-reference a pattern against the service and its
